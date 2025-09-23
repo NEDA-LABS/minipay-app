@@ -34,6 +34,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const isLanding = pathname === "/";
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -75,11 +76,13 @@ export default function Header() {
       className={`
         sticky top-0 z-50 
         transition-all duration-300
-        ${scrolled ? "shadow-lg bg-[#004a6d]/50" : "shadow-sm"}
+        ${isLanding ? (scrolled ? "shadow-lg bg-[#004a6d]/50" : "shadow-sm") : "shadow-none bg-transparent"}
       `}
     >
       {/* Simple top border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+      {isLanding && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+      )}
 
       <div className="mx-auto sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">

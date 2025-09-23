@@ -47,7 +47,7 @@ import useSumsub from "@/hooks/useSumsub";
 
 function NedaPayLogo() {
   return (
-    <div className="p-4 flex items-center justify-center">
+    <div className="p-4 pl-0 flex items-center justify-center">
       <Image src="/logo.svg" alt="Logo" width={100} height={100} />
     </div>
   );

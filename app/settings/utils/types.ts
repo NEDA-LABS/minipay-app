@@ -18,14 +18,6 @@ export interface SettingsDto {
     webhookUrl: string;
   }
   
-  export interface ApiKey {
-    id: string;
-    keyId: string;
-    environment: string;
-    name: string;
-    lastUsed?: string;
-    createdAt: string;
-  }
   
   // referral additions
   export interface ReferralStats {

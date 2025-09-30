@@ -136,7 +136,7 @@ function AppSidebarContent() {
                 <SidebarMenuButton asChild>
                   <Link
                     href={item.url}
-                    className={`flex items-center space-x-3 md:space-x-4 p-2 md:p-3 rounded-full transition-colors text-base md:text-lg ${getNavClass(
+                    className={`flex items-center space-x-3 md:space-x-4 p-2 md:p-3 rounded-full transition-colors text-base ${getNavClass(
                       item.url
                     )}`}
                   >

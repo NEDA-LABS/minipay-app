@@ -42,3 +42,6 @@ next-env.d.ts
 
 #kotani
 /app/mobileWithdrawal/someting.txt
+
+#backend
+/express-api

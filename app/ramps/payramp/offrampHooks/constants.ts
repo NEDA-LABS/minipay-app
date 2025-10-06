@@ -1,6 +1,6 @@
-import {scroll, base, arbitrum, polygon, celo, bsc} from 'viem/chains';
+import {scroll, base, arbitrum, polygon, celo, bsc, lisk} from 'viem/chains';
 
-export type ChainId = 8453 | 42161 | 137 | 42220 | 56 | 534352;
+export type ChainId = 8453 | 42161 | 137 | 42220 | 56 | 534352 | 1135;
 
 export interface ChainConfig {
   id: ChainId;
@@ -97,6 +97,19 @@ export const SCROLL_CHAIN: ChainConfig = {
   blockExplorerUrls: ['https://scrollscan.com']
 };
 
-export const SUPPORTED_CHAINS = [BASE_CHAIN, BNB_CHAIN, ARBITRUM_CHAIN, POLYGON_CHAIN, CELO_CHAIN, SCROLL_CHAIN];
+export const LISK_CHAIN: ChainConfig = {
+  id: 1135,
+  name: 'Lisk',
+  nativeCurrency: { name: 'Lisk', symbol: 'LSK', decimals: 18 },
+  rpcUrl: 'https://rpc.lisk.com',
+  explorerUrl: 'https://explorer.lisk.com',
+  icon: '/lisk.svg',
+  tokens: ['USDC', 'USDT'],
+  chainIdHex: '0x480',
+  rpcUrls: ['https://rpc.lisk.com'],
+  blockExplorerUrls: ['https://explorer.lisk.com']
+};
+
+export const SUPPORTED_CHAINS = [BASE_CHAIN, BNB_CHAIN, ARBITRUM_CHAIN, POLYGON_CHAIN, CELO_CHAIN, SCROLL_CHAIN, LISK_CHAIN];
 export const SUPPORTED_CHAINS_NORMAL = [BASE_CHAIN, BNB_CHAIN, ARBITRUM_CHAIN, POLYGON_CHAIN, CELO_CHAIN, SCROLL_CHAIN];
 export const DEFAULT_CHAIN = BASE_CHAIN;

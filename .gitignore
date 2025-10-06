@@ -45,3 +45,8 @@ next-env.d.ts
 
 #backend
 /express-api
+
+#docs
+
+/ARCHITECTURE.md
+/PERFORMANCE_ANALYSIS.md

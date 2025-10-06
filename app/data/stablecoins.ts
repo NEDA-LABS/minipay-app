@@ -23,11 +23,12 @@ export const stablecoins = [
       56:    '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', // BNB Smart Chain
       10:    '0x7F5c764cBc14f9669B88837ca1490cCa17c31607', // Optimism
       534352:'0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4', // Scroll Mainnet
+      1135: '0xf242275d3a6527d877f2c927a82d9b057609cc71', // Lisk Mainnet 
     },
     issuer: 'Circle',
     description: 'USD-backed stablecoin by Circle',
     website: 'https://www.circle.com/usdc',
-    chainIds: [8453, 42161, 137, 42220, 56, 10, 534352],
+    chainIds: [8453, 42161, 137, 42220, 56, 10, 534352, 1135],
   },
   {
     region: 'United States',
@@ -52,11 +53,12 @@ export const stablecoins = [
       56:    '0x55d398326f99059fF775485246999027B3197955', // BNB Smart Chain
       10:    '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // Optimism
       534352:'0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df', // Scroll Mainnet
+      1135: '0x05d032ac25d322df992303dca074ee7392c117b9', // Lisk Mainnet 
     },
     issuer: 'Tether',
     description: 'USD-backed stablecoin by Tether',
     website: 'https://tether.to',
-    chainIds: [8453, 42161, 137, 42220, 56, 10, 534352],
+    chainIds: [8453, 42161, 137, 42220, 56, 10, 534352, 1135],
   },
   {
     region: 'Nigeria',

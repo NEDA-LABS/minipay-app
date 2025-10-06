@@ -15,7 +15,7 @@ import Image from "next/image";
 import ChainSwitcher from "@/components/ChainSwitcher";
 import WalletKit from "@/dashboard/WalletKit";
 
-type ChainId = 8453 | 42161 | 137 | 42220 | 56 | 534352 | 10;
+type ChainId = 8453 | 42161 | 137 | 42220 | 56 | 534352 | 10 | 1135;
 
 interface Chain {
   id: number;

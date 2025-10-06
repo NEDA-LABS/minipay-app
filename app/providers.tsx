@@ -1,6 +1,6 @@
 "use client";
 
-import { base, polygon, arbitrum, celo, scroll, bsc, optimism, mainnet } from "wagmi/chains";
+import { base, polygon, arbitrum, celo, scroll, bsc, optimism, mainnet, lisk } from "wagmi/chains";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { http, fallback } from "wagmi";
@@ -15,7 +15,7 @@ const queryClient = new QueryClient();
 
 // Configure wagmi with all supported wallet connectors
 const wagmiConfig = createPrivyConfig({
-  chains: [base, polygon, bsc, arbitrum, celo, scroll],
+  chains: [base, polygon, bsc, arbitrum, celo, scroll, lisk, optimism],
   ssr: true,
   transports: {
     [base.id]: fallback([
@@ -64,6 +64,13 @@ const wagmiConfig = createPrivyConfig({
       http('https://optimistic.etherscan.io'),
       http('https://1rpc.io/optimism'),
       http('https://optimism.llamarpc.com')
+    ]),
+    [lisk.id]: fallback([
+      http(process.env.NEXT_PUBLIC_LISK_RPC || lisk.rpcUrls.default.http[0]),
+      http('https://lisk-mainnet.infura.io/v3/demo'),
+      http('https://rpc.ankr.com/lisk'),
+      http('https://1rpc.io/lisk'),
+      http('https://lisk.llamarpc.com')
     ])
   }
 });
@@ -84,7 +91,7 @@ export function Providers(props: { children: ReactNode }) {
               createOnLogin: "users-without-wallets",
             },
           },
-          supportedChains: [base, bsc, arbitrum, polygon, celo, scroll, optimism, mainnet]
+          supportedChains: [base, bsc, arbitrum, polygon, celo, scroll, optimism, mainnet, lisk]
         }}
       >
         <QueryClientProvider client={queryClient}>

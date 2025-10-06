@@ -5,7 +5,8 @@ export const TOKEN_ADDRESSES = {
       137: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', // Polygon
       42220: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C', // Celo
       56: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d', // BNB
-      534352:'0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4' // Scroll Mainnet
+      534352:'0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4', // Scroll Mainnet
+      1135: '0xf242275d3a6527d877f2c927a82d9b057609cc71', // Lisk Mainnet 
     },
     USDT: {
       8453: '', // Base
@@ -14,6 +15,7 @@ export const TOKEN_ADDRESSES = {
       42220: '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e', // Celo
       56: '0x55d398326f99059fF775485246999027B3197955', // BNB
       534352:'0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df', // Scroll Mainnet
+      1135: '0x05d032ac25d322df992303dca074ee7392c117b9', // Lisk Mainnet 
     },
     CNGN : {
       8453: '0x46C85152bFe9f96829aA94755D9f915F9B10EF5F', // Base Mainnet

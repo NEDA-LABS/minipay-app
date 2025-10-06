@@ -1,8 +1,17 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Loader2, AlertCircle, Check, ChevronDown } from 'lucide-react';
 import { useWallets } from '@privy-io/react-auth';
-import { polygon, arbitrum, optimism, base, bsc, mainnet, scroll, celo } from 'viem/chains';
+import { polygon, arbitrum, optimism, base, bsc, mainnet, scroll, celo, lisk } from 'viem/chains';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
+import { Button } from '../components/ui/button';
 
 // Define supported chains with their metadata
 const SUPPORTED_CHAINS = [
@@ -34,6 +43,10 @@ const SUPPORTED_CHAINS = [
     ...celo,
     icon: '/celo.svg',
   },
+  {
+    ...lisk,
+    icon: '/lisk.svg',
+  }
 ];
 
 const DEFAULT_CHAIN = SUPPORTED_CHAINS[3]; // Base
@@ -46,23 +59,11 @@ const ChainSwitcher: React.FC = () => {
   const [error, setError] = useState("");
   const [isSwitching, setIsSwitching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Get current chain from supported chains or fallback to default
   const currentChain = SUPPORTED_CHAINS.find(
     chain => chain.id.toString() === currentChainId?.replace('eip155:', '')
   ) || DEFAULT_CHAIN;
-
-  // Close when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Monitor chain changes and reset switching state
   useEffect(() => {
@@ -127,14 +128,14 @@ const ChainSwitcher: React.FC = () => {
 
   if (!wallets || wallets.length === 0) {
     return (
-      <button disabled className="px-3 py-2 bg-gray-100 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+      <Button disabled variant="outline" size="sm">
         No Wallet
-      </button>
+      </Button>
     );
   }
 
   return (
-    <div className="relative z-50" ref={dropdownRef}>
+    <div className="relative">
       {error && (
         <div className="absolute bottom-full mb-2 left-0 bg-red-50 border border-red-200 rounded-lg p-3 z-50 max-w-xs">
           <div className="flex items-center gap-2">
@@ -150,70 +151,73 @@ const ChainSwitcher: React.FC = () => {
         </div>
       )}
 
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        disabled={isSwitching}
-        className="flex items-center gap-2 p-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isSwitching ? (
-          <Loader2 className="animate-spin w-4 h-4" />
-        ) : (
-          <>
-            <img 
-              src={currentChain.icon} 
-              alt={currentChain.name}
-              className="w-4 h-4 rounded-full"
-              onError={(e) => {
-                e.currentTarget.src = createFallbackIcon(currentChain.name);
-              }}
-            />
-            <span className="text-sm font-medium">{currentChain.name}</span>
-            <ChevronDown className={`w-8 md:w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </>
-        )}
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full mt-1 left-0 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
-          <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100">
-            Switch Network
-          </div>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm"
+            disabled={isSwitching}
+            className="flex items-center gap-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer w-full"
+          >
+            {isSwitching ? (
+              <Loader2 className="animate-spin w-4 h-4" />
+            ) : (
+              <>
+                <div className="bg-white rounded-full p-0.5 pointer-events-none">
+                  <img 
+                    src={currentChain.icon} 
+                    alt={currentChain.name}
+                    className="w-4 h-4 rounded-full pointer-events-none"
+                    onError={(e) => {
+                      e.currentTarget.src = createFallbackIcon(currentChain.name);
+                    }}
+                  />
+                </div>
+                <span className="text-sm font-medium pointer-events-none">{currentChain.name}</span>
+                <ChevronDown className="w-4 h-4 ml-1 pointer-events-none" />
+              </>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        
+        <DropdownMenuContent align="start" className="w-56 bg-slate-800 border-slate-700">
+          <DropdownMenuLabel className="text-slate-200">Switch Network</DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-slate-700" />
+          
           {SUPPORTED_CHAINS.map(chain => {
             const isCurrentChain = chain.id.toString() === currentChainId?.replace('eip155:', '');
             
             return (
-              <button
+              <DropdownMenuItem
                 key={chain.id}
                 onClick={() => handleSwitch(chain.id)}
                 disabled={isCurrentChain || isSwitching}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors disabled:cursor-not-allowed ${
-                  isCurrentChain
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'hover:bg-gray-50 disabled:opacity-50'
-                }`}
+                className="flex items-center gap-3 cursor-pointer text-slate-100 hover:bg-slate-700 focus:bg-slate-700 focus:text-slate-100"
               >
-                {/* <img 
-                  src={chain.icon} 
-                  alt={chain.name}
-                  className="w-4 h-4 rounded-full"
-                  onError={(e) => {
-                    e.currentTarget.src = createFallbackIcon(chain.name);
-                  }}
-                /> */}
+                <div className="bg-white rounded-full p-1">
+                  <img 
+                    src={chain.icon} 
+                    alt={chain.name}
+                    className="w-5 h-5 rounded-full"
+                    onError={(e) => {
+                      e.currentTarget.src = createFallbackIcon(chain.name);
+                    }}
+                  />
+                </div>
                 <div className="flex-1">
-                  <div className="font-medium text-sm text-slate-800">{chain.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="font-medium text-sm">{chain.name}</div>
+                  <div className="text-xs text-slate-400">
                     {chain.nativeCurrency.symbol}
                   </div>
                 </div>
                 {isCurrentChain && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                  <Check className="w-4 h-4 text-blue-400" />
                 )}
-              </button>
+              </DropdownMenuItem>
             );
           })}
-        </div>
-      )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

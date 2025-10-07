@@ -593,7 +593,7 @@ export const StablecoinBalanceButton = () => {
           </div> */}
           
           {/* Decorative Elements */}
-          <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-bl from-emerald-500/5 to-transparent rounded-full"></div>
+          {/* <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-bl from-emerald-500/5 to-transparent rounded-full"></div> */}
           <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-tr from-blue-500/5 to-transparent rounded-full"></div>
         </div>
       </div>

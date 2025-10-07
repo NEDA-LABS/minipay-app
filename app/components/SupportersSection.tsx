@@ -65,6 +65,7 @@ const ChainsWidget = () => {
     { id: 5, image: "/bnb.svg" },
     { id: 6, image: "/celo.svg" },
     { id: 7, image: "/optimism.svg" },
+    { id: 8, image: "/lisk.svg" },
   ];
 
   return (

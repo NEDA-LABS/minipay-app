@@ -123,12 +123,19 @@ model Transaction {
   status       String
   txHash       String
   createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   invoiceId    String?       @unique
+  network      String?
+  orderId      String?
+  recipient    String?
+  type         String?
   Notification Notification? @relation("TransactionNotification")
 
   @@index([wallet])
   @@index([currency])
   @@index([createdAt])
+  @@index([merchantId, createdAt])
+  @@index([txHash])
 }
 
 model PaymentLink {

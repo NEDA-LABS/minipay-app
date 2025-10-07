@@ -231,10 +231,10 @@ export default function NotificationTab() {
         <Button
           variant="ghost"
           size="sm"
-          className="relative hover:bg-slate-100 transition-colors duration-200"
+          className="relative hover:bg-slate-500 transition-colors duration-200"
           aria-label="Notifications"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-4 w-4 bg-slate-100" />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 

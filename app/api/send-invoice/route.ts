@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { MailtrapClient } from 'mailtrap';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
 
 // Setup Mailtrap client
 const client = new MailtrapClient({

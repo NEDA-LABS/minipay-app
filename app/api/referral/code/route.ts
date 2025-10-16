@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { generateReferralCode } from '@/utils/referalCodes/generateCode';
 import jwt from 'jsonwebtoken';
 
-const prisma = new PrismaClient();
-
-/* returns privyUserId string or null */
-export async function getUserIdFromRequest(request: NextRequest): Promise<string | null> {
+async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
   try {
-    const authHeader = request.headers.get('authorization');
+    const authHeader = req.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
     
     if (!token) {

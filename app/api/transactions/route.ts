@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 // GET: Fetch all transactions for a merchant (by merchantId query param)
 export async function GET(req: NextRequest) {
@@ -124,7 +122,5 @@ export async function PUT(req: NextRequest) {
   } catch (error) {
     console.error('Error updating transaction:', error);
     return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

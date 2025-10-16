@@ -10,6 +10,28 @@ export function useHasSavedConsent() {
   useEffect(() => {
     let active = true;
     async function run() {
+      // First check client-side cookie immediately
+      try {
+        const raw = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("nedapay.cookieConsent.v1="))
+          ?.split("=")[1];
+        if (raw) {
+          const parsed = JSON.parse(decodeURIComponent(raw));
+          if (active) {
+            setHasConsent(true);
+            setLoading(false);
+          }
+          return; // Early return if cookie exists
+        }
+      } catch {}
+
+      // If no cookie and user is authenticated, check the database
+      if (!user) {
+        if (active) setLoading(false);
+        return;
+      }
+
       try {
         const tk = await getAccessToken();
         const res = await fetch("/api/cookie-consent", {
@@ -21,17 +43,10 @@ export function useHasSavedConsent() {
         });
         const json = await res.json();
         if (!active) return;
-        // console.log("analytics",json.preferences?.analytics); //debug
-        setHasConsent(Boolean(json?.preferences?.analytics || json?.preferences?.necessary));
-      } catch {
-        // fallback to cookie-only check
-        try {
-          const raw = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("nedapay.cookieConsent.v1="))
-            ?.split("=")[1];
-          setHasConsent(Boolean(raw));
-        } catch {}
+        // Check if preferences exist (either analytics or necessary was set)
+        setHasConsent(Boolean(json?.preferences));
+      } catch (err) {
+        console.error("Failed to check consent from API:", err);
       } finally {
         if (active) setLoading(false);
       }
@@ -40,7 +55,7 @@ export function useHasSavedConsent() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user, getAccessToken]);
 
   return { loading, hasConsent };
 }

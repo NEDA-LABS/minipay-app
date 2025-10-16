@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getSignedUrl } from '@/utils/supabase/supabase'
 
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma';
 const STORAGE_BUCKET = 'master-verify'
 
 export async function GET(request: NextRequest) {

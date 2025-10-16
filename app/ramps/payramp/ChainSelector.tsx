@@ -47,81 +47,101 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
     }
   };
 
+  const currentSelectedToken = selectedTokens[activeChainId] || activeChain?.tokens[0] || '';
+
   return (
-    <div className="bg-slate-900 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-white/10 overflow-hidden">
-      <div className="mb-6">
-        <h2 className="text-lg font-bold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Select Token
+    <div className="bg-gradient-to-br from-slate-800/80 via-slate-800/60 to-slate-900/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-300">
+      <div className="mb-5">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          Select Network & Token
         </h2>
-        <p className="text-gray-400 text-sm mt-2">Choose a chain, then tap a token to proceed to cash-out</p>
+        <p className="text-slate-400 text-xs mt-1.5">Choose your blockchain network and token to cash-out</p>
       </div>
 
-      {/* Network Selection with shadcn Select */}
-      <div>
-        <label className="block text-xs text-gray-300 mb-2">Network</label>
-        <Select value={activeChainId} onValueChange={setActiveChainId}>
-          <SelectTrigger className="w-full rounded-xl bg-slate-800/70 border border-white/10 px-4 py-3 text-white focus:ring-2 focus:ring-purple-500/50 hover:bg-slate-800/80 transition-colors">
-            <SelectValue placeholder="Select a network" />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-800 border border-white/10 rounded-xl">
-            {chains.map((chain) => (
-              <SelectItem 
-                key={chain.id} 
-                value={chain.id.toString()}
-                className="text-white hover:bg-slate-700/50 focus:bg-slate-700/50 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <img src={chain.icon} alt={chain.name} className="w-4 h-4 rounded-full" />
-                  <span>{chain.name}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Network and Token Selection - Same Line */}
+      <div className="grid grid-cols-2 gap-4 mb-5">
+        {/* Network Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-slate-200 mb-2.5">
+            Network
+          </label>
+          <Select value={activeChainId} onValueChange={setActiveChainId}>
+            <SelectTrigger className="w-full rounded-xl bg-slate-900/70 border border-slate-600/60 px-3.5 py-3 text-white focus:ring-2 focus:ring-blue-500/50 hover:bg-slate-900/90 hover:border-blue-500/50 transition-all duration-200 h-auto shadow-sm">
+              <SelectValue placeholder="Select network">
+                {activeChain && (
+                  <div className="flex items-center gap-2">
+                    <img src={activeChain.icon} alt={activeChain.name} className="w-4 h-4 rounded-full" />
+                    <span className="text-sm">{activeChain.name}</span>
+                  </div>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800/95 backdrop-blur-xl border border-slate-700/60 rounded-xl shadow-2xl">
+              {chains.map((chain) => (
+                <SelectItem 
+                  key={chain.id} 
+                  value={chain.id.toString()}
+                  className="text-white hover:bg-blue-500/10 focus:bg-blue-500/15 cursor-pointer rounded-lg transition-colors my-0.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <img src={chain.icon} alt={chain.name} className="w-4 h-4 rounded-full" />
+                    <span>{chain.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Active chain card & its tokens */}
-      {activeChain && (
-          <div
-            key={activeChain.id}
-            className="mt-5 border border-white/10 bg-gradient-to-b from-slate-900/80 to-slate-800/50 rounded-2xl p-5"
+        {/* Token Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-slate-200 mb-2.5">
+            Token
+          </label>
+          <Select 
+            value={currentSelectedToken} 
+            onValueChange={(token) => handleTokenSelect(activeChainId, token)}
           >
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
-              <img src={activeChain.icon} alt={activeChain.name} className="w-9 h-9 rounded-full p-1 bg-white" />
-              <div>
-                <h3 className="text-sm font-bold text-white">{activeChain.name}</h3>
-                <p className="text-xs text-gray-400">{activeChain.nativeCurrency.symbol}</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {activeChain.tokens.map((token) => {
-                const currentSelectedToken = selectedTokens[activeChain.id.toString()] || activeChain.tokens[0];
-                return (
-                  <Button
-                    key={`${activeChain.id}-${token}`}
-                    variant="ghost"
-                    onClick={() => handleTokenSelect(activeChain.id.toString(), token)}
-                    className="w-full h-auto p-2 text-left justify-start bg-gradient-to-r from-blue-600/30 to-purple-600/30 border border-blue-500/50 shadow-lg hover:translate-y-[-1px] active:translate-y-[0px] hover:from-blue-600/40 hover:to-purple-600/40 transition-all duration-200"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <TokenBalanceCard
-                        token={token}
-                        balance={balances[activeChain.id]?.[token] || '0'}
-                        loading={loading}
-                        isSelected={token === currentSelectedToken}
-                        compactView
-                      />
+            <SelectTrigger className="w-full rounded-xl bg-slate-900/70 border border-slate-600/60 px-3.5 py-3 text-white focus:ring-2 focus:ring-purple-500/50 hover:bg-slate-900/90 hover:border-purple-500/50 transition-all duration-200 h-auto shadow-sm">
+              <SelectValue placeholder="Select token">
+                {currentSelectedToken && (
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <div className="flex items-center gap-2">
+                      <img src={getTokenIcon(currentSelectedToken)} alt={currentSelectedToken} className="w-4 h-4 rounded-full" />
+                      <span className="text-sm">{currentSelectedToken}</span>
                     </div>
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                    <span className="text-xs text-slate-400">
+                      {loading ? '...' : parseFloat(balances[activeChain.id]?.[currentSelectedToken] || '0').toFixed(4)}
+                    </span>
+                  </div>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800/95 backdrop-blur-xl border border-slate-700/60 rounded-xl shadow-2xl">
+              {activeChain?.tokens.map((token) => (
+                <SelectItem 
+                  key={token} 
+                  value={token}
+                  className="text-white hover:bg-purple-500/10 focus:bg-purple-500/15 cursor-pointer rounded-lg transition-colors my-0.5"
+                >
+                  <div className="flex items-center justify-between gap-3 w-full">
+                    <div className="flex items-center gap-2">
+                      <img src={getTokenIcon(token)} alt={token} className="w-4 h-4 rounded-full" />
+                      <span>{token}</span>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {loading ? '...' : parseFloat(balances[activeChain.id]?.[token] || '0').toFixed(4)}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      <div className="mt-6 pt-4 border-t border-white/10 text-center">
-        <p className="text-xs text-gray-500">Powered by secure off-chain protocols</p>
+      <div className="mt-5 pt-4 border-t border-slate-700/40 text-center">
+        <p className="text-[10px] text-slate-500 font-medium">Powered by secure off-chain protocols</p>
       </div>
     </div>
   );

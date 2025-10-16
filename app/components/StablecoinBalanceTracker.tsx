@@ -288,8 +288,6 @@ export const StablecoinBalanceTracker = ({
     setParentLoading(loading);
   }, [loading, setParentLoading]);
 
-  if (!isOpen) return null;
-
   // Get all relevant tokens for current chain
   const relevantTokens = stablecoins.filter((coin) => 
     currentChain && coin.chainIds.includes(currentChain.id)
@@ -310,205 +308,139 @@ export const StablecoinBalanceTracker = ({
   const displayTokens = [...tokensWithBalance, ...tokensWithoutBalance.slice(0, Math.max(0, visibleTokensCount - tokensWithBalance.length))];
   const hasMoreTokens = relevantTokens.length > displayTokens.length;
 
+  if (!isOpen) return null;
+
   return (
-    <Card className="bg-slate-900/40 backdrop-blur-xl border-slate-800/50 hover:border-slate-700/50 transition-all duration-300 h-full flex flex-col">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-white text-center flex items-center justify-between">
-          <span>Stablecoins</span>
-          <Badge variant="secondary" className="bg-slate-800 text-slate-300">
-            {tokensWithBalance.length}/{relevantTokens.length}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col">
-        {errors.length > 0 && (
-          <div className="p-3 bg-red-900/30 rounded-lg border border-red-800/50">
-            {errors.map((err, i) => (
-              <div key={i} className="text-red-400 text-sm flex items-center">
-                <AlertCircle className="mr-2 h-4 w-4" /> {err}
-              </div>
-            ))}
-            <Button 
-              size="sm" 
-              variant="outline"
-              className="mt-2"
-              onClick={() => setRetryCount(c => c + 1)}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" /> Retry
-            </Button>
-          </div>
-        )}
-
-        {/* Stablecoin Flex Layout */}
-        <div className="flex flex-wrap gap-3 flex-1 content-start">
-          {displayTokens.map((coin) => {
-            const balance = balances[coin.baseToken] || 0;
-            const convertedBalance = convertCurrency(
-              balance,
-              coin.currency,
-              selectedCurrency
-            );
-            const hasBalance = balance > 0;
-
-            return (
-              <Card
-                key={coin.baseToken}
-                className={`flex-shrink-0 w-[calc(50%-0.375rem)] md:w-[calc(33.333%-0.5rem)] transition-all duration-200 hover:scale-[1.02] ${
-                  hasBalance
-                    ? "bg-gradient-to-b from-emerald-900/20 to-slate-900/40 border-emerald-500/30 hover:border-emerald-400/50"
-                    : "bg-slate-900/20 border-slate-700/30 hover:border-slate-600/50"
-                }`}
-              >
-                <CardContent className="p-3">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Image 
-                        src={coin.flag} 
-                        alt={coin.name} 
-                        width={18} 
-                        height={18} 
-                        className="rounded-full"
-                      />
-                      <div className="text-sm font-medium text-white truncate">
-                        {coin.baseToken}
-                      </div>
-                    </div>
-                    <div className="text-xs text-slate-400 text-center">
-                      ≈{getCurrencySymbol(selectedCurrency)}{convertedBalance.toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 2,
-                      })}
-                    </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[85vh] bg-slate-900 border-slate-700">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-400" />
+              Stablecoins on {currentChain?.name || "Current Chain"}
+            </span>
+            <Badge variant="secondary" className="bg-slate-800 text-slate-300">
+              {tokensWithBalance.length}/{relevantTokens.length} Active
+            </Badge>
+          </DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="h-[65vh] pr-4">
+          <div className="space-y-4 p-1">
+            {errors.length > 0 && (
+              <div className="p-3 bg-red-900/30 rounded-lg border border-red-800/50">
+                {errors.map((err, i) => (
+                  <div key={i} className="text-red-400 text-sm flex items-center">
+                    <AlertCircle className="mr-2 h-4 w-4" /> {err}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Show All Button - Opens Modal */}
-        <div className="mt-auto pt-4">
-          {(hasMoreTokens || relevantTokens.length > visibleTokensCount) && (
-            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-              <DialogTrigger asChild>
+                ))}
                 <Button 
-                  variant="outline" 
-                  className="w-full text-xs text-slate-400 hover:text-white hover:bg-slate-800/50 border-slate-700 transition-colors"
+                  size="sm" 
+                  variant="outline"
+                  className="mt-2"
+                  onClick={() => setRetryCount(c => c + 1)}
                 >
-                  <ChevronDown className="h-4 w-4 mr-2" />
-                  View All Stablecoins ({relevantTokens.length} total)
+                  <RefreshCw className="mr-2 h-4 w-4" /> Retry
                 </Button>
-              </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[80vh] bg-slate-900 border-slate-700">
-              <DialogHeader>
-                <DialogTitle className="text-white flex items-center justify-between">
-                  <span>All Stablecoins</span>
-                  <Badge variant="secondary" className="bg-slate-800 text-slate-300">
-                    {tokensWithBalance.length}/{relevantTokens.length} Active
-                  </Badge>
-                </DialogTitle>
-              </DialogHeader>
-              <ScrollArea className="h-[60vh] pr-4">
-                <div className="flex flex-wrap gap-3 p-1">
-                  {relevantTokens.map((coin) => {
-                    const balance = balances[coin.baseToken] || 0;
-                    const convertedBalance = convertCurrency(
-                      balance,
-                      coin.currency,
-                      selectedCurrency
-                    );
-                    const hasBalance = balance > 0;
+              </div>
+            )}
 
-                    return (
-                      <Card
-                        key={coin.baseToken}
-                        className={`flex-shrink-0 w-[calc(50%-0.375rem)] md:w-[calc(33.333%-0.5rem)] lg:w-[calc(25%-0.5625rem)] xl:w-[calc(20%-0.6rem)] transition-all duration-200 hover:scale-[1.02] ${
-                          hasBalance
-                            ? "bg-gradient-to-b from-emerald-900/20 to-slate-900/40 border-emerald-500/30 hover:border-emerald-400/50"
-                            : "bg-slate-900/20 border-slate-700/30 hover:border-slate-600/50"
-                        }`}
-                      >
-                        <CardContent className="p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Image 
-                              src={coin.flag} 
-                              alt={coin.name} 
-                              width={20} 
-                              height={20} 
-                              className="rounded-full"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-semibold text-white truncate">
-                                {coin.baseToken}
-                              </div>
-                              {hasBalance && (
-                                <Badge variant="secondary" className="text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                                  Active
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-400">
-                              ≈ {getCurrencySymbol(selectedCurrency)}
-                              {convertedBalance.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 4,
-                              })}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="text-sm font-bold text-white">
-                                {balance.toLocaleString(undefined, {
-                                  minimumFractionDigits: 0,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </div>
-                              <Button
-                                size="sm"
-                                variant={hasBalance ? "default" : "ghost"}
-                                className={`h-6 w-6 p-0 ${
-                                  hasBalance
-                                    ? "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border-emerald-500/30"
-                                    : "text-slate-500 hover:text-slate-400"
-                                }`}
-                                onClick={() => {
-                                  if (hasBalance) {
-                                    handleSwapClick(coin.baseToken);
-                                    setModalOpen(false);
-                                  }
-                                }}
-                                disabled={!hasBalance}
-                              >
-                                <Repeat className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </DialogContent>
-          </Dialog>
-        )}
-        </div>
+            {/* Stablecoin Grid Layout */}
+            <div className="flex flex-wrap gap-3">
+              {relevantTokens.map((coin) => {
+                const balance = balances[coin.baseToken] || 0;
+                const convertedBalance = convertCurrency(
+                  balance,
+                  coin.currency,
+                  selectedCurrency
+                );
+                const hasBalance = balance > 0;
 
-        {swapModalOpen && (
-          <SwapModal
-            open={swapModalOpen}
-            fromSymbol={swapFromSymbol}
-            onSwap={handleSwapClick}
-            onClose={() => setSwapModalOpen(false)}
-            maxAmount={balances[swapFromSymbol]?.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 6,
-            })}
-          />
-        )}
-      </CardContent>
-    </Card>
+                return (
+                  <Card
+                    key={coin.baseToken}
+                    className={`flex-shrink-0 w-[calc(50%-0.375rem)] md:w-[calc(33.333%-0.5rem)] lg:w-[calc(25%-0.5625rem)] xl:w-[calc(20%-0.6rem)] transition-all duration-200 hover:scale-[1.02] ${
+                      hasBalance
+                        ? "bg-gradient-to-b from-emerald-900/20 to-slate-900/40 border-emerald-500/30 hover:border-emerald-400/50"
+                        : "bg-slate-900/20 border-slate-700/30 hover:border-slate-600/50"
+                    }`}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Image 
+                          src={coin.flag} 
+                          alt={coin.name} 
+                          width={20} 
+                          height={20} 
+                          className="rounded-full"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-white truncate">
+                            {coin.baseToken}
+                          </div>
+                          {hasBalance && (
+                            <Badge variant="secondary" className="text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                              Active
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="text-xs text-slate-400">
+                          ≈ {getCurrencySymbol(selectedCurrency)}
+                          {convertedBalance.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 4,
+                          })}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-bold text-white">
+                            {balance.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2,
+                            })}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={hasBalance ? "default" : "ghost"}
+                            className={`h-6 w-6 p-0 ${
+                              hasBalance
+                                ? "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border-emerald-500/30"
+                                : "text-slate-500 hover:text-slate-400"
+                            }`}
+                            onClick={() => {
+                              if (hasBalance) {
+                                handleSwapClick(coin.baseToken);
+                              }
+                            }}
+                            disabled={!hasBalance}
+                          >
+                            <Repeat className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+      
+      {swapModalOpen && (
+        <SwapModal
+          open={swapModalOpen}
+          fromSymbol={swapFromSymbol}
+          onSwap={handleSwapClick}
+          onClose={() => setSwapModalOpen(false)}
+          maxAmount={balances[swapFromSymbol]?.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6,
+          })}
+        />
+      )}
+    </Dialog>
   );
 };
 

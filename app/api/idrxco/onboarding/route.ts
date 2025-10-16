@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { idrxHeaders, IDRX_BASE } from "../_core";
-import { PrismaClient } from "@prisma/client";
 import { encryptToBase64 } from "@/utils/crypto";
-
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {

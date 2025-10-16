@@ -19,10 +19,7 @@ import {
   Link as LinkIcon,
   Receipt
 } from "lucide-react";
-import Sidebar from "./Sidebar";
 import Image from "next/image";
-import { AppSidebarToggle } from "@/dashboard/AppSidebar";
-import { SidebarProvider } from "@/compliance/user/components/ui/sidebar";
 import {LayoutDashboard} from "lucide-react";
 
 // Import your actual components
@@ -209,9 +206,6 @@ export default function Header() {
               >
                 <Menu size={16} className="text-white hover:text-slate-700 transition-colors duration-300" />
               </button> */}
-              {pathname === "/dashboard" && <AppSidebarToggle />}
-              
-              
             </div>
           </div>
         </div>

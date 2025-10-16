@@ -1,9 +1,7 @@
 // /app/api/referral/analytics/influencer/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getUserIdFromRequest } from "@/utils/privyUserIdFromRequest";
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 // safe number from optional string
 const toNum = (s: string | null | undefined) => {

@@ -9,6 +9,7 @@ import { WagmiProvider } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { SidebarProvider } from "@/compliance/user/components/ui/sidebar";
+import { ChainProvider } from "@/contexts/ChainContext";
 
 // Create a query client for React Query
 const queryClient = new QueryClient();
@@ -95,7 +96,11 @@ export function Providers(props: { children: ReactNode }) {
         }}
       >
         <QueryClientProvider client={queryClient}>
-          <WagmiProvider config={wagmiConfig}>{props.children}</WagmiProvider>
+          <WagmiProvider config={wagmiConfig}>
+            <ChainProvider>
+              {props.children}
+            </ChainProvider>
+          </WagmiProvider>
         </QueryClientProvider>
       </PrivyProvider>
     </ThemeProvider>

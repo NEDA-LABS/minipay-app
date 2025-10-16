@@ -22,6 +22,7 @@ const OffRampForm: React.FC<{
   setIsAccountVerified: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ chain, token, onTokenChange, onBack }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [inputMode, setInputMode] = useState<'crypto' | 'fiat'>('crypto');
   const [fiatInput, setFiatInput] = useState('');
   const [isRateFetching, setIsRateFetching] = useState(false);
@@ -227,6 +228,35 @@ const OffRampForm: React.FC<{
     await handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
 
+  // Handle step navigation
+  const handleStepBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3);
+    } else {
+      onBack();
+    }
+  };
+
+  const handleStepForward = () => {
+    if (currentStep < 3) {
+      setCurrentStep((prev) => (prev + 1) as 1 | 2 | 3);
+    }
+  };
+
+  // Auto-advance to step 2 when rate is loaded
+  useEffect(() => {
+    if (rate && !rateError && currentStep === 1 && amount) {
+      setCurrentStep(2);
+    }
+  }, [rate, rateError, amount]);
+
+  // Auto-advance to step 3 when account is verified
+  useEffect(() => {
+    if (isAccountVerified && currentStep === 2) {
+      setCurrentStep(3);
+    }
+  }, [isAccountVerified]);
+
   const calculateTokenAmount = async (amount: number) => {
     // if (!rate || !fiatAmount) return "0";
     const rate = await fetchTokenRate(token, 1, fiat, chain.name);
@@ -333,13 +363,13 @@ const OffRampForm: React.FC<{
       {/* Back button and header */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
         <button
-          onClick={onBack}
+          onClick={handleStepBack}
           className="group flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-700 transition-all duration-300 text-sm font-medium text-gray-300 hover:text-white"
         >
           <span className="group-hover:-translate-x-1 transition-transform duration-300">
             <ArrowLeft className="w-4 h-4" />
           </span>
-          Back to Networks
+          {currentStep === 1 ? 'Back to Networks' : `Back to Step ${currentStep - 1}`}
         </button>
         
         <div className="flex items-center gap-3">
@@ -378,14 +408,30 @@ const OffRampForm: React.FC<{
 
       <form onSubmit={handleFormSubmit} className="space-y-8">
         {/* Step 1: Amount and Currency */}
+        {currentStep >= 1 && (
         <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-full px-3 py-1">
-              Step 1
-            </span>
-            <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
-              Enter Amount and Currency
-            </h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-medium rounded-full px-3 py-1 ${
+                currentStep === 1 
+                  ? 'text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50' 
+                  : 'text-green-400 bg-green-900/30'
+              }`}>
+                {currentStep > 1 ? '✓ Step 1' : 'Step 1'}
+              </span>
+              <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                Enter Amount and Currency
+              </h3>
+            </div>
+            {currentStep > 1 && (
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="text-xs text-purple-400 hover:text-purple-300 underline"
+              >
+                Edit
+              </button>
+            )}
           </div>
 
           {/* Fiat Currency Selection First */}
@@ -564,32 +610,79 @@ const OffRampForm: React.FC<{
               </div>
             </div>
           )}
+          
+          {currentStep === 1 && rate && !rateError && amount && (
+            <button
+              type="button"
+              onClick={handleStepForward}
+              className="w-full py-3 px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-base rounded-xl shadow-lg transition-all"
+            >
+              Continue to Recipient Details
+            </button>
+          )}
         </div>
+        )}
 
         {/* Step 2: Recipient Details */}
-        {rate && !rateError && (
-          <VerificationStep
-            institution={institution}
-            setInstitution={setInstitution}
-            accountIdentifier={accountIdentifier}
-            setAccountIdentifier={setAccountIdentifier}
-            accountName={accountName}
-            setAccountName={setAccountName}
-            isAccountVerified={isAccountVerified}
-            setIsAccountVerified={setIsAccountVerified}
-            isLoading={isLoading}
-            handleVerifyAccount={handleVerifyAccount}
-            institutions={institutions}
-            fetchInstitutions={fetchInstitutions}
-            fiat={fiat}
-          />
+        {currentStep >= 2 && rate && !rateError && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium rounded-full px-3 py-1 ${
+                  currentStep === 2 
+                    ? 'text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50' 
+                    : currentStep > 2 
+                    ? 'text-green-400 bg-green-900/30' 
+                    : 'text-gray-500 bg-gray-800/30'
+                }`}>
+                  {currentStep > 2 ? '✓ Step 2' : 'Step 2'}
+                </span>
+                <h3 className="text-sm font-medium text-gray-300">
+                  Recipient Details
+                </h3>
+              </div>
+              {currentStep > 2 && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                  className="text-xs text-purple-400 hover:text-purple-300 underline"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+            <VerificationStep
+              institution={institution}
+              setInstitution={setInstitution}
+              accountIdentifier={accountIdentifier}
+              setAccountIdentifier={setAccountIdentifier}
+              accountName={accountName}
+              setAccountName={setAccountName}
+              isAccountVerified={isAccountVerified}
+              setIsAccountVerified={setIsAccountVerified}
+              isLoading={isLoading}
+              handleVerifyAccount={handleVerifyAccount}
+              institutions={institutions}
+              fetchInstitutions={fetchInstitutions}
+              fiat={fiat}
+            />
+            {currentStep === 2 && isAccountVerified && (
+              <button
+                type="button"
+                onClick={handleStepForward}
+                className="w-full py-3 px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-base rounded-xl shadow-lg transition-all"
+              >
+                Continue to Transaction Details
+              </button>
+            )}
+          </div>
         )}
 
         {/* Step 3: Transaction Memo */}
-        {rate && !rateError && isAccountVerified && (
+        {currentStep >= 3 && rate && !rateError && isAccountVerified && (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-blue-400 bg-gradient-to-r from-blue-900/50 to-indigo-900/50 rounded-full px-3 py-1">
+              <span className="text-xs font-medium text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-full px-3 py-1">
                 Step 3
               </span>
               <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
@@ -627,7 +720,7 @@ const OffRampForm: React.FC<{
         )}
 
         {/* Submit Button */}
-        {rate && !rateError && isAccountVerified && (
+        {currentStep === 3 && rate && !rateError && isAccountVerified && (
           <div className="space-y-4">
             <button
               type="submit"

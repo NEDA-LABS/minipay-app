@@ -42,11 +42,8 @@ import { resolveName, toHexAddress } from '../utils/ensUtils';
 //   SidebarProvider,
 //   useSidebar,
 // } from "@/compliance/user/components/ui/sidebar";
-import {
-  StablecoinBalanceButton,
-  StablecoinBalanceTracker,
-} from "@/components/StablecoinBalanceTracker";
-import QuickActions from "@/components/QuickActions";
+// Removed StablecoinBalanceButton and StablecoinBalanceTracker - now in header
+import DashboardTabs from "@/components/DashboardTabs";
 import BroadCastNotificationListener from "@/components/pushNotificationsListener";
 
 // Define ABIs and constants
@@ -351,7 +348,7 @@ export default function DashboardContent() {
     <div className="space-y-2 px-2 lg:px-[] max-w-6xl mx-auto">
       <Header />
       <BroadCastNotificationListener />
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-8">
         <div>
           {/* <h1 className="text-2xl font-bold text-white">
             Your Dashboard
@@ -362,94 +359,31 @@ export default function DashboardContent() {
           </p> */}
         </div>
       </div>
-      {/* Quick Actions - Detached and positioned above */}
-      <div className="relative z-40">
-      {authenticated && <QuickActions />}
-      </div>
-      
-      <div className=" rounded-2xl relative z-10">
-        <Card className="relative border-0 bg-slate-900/90 text-white shadow-2xl md:w-[92%] mx-auto rounded-3xl">
-          <CardContent className="relative p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="lg:col-span-2 space-y-4">
-                {authenticated ? (
-                  <>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Column - Address, Balance, Actions */}
-                      <div className="space-y-8">
-                        {/* Address Section */}
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-xl"></div>
-                          <div className="relative bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/30">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
-                                  <Wallet className="w-4 h-4 text-blue-400" />
-                                </div>
-                                <div>
-                                  <p className="text-xs text-slate-400 mb-1">Wallet Address</p>
-                                  <p className="text-white font-mono text-sm font-medium">
-                                    {ensName || `${walletAddress?.slice(0, 8)}...${walletAddress?.slice(-6)}`}
-                                  </p>
-                                </div>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all duration-200"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(walletAddress || "")
-                                  setCopied(true)
-                                  setTimeout(() => setCopied(false), 2000)
-                                }}
-                              >
-                                {copied ? (
-                                  <Check className="h-4 w-4 text-green-400" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Balance Section */}
-                        <div>
-                          <StablecoinBalanceButton />
-                        </div>
-                        
-                      </div>
-                      
-                      {/* Right Column - Stablecoins */}
-                      <div>
-                        <StablecoinBalanceTracker
-                          isOpen={true}
-                          onClose={() => {}}
-                          setTotalBalance={() => {}}
-                          setLoading={() => {}}
-                        />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-white">
-                        Please Connect Wallet
-                      </h2>
-                      <p className="text-white/80">
-                        Connect your wallet to get started
-                      </p>
-                    </div>
+      {/* Dashboard Tabs - Main Content Area */}
+      <div className="relative z-10 mt-6">
+        <div className="md:w-[92%] mx-auto">
+          {authenticated ? (
+            <DashboardTabs walletAddress={walletAddress} />
+          ) : (
+            <Card className="relative border-0 bg-slate-900/90 text-white shadow-2xl rounded-3xl">
+              <CardContent className="relative p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Shield className="h-6 w-6 text-white" />
                   </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">
+                      Please Connect Wallet
+                    </h2>
+                    <p className="text-white/80">
+                      Connect your wallet to get started
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

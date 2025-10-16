@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient, DocumentType } from '@prisma/client'
 import { uploadToBucket, getPublicUrl, deleteFromBucket } from '@/utils/supabase/supabase'
 
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma';
 
 const STORAGE_BUCKET = 'master-verify' 
 

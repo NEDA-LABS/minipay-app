@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { createNotification } from '@/utils/createNotification';
-
-const prisma = new PrismaClient();
 const CLIENT_SECRET = process.env.PAYCREST_CLIENT_SECRET!;
 
 interface WebhookStructure

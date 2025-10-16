@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { PrismaClient } from "@prisma/client";
 import { getUserIdFromRequest } from "@/utils/privyUserIdFromRequest";
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 // export const runtime = "nodejs";
 

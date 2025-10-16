@@ -137,7 +137,7 @@ const ChainSwitcher: React.FC = () => {
   return (
     <div className="relative">
       {error && (
-        <div className="absolute bottom-full mb-2 left-0 bg-red-50 border border-red-200 rounded-lg p-3 z-50 max-w-xs">
+        <div className="absolute bottom-full mb-2 left-0 bg-red-50 border border-red-200 p-3 z-50 max-w-xs">
           <div className="flex items-center gap-2">
             <AlertCircle className="text-red-500 w-4 h-4 flex-shrink-0" />
             <span className="text-red-800 text-sm">{error}</span>
@@ -157,7 +157,7 @@ const ChainSwitcher: React.FC = () => {
             variant="outline" 
             size="sm"
             disabled={isSwitching}
-            className="flex items-center gap-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer w-full"
+            className="flex items-center gap-2 border-slate-200 hover:bg-white/20 cursor-pointer w-full rounded-xl"
           >
             {isSwitching ? (
               <Loader2 className="animate-spin w-4 h-4" />

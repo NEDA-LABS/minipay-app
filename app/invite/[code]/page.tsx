@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import InviteClient from './InviteClient';
-
-const prisma = new PrismaClient();
 
 export default async function InvitePage({ params }: { params: { code: string } }) {
   const profile = await prisma.influencerProfile.findUnique({

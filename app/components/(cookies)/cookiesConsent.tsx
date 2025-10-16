@@ -54,6 +54,12 @@ export function CookieConsentModal() {
   async function save(preferences: Prefs) {
     // optimistic local write to avoid flicker
     setPrefs(preferences);
+    
+    // Immediately write cookie client-side for instant feedback
+    const cookieValue = JSON.stringify({ ...preferences, v: "v1" });
+    const sixMonths = 60 * 60 * 24 * 30 * 6;
+    document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(cookieValue)}; path=/; max-age=${sixMonths}; SameSite=Lax; Secure`;
+    
     try {
       const tk = await getAccessToken();
       await fetch("/api/cookie-consent", {

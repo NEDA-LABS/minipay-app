@@ -16,7 +16,7 @@ import { getBasename } from "../utils/getBaseName";
 import { useUserSync } from "../hooks/useUserSync";
 import { useLinkAccount } from "@privy-io/react-auth";
 import AuthenticationModal from "./AuthenticationModal";
-import { Wallet, LogOut, PlusCircle, ChevronDown } from "lucide-react";
+import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -388,30 +388,24 @@ const WalletSelector = forwardRef<
     }
   };
 
-  // Render wallet icon
-  const renderWalletIcon = () => {
-    const walletType = user?.wallet?.walletClientType;
+  // Render avatar icon (placeholder)
+  const renderAvatarIcon = () => {
+    // Get initials from email or wallet address
+    const getInitials = () => {
+      if (emailAddress) {
+        return emailAddress.charAt(0).toUpperCase();
+      }
+      if (walletAddress) {
+        return walletAddress.substring(2, 4).toUpperCase();
+      }
+      return 'U';
+    };
 
-    if (walletType === "coinbase_wallet") {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="12" fill="#0052FF" />
-          <circle cx="12" cy="12" r="7.2" fill="#fff" />
-          <rect x="8" y="11" width="8" height="2" rx="1" fill="#0052FF" />
-        </svg>
-      );
-    } else if (walletType === "metamask") {
-      return (
-        <img
-          src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/metamask-icon.svg"
-          alt="MetaMask Logo"
-          width="18"
-          height="18"
-        />
-      );
-    }
-
-    return <Wallet className="h-5 w-5 text-white" />;
+    return (
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+        {getInitials()}
+      </div>
+    );
   };
 
   if (!ready) {
@@ -429,10 +423,8 @@ const WalletSelector = forwardRef<
       {isConnected ? (
         <DropdownMenu open={showOptions} onOpenChange={setShowOptions}>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" className="flex items-center space-x-2 bg-[#3E55E6] text-white hover:bg-blue-700 rounded-2xl px-2">
-              <div className="wallet-icon w-6 h-6 flex items-center justify-center">
-                {renderWalletIcon()}
-              </div>
+            <Button variant="secondary" className="flex items-center space-x-2 bg-slate-800/80 border border-slate-600/50 text-white hover:bg-slate-700/80 rounded-full px-2">
+              {renderAvatarIcon()}
               {pathname !== "/" && (
                 <div className="wallet-address-container flex-1 min-w-0">
                   {walletAddress ? (
@@ -483,13 +475,30 @@ const WalletSelector = forwardRef<
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer hover:bg-slate-800">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/withdraw-history')} className="cursor-pointer hover:bg-slate-800">
+              <History className="mr-2 h-4 w-4" />
+              <span>Withdraw History</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/analytics')} className="cursor-pointer hover:bg-slate-800">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              <span>Analytics</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/support')} className="cursor-pointer hover:bg-slate-800">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Support</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             {!hasEmail && walletAddress && (
-              <DropdownMenuItem onClick={handleLinkEmail}>
+              <DropdownMenuItem onClick={handleLinkEmail} className="cursor-pointer hover:bg-slate-800">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 <span>Add Email Address</span>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer hover:bg-slate-800">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Logout</span>
             </DropdownMenuItem>

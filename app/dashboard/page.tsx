@@ -345,23 +345,12 @@ export default function DashboardContent() {
   };
 
   return (
-    <div className="space-y-2 px-2 lg:px-[] max-w-6xl mx-auto">
+    <div className="space-y-2 w-full">
       <Header />
       <BroadCastNotificationListener />
-      <div className="flex items-center justify-between mt-8">
-        <div>
-          {/* <h1 className="text-2xl font-bold text-white">
-            Your Dashboard
-          </h1> */}
-          {/* <p className="text-sm md:text-lg text-white text-muted-foreground mt-2">
-            Seamlessly manage stablecoin payments and monitor your business
-            performance
-          </p> */}
-        </div>
-      </div>
       {/* Dashboard Tabs - Main Content Area */}
-      <div className="relative z-10 mt-6">
-        <div className="md:w-[92%] mx-auto">
+      <div className="relative z-10">
+        <div className="w-full">
           {authenticated ? (
             <DashboardTabs walletAddress={walletAddress} />
           ) : (

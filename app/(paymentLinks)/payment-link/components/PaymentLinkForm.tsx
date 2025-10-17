@@ -97,22 +97,8 @@ export const PaymentLinkForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-12">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-slate-200 to-slate-400 bg-clip-text text-transparent">
-          Create Instant Payment Link
-        </h1>
-        {/* <p className="text-lg text-slate-400 max-w-xl mx-auto">
-          Generate secure and shareable payment links in seconds.
-        </p> */}
-      </div>
-
-      <WalletStatus 
-        getMerchantAddress={getMerchantAddress} 
-        isConnected={isConnected} 
-      />
-
-      <Card className="bg-slate-900/90 border-slate-800 backdrop-blur-sm mt-8 !rounded-3xl">
+    <div className="w-full max-w-2xl mx-auto">
+      <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden">
         <form onSubmit={handleCreateLink}>
           <CardHeader>
             <LinkTypeSelector

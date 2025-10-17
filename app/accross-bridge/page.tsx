@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAccount, useWalletClient, useBalance, usePublicClient } from "wagmi";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
 import { parseEther, formatUnits, isAddress, parseUnits } from "viem";
 import { acrossClient } from "@/utils/acrossProtocol";
 import { type TransactionProgress } from '@across-protocol/app-sdk';
@@ -208,6 +209,8 @@ interface CompletedBridge {
 }
 
 function BridgePage() {
+  const searchParams = useSearchParams();
+  const isEmbedded = searchParams?.get('embedded') === 'true';
   const { login, authenticated, ready } = usePrivy();
   const { wallets } = useWallets();
   const { address } = useAccount();
@@ -725,7 +728,7 @@ function BridgePage() {
           },
         }}
       />
-      <Header />
+      {!isEmbedded && <Header />}
       <main className="max-w-2xl mx-auto p-1 md:pt-8">
         <Card className="bg-gray-800 border-gray-700 shadow-2xl !rounded-2xl">
           <CardHeader className="pb-4">

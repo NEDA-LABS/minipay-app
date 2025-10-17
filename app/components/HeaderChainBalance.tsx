@@ -246,22 +246,22 @@ export const HeaderChainBalance = () => {
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         {/* Chain Switcher */}
         <ChainSwitcher />
         
         {/* Balance Display Button */}
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2  border-slate-200 hover:border-emerald-400/50 hover:bg-emerald-500/20 transition-all duration-200 rounded-xl"
+          className="flex items-center gap-1 sm:gap-2 bg-slate-800/80 border border-slate-600/50 hover:bg-slate-700/80 transition-all duration-200 rounded-full px-2 sm:px-3"
         >
-          <DollarSign className="w-4 h-4 text-emerald-400" />
+          <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
           {loading ? (
-            <Loader2 className="animate-spin w-4 h-4 text-emerald-400" />
+            <Loader2 className="animate-spin w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
           ) : (
-            <span className="text-sm font-semibold text-slate-100">
+            <span className="text-[8px] sm:text-sm font-semibold text-slate-100">
               ${totalBalance.toLocaleString('en-US', { 
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 

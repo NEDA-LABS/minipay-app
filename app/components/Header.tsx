@@ -121,7 +121,7 @@ export default function Header() {
             )}
 
             {/* Action Buttons Container */}
-            <div className="flex items-center space-x-1 sm:space-x-3 px-2 sm:px-3 py-1.5 sm:py-2">
+            <div className="flex items-center space-x-0.5 sm:space-x-3 px-1 sm:px-3 py-1 sm:py-2">
               <NotificationTab />
 
               {/* Chain Switcher and Balance - Left of Wallet Selector */}

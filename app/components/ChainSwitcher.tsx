@@ -154,10 +154,10 @@ const ChainSwitcher: React.FC = () => {
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button 
-            variant="outline" 
+            variant="secondary" 
             size="sm"
             disabled={isSwitching}
-            className="flex items-center gap-2 border-slate-200 hover:bg-white/20 cursor-pointer w-full rounded-xl"
+            className="flex items-center gap-2 bg-slate-800/80 border border-slate-600/50 hover:bg-slate-700/80 cursor-pointer w-full rounded-full px-2 sm:px-3"
           >
             {isSwitching ? (
               <Loader2 className="animate-spin w-4 h-4" />
@@ -167,14 +167,14 @@ const ChainSwitcher: React.FC = () => {
                   <img 
                     src={currentChain.icon} 
                     alt={currentChain.name}
-                    className="w-4 h-4 rounded-full pointer-events-none"
+                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full pointer-events-none"
                     onError={(e) => {
                       e.currentTarget.src = createFallbackIcon(currentChain.name);
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium pointer-events-none">{currentChain.name}</span>
-                <ChevronDown className="w-4 h-4 ml-1 pointer-events-none" />
+                <span className="text-[8px] sm:text-sm font-medium text-slate-100 pointer-events-none hidden sm:inline">{currentChain.name}</span>
+                <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-slate-100 ml-1 pointer-events-none hidden sm:inline" />
               </>
             )}
           </Button>

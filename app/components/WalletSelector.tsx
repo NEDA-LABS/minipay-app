@@ -120,7 +120,7 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
   if (baseName) {
     return (
       <span
-        className={`text-sm text-white font-bold ${basenameClassName}`}
+        className={`text-[8px] sm:text-sm text-white font-bold ${basenameClassName}`}
       >
         {baseName}
       </span>
@@ -402,7 +402,7 @@ const WalletSelector = forwardRef<
     };
 
     return (
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-[8px] sm:text-sm">
         {getInitials()}
       </div>
     );
@@ -423,12 +423,12 @@ const WalletSelector = forwardRef<
       {isConnected ? (
         <DropdownMenu open={showOptions} onOpenChange={setShowOptions}>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" className="flex items-center space-x-2 bg-slate-800/80 border border-slate-600/50 text-white hover:bg-slate-700/80 rounded-full px-2">
+            <Button variant="secondary" className="flex items-center space-x-1 sm:space-x-2 bg-slate-800/80 border border-slate-600/50 text-white hover:bg-slate-700/80 rounded-full px-1.5 sm:px-2">
               {renderAvatarIcon()}
               {pathname !== "/" && (
                 <div className="wallet-address-container flex-1 min-w-0">
                   {walletAddress ? (
-                    <div className="wallet-address text-xs sm:text-sm font-bold">
+                    <div className="wallet-address text-[8px] sm:text-sm font-bold">
                       <BasenameDisplay
                         address={walletAddress}
                         basenameClassName="basename-display"
@@ -437,17 +437,17 @@ const WalletSelector = forwardRef<
                       />
                     </div>
                   ) : emailAddress ? (
-                    <span className="wallet-address text-xs sm:text-sm font-bold">
+                    <span className="wallet-address text-[8px] sm:text-sm font-bold">
                       {formatEmail(emailAddress, 15)}
                     </span>
                   ) : (
-                    <span className="wallet-address text-xs sm:text-sm font-bold">
+                    <span className="wallet-address text-[8px] sm:text-sm font-bold">
                       Connected
                     </span>
                   )}
                 </div>
               )}
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-64 bg-slate-900/90 backdrop-blur-sm border border-slate-700 text-slate-200" align="end">

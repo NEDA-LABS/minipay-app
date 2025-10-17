@@ -20,7 +20,8 @@ const OffRampForm: React.FC<{
   onBack: () => void;
   isAccountVerified: boolean;
   setIsAccountVerified: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ chain, token, onTokenChange, onBack }) => {
+  preselectedCurrency?: string; // Auto-select this currency (e.g., 'TZS', 'KES')
+}> = ({ chain, token, onTokenChange, onBack, preselectedCurrency }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [inputMode, setInputMode] = useState<'crypto' | 'fiat'>('crypto');
@@ -29,6 +30,14 @@ const OffRampForm: React.FC<{
   const [rateError, setRateError] = useState<string | null>(null);
   const [fiatBalance, setFiatBalance] = useState<string | null>(null);
   const [minimumAmount, setMinimumAmount] = useState<string | null>(null);
+  
+  // Auto-select currency if preselected
+  useEffect(() => {
+    if (preselectedCurrency && !fiat) {
+      setFiat(preselectedCurrency);
+      fetchInstitutions();
+    }
+  }, [preselectedCurrency]);
   
   const {
     amount,
@@ -278,7 +287,7 @@ const OffRampForm: React.FC<{
   }
   
   return (
-    <div className="bg-gray-900/90 backdrop-blur-sm rounded-3xl p-4 shadow-2xl border border-gray-700 mb-8">
+    <div className="space-y-6">
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex  items-end justify-center p-4">
@@ -360,30 +369,20 @@ const OffRampForm: React.FC<{
         </div>
       )}
 
-      {/* Back button and header */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
-        <button
-          onClick={handleStepBack}
-          className="group flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-700 transition-all duration-300 text-sm font-medium text-gray-300 hover:text-white"
-        >
-          <span className="group-hover:-translate-x-1 transition-transform duration-300">
-            <ArrowLeft className="w-4 h-4" />
-          </span>
-          {currentStep === 1 ? 'Back to Networks' : `Back to Step ${currentStep - 1}`}
-        </button>
-        
+      {/* Header with chain info and balance */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img 
             src={chain.icon} 
             alt={chain.name}
-            className="w-10 h-10 rounded-full border-2 border-gray-800 shadow-sm"
+            className="w-10 h-10 rounded-full border-2 border-slate-700/50 shadow-sm"
           />
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h3 className="text-base font-semibold text-white">
               Convert {token.toUpperCase()} to Cash
-            </h2>
-            <p className="text-gray-400 text-xs">
-              {chain.name} Network • Balance: 
+            </h3>
+            <p className="text-slate-400 text-xs">
+              {chain.name} • Balance: 
               <span className="font-medium ml-1">
                 {balanceLoading ? (
                   <span className="inline-flex">
@@ -394,7 +393,7 @@ const OffRampForm: React.FC<{
                   <>
                     {balance} {token.toUpperCase()}
                     {fiatBalance && fiat && (
-                      <span className="text-gray-500 ml-1">
+                      <span className="text-slate-500 ml-1">
                         (≈ {fiatBalance} {fiat})
                       </span>
                     )}
@@ -404,6 +403,13 @@ const OffRampForm: React.FC<{
             </p>
           </div>
         </div>
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/60 border border-slate-600/60 rounded-lg text-slate-200 hover:bg-purple-500/20 hover:border-purple-500/60 hover:text-purple-300 transition-all duration-200 text-xs font-medium"
+        >
+          <ArrowLeft className="w-3 h-3" />
+          Change Network
+        </button>
       </div>
 
       <form onSubmit={handleFormSubmit} className="space-y-8">
@@ -434,43 +440,57 @@ const OffRampForm: React.FC<{
             )}
           </div>
 
-          {/* Fiat Currency Selection First */}
-          <div>
-            <label
-              htmlFor="fiat"
-              className="block text-sm font-semibold mb-3 text-gray-100"
-            >
-              Select Fiat Currency *
-            </label>
-            <select
-              id="fiat"
-              value={fiat}
-              onChange={(e) => {
-                setFiat(e.target.value);
-                setRate('');
-                setRateError(null);
-                fetchInstitutions();
-                setInstitution("");
-                setIsAccountVerified(false);
-                // Clear amounts when currency changes
-                setAmount('');
-                setFiatInput('');
-              }}
-              className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
-              required
-            >
-              <option value="" className="bg-gray-100 text-gray-500">Select Currency</option>
-              {currencies.map((currency) => (
-                <option 
-                  key={currency.code} 
-                  value={currency.code}
-                  className="bg-gray-100 text-gray-900"
-                >
-                  {currency.name} ({currency.code})
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Fiat Currency Display (pre-selected) */}
+          {preselectedCurrency && fiat ? (
+            <div>
+              <label className="block text-sm font-semibold mb-3 text-gray-100">
+                Fiat Currency
+              </label>
+              <div className="w-full px-4 py-3 text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
+                <span>
+                  {currencies.find(c => c.code === fiat)?.name || fiat} ({fiat})
+                </span>
+                <span className="text-xs text-slate-400">Auto-selected</span>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label
+                htmlFor="fiat"
+                className="block text-sm font-semibold mb-3 text-gray-100"
+              >
+                Select Fiat Currency *
+              </label>
+              <select
+                id="fiat"
+                value={fiat}
+                onChange={(e) => {
+                  setFiat(e.target.value);
+                  setRate('');
+                  setRateError(null);
+                  fetchInstitutions();
+                  setInstitution("");
+                  setIsAccountVerified(false);
+                  // Clear amounts when currency changes
+                  setAmount('');
+                  setFiatInput('');
+                }}
+                className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
+                required
+              >
+                <option value="" className="bg-gray-100 text-gray-500">Select Currency</option>
+                {currencies.map((currency) => (
+                  <option 
+                    key={currency.code} 
+                    value={currency.code}
+                    className="bg-gray-100 text-gray-900"
+                  >
+                    {currency.name} ({currency.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {fiat && (
             <>

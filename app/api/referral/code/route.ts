@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
       id: inv.id,
       email: inv.user?.email ?? undefined,
       wallet: inv.user?.wallet ?? undefined,
-      // volumeUsd: inv._count.payments * 10, // dummy calc – replace with real sum
+      volumeUsd: 0, // TODO: calculate actual transaction volume
       createdAt: inv.createdAt.toISOString(),
     }));
 
@@ -153,13 +153,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Return the referral code and link
+    // Return the referral code, link, and empty invitees array
     const host = process.env.NEXT_PUBLIC_HOST || 'https://nedapay.xyz';
     const inviteLink = `${host}/invite/${influencer.customCode}`;
     
     return NextResponse.json({
       code: influencer.customCode,
       inviteLink,
+      invitees: [], // Empty array for newly created codes
     });
   } catch (e: any) {
     console.error('[POST /api/referral/code]', e);

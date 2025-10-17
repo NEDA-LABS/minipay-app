@@ -16,7 +16,7 @@ import { getBasename } from "../utils/getBaseName";
 import { useUserSync } from "../hooks/useUserSync";
 import { useLinkAccount } from "@privy-io/react-auth";
 import AuthenticationModal from "./AuthenticationModal";
-import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3 } from "lucide-react";
+import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3, Gift } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -475,17 +475,21 @@ const WalletSelector = forwardRef<
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer hover:bg-slate-800">
+            <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer hover:bg-slate-800">
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/withdraw-history')} className="cursor-pointer hover:bg-slate-800">
+            <DropdownMenuItem onClick={() => router.push('/all-notifications')} className="cursor-pointer hover:bg-slate-800">
               <History className="mr-2 h-4 w-4" />
               <span>Withdraw History</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/analytics')} className="cursor-pointer hover:bg-slate-800">
               <BarChart3 className="mr-2 h-4 w-4" />
               <span>Analytics</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/referrals')} className="cursor-pointer hover:bg-slate-800">
+              <Gift className="mr-2 h-4 w-4" />
+              <span>Referrals</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/support')} className="cursor-pointer hover:bg-slate-800">
               <HelpCircle className="mr-2 h-4 w-4" />

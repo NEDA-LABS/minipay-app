@@ -4,7 +4,6 @@ export const TABS = [
   // 'security',
   // 'notifications',
   // 'api',
-  'referrals',
   // 'kyc',
 ] as const;
   

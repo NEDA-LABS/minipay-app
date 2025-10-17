@@ -23,10 +23,11 @@ export async function generateReferralCode(): Promise<string> {
   const shardIndex = Math.floor(Math.random() * BASE);
   const shardChar  = ALPHABET[shardIndex];
 
-  // 2. atomically bump counter for that shard
-  const counterRow = await prisma.counter.update({
+  // 2. atomically bump counter for that shard (upsert creates if not exists)
+  const counterRow = await prisma.counter.upsert({
     where: { shard: shardChar },
-    data : { nextVal: { increment: 1 } },
+    create: { shard: shardChar, nextVal: 1 },
+    update: { nextVal: { increment: 1 } },
     select: { nextVal: true },
   });
 

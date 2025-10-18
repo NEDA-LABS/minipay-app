@@ -375,3 +375,23 @@ user User? @relation(fields: [privyUserId], references: [privyUserId], onDelete:
 @@index([privyUserId])
 }
 
+// Admin Settings for controlling platform features
+model AdminSettings {
+  id                    String   @id @default(uuid())
+  
+  // Payramp/Paycrest Bank Withdrawal Controls
+  allowBankWithdrawals  Json     @default("{\"TZS\": false, \"KES\": true, \"UGX\": true, \"NGN\": true, \"GHS\": true}")
+  // Format: { "TZS": false, "KES": true, "UGX": true, "NGN": true, "GHS": true }
+  
+  // Additional feature flags
+  maintenanceMode       Boolean  @default(false)
+  allowNewRegistrations Boolean  @default(true)
+  
+  // Metadata
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  lastModifiedBy        String?  // Admin who last modified
+  
+  @@map("admin_settings")
+}
+

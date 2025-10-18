@@ -31,6 +31,17 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
     return stablecoin?.flag || '/default-token-icon.png';
   };
 
+  const handleChainChange = (chainId: string) => {
+    setActiveChainId(chainId);
+    const chain = chains.find(c => c.id === Number(chainId));
+    if (chain) {
+      // Get the selected token for this chain, or default to first token
+      const token = selectedTokens[chainId] || chain.tokens[0];
+      console.log(`Chain changed to: ${chain.name}, token: ${token}`);
+      onSelectChain(chain, token);
+    }
+  };
+
   const handleTokenSelect = async (chainId: string, token: string) => {
     setSelectedTokens(prev => ({ ...prev, [chainId]: token }));
 
@@ -43,6 +54,7 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
       } catch (e) {
         // handle chain switch errors gracefully
       }
+      console.log(`Token selected: ${token} on ${chain.name}`);
       onSelectChain(chain, token);
     }
   };
@@ -65,7 +77,7 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
           <label className="block text-xs sm:text-sm font-medium text-slate-200 mb-2">
             Network
           </label>
-          <Select value={activeChainId} onValueChange={setActiveChainId}>
+          <Select value={activeChainId} onValueChange={handleChainChange}>
             <SelectTrigger className="w-full rounded-xl bg-slate-900/70 border border-slate-600/60 px-2.5 sm:px-3.5 py-2 sm:py-3 text-white focus:ring-2 focus:ring-blue-500/50 hover:bg-slate-900/90 hover:border-blue-500/50 transition-all duration-200 h-auto shadow-sm">
               <SelectValue placeholder="Select network">
                 {activeChain && (

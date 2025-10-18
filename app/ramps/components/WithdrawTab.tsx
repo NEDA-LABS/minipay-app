@@ -98,6 +98,13 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(countries[0]); // Default to Tanzania
   const [isAccountVerified, setIsAccountVerified] = useState(false);
 
+  // Debug: Log context changes
+  useEffect(() => {
+    console.log('Context updated - selectedChain:', selectedChain?.name, 'selectedToken:', selectedToken);
+    console.log('Context updated - selectedChain FULL OBJECT:', selectedChain);
+    console.log('Context updated - selectedChain type:', typeof selectedChain);
+  }, [selectedChain, selectedToken]);
+
   // Detect user's country on mount
   useEffect(() => {
     const detectCountry = async () => {
@@ -137,19 +144,55 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
   }, []);
 
   const handleCountrySelect = (country: Country) => {
+    console.log('handleCountrySelect - Current selectedChain:', selectedChain?.name);
+    console.log('handleCountrySelect - Current selectedToken:', selectedToken);
+    console.log('handleCountrySelect - selectedChain object:', selectedChain);
+    
+    // Don't auto-select if chain is already selected - just proceed
+    if (!selectedChain) {
+      // Default to Base chain with USDC for all countries (except Indonesia)
+      const defaultChain = SUPPORTED_CHAINS.find(c => c.name === 'Base') || SUPPORTED_CHAINS[0];
+      console.log(`Auto-selecting chain:`, defaultChain);
+      setSelectedChain(defaultChain);
+      setSelectedToken('USDC');
+      console.log(`Auto-selected chain: ${defaultChain.name}, token: USDC`);
+    } else {
+      console.log(`Using manually selected chain: ${selectedChain.name}, token: ${selectedToken}`);
+    }
+    
     // Move to form step (step 2)
     setCurrentStep(2);
   };
 
-  const handleChainSelect = (chain: ChainConfig, token: string) => {
+  const handleChainSelect = async (chain: ChainConfig, token: string) => {
+    console.log(`handleChainSelect called with: ${chain.name}, token: ${token}`);
+    console.log(`Before update - selectedChain:`, selectedChain?.name);
+    
+    // Update context first
     if (chain.tokens.includes(token)) {
       setSelectedChain(chain);
       setSelectedToken(token as "USDC" | "USDT" | "CNGN");
+      console.log(`Chain selected: ${chain.name}, token: ${token}`);
     } else {
       const defaultToken = chain.tokens[0];
       setSelectedChain(chain);
       setSelectedToken(defaultToken as "USDC" | "USDT" | "CNGN");
+      console.log(`Chain selected: ${chain.name}, token: ${defaultToken} (default)`);
     }
+    
+    // Also switch the wallet's chain to keep them in sync
+    try {
+      if (activeWallet && typeof activeWallet.switchChain === 'function') {
+        console.log(`Switching wallet to chain: ${chain.name} (${chain.id})`);
+        await activeWallet.switchChain(chain.id);
+        console.log(`Wallet switched successfully`);
+      }
+    } catch (error) {
+      console.warn('Failed to switch wallet chain:', error);
+      // Continue anyway - user can manually switch if needed
+    }
+    
+    console.log(`After setSelectedChain call (state may not be updated yet)`);
   };
 
   const handleStepBack = () => {
@@ -337,16 +380,24 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
               {selectedCountry.id === 'indonesia' ? (
                 <RedeemForm />
               ) : selectedChain ? (
-                <OffRampForm
-                  chain={selectedChain}
-                  token={selectedToken}
-                  onTokenChange={(token) => {
-                    setSelectedToken(token);
-                  }}
-                  onBack={handleStepBack}
-                  isAccountVerified={isAccountVerified}
-                  setIsAccountVerified={setIsAccountVerified}
-                />
+                <>
+                  {console.log('Rendering OffRampForm with:', { 
+                    chain: selectedChain.name, 
+                    token: selectedToken,
+                    currency: selectedCountry.currencySymbol 
+                  })}
+                  <OffRampForm
+                    chain={selectedChain}
+                    token={selectedToken}
+                    onTokenChange={(token) => {
+                      setSelectedToken(token);
+                    }}
+                    onBack={handleStepBack}
+                    isAccountVerified={isAccountVerified}
+                    setIsAccountVerified={setIsAccountVerified}
+                    preselectedCurrency={selectedCountry.currencySymbol}
+                  />
+                </>
               ) : null}
             </motion.div>
           )}

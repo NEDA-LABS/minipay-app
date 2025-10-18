@@ -237,9 +237,23 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
     try {
       let data = await fetchSupportedInstitutions(fiat);
       
-      // If fiat is TZS, filter out bank institutions
-      if (fiat === 'TZS') {
-        data = data.filter(inst => inst.type !== 'bank');
+      // Check admin settings to see if bank withdrawals are allowed for this currency
+      try {
+        const settingsResponse = await fetch(`/api/admin/settings/bank-withdrawals?currency=${fiat}`);
+        if (settingsResponse.ok) {
+          const settingsData = await settingsResponse.json();
+          
+          // If bank withdrawals are disabled for this currency, filter them out
+          if (!settingsData.allowBankWithdrawals) {
+            data = data.filter(inst => inst.type !== 'bank');
+          }
+        }
+      } catch (settingsError) {
+        // If settings fetch fails, fall back to default behavior (TZS banks disabled)
+        console.warn('Failed to fetch bank withdrawal settings, using defaults:', settingsError);
+        if (fiat === 'TZS') {
+          data = data.filter(inst => inst.type !== 'bank');
+        }
       }
       
       // console.log("fiat", fiat);

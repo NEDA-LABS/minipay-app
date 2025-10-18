@@ -31,14 +31,6 @@ const OffRampForm: React.FC<{
   const [fiatBalance, setFiatBalance] = useState<string | null>(null);
   const [minimumAmount, setMinimumAmount] = useState<string | null>(null);
   
-  // Auto-select currency if preselected
-  useEffect(() => {
-    if (preselectedCurrency && !fiat) {
-      setFiat(preselectedCurrency);
-      fetchInstitutions();
-    }
-  }, [preselectedCurrency]);
-  
   const {
     amount,
     setAmount,
@@ -76,6 +68,15 @@ const OffRampForm: React.FC<{
     balanceLoading,
     usdcToFiatRate
   } = useOffRamp(chain, token);
+
+  // Auto-select currency if preselected (runs only when preselectedCurrency prop changes)
+  useEffect(() => {
+    if (preselectedCurrency) {
+      console.log(`Auto-selecting currency: ${preselectedCurrency}`);
+      setFiat(preselectedCurrency);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectedCurrency]); // Only run when preselectedCurrency changes
 
   // Enhanced rate fetching function with retry logic
   // const fetchRateWithRetry = useCallback(async (retryCount = 0, maxRetries = 3) => {

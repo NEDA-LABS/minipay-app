@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   LayoutDashboard, LogOut, Settings, Users, BarChart3,
@@ -10,12 +10,13 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { OnboardingForm } from '@/ramps/idrxco/components/OnboardingForm';
 import OnboardingStatus from './components/OnboardingStatus';
+import PasswordDialog from './components/PasswordDialog';
 
 // IMPORT THE TAB COMPONENTS
 import OfframpTransactions from './components/OfframpTransactions';
 import BroadcastNotifications from './components/PushNotifications';
-// import UserOnboarding from './components/UserOnboarding';
 import Referrals from './components/Referrals';
+import SystemSettings from './components/SystemSettings';
 
 type AdminLayoutProps = { children?: React.ReactNode };
 
@@ -26,12 +27,13 @@ const navigationItems = [
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
-// Updated tabs - removed href since we're not routing anymore
+// Updated tabs - organized by category
 const tabItems = [
-  { name: 'Offramp Transactions', key: 'offramp', icon: ArrowRightLeft },
-  { name: 'Broadcast Notifications', key: 'notifications', icon: Bell },
-  { name: 'User Onboarding · IDRXCO', key: 'onboarding', icon: UserPlus },
-  { name: 'Referrals Analytics', key: 'referrals', icon: Share2 },
+  { name: 'Offramp Transactions', key: 'offramp', icon: ArrowRightLeft, category: 'Transactions' },
+  { name: 'Broadcast Notifications', key: 'notifications', icon: Bell, category: 'Communications' },
+  { name: 'User Onboarding · IDRXCO', key: 'onboarding', icon: UserPlus, category: 'Onboarding' },
+  { name: 'Referrals Analytics', key: 'referrals', icon: Share2, category: 'Analytics' },
+  { name: 'System Settings', key: 'settings', icon: Settings, category: 'Configuration' },
 ];
 
 // Map tab keys to components
@@ -49,6 +51,7 @@ const TabComponents: Record<string, React.ComponentType> = {
     </div>
   ),
   referrals: Referrals,
+  settings: SystemSettings,
 };
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -58,10 +61,58 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   // State to track active tab
   const [activeTab, setActiveTab] = useState<string>('offramp');
+  
+  // State for password authentication
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/verify-password');
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Handle password authentication
+  const handleAuthenticate = async (password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/admin/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Authentication error:', error);
+      return false;
+    }
+  };
 
   const handleLogout = () => {
+    // Clear both old and new admin cookies
     document.cookie = 'admin-access-key=; Path=/; Max-Age=0; SameSite=Lax';
-    router.push('/admin/login');
+    document.cookie = 'admin-authenticated=; Path=/; Max-Age=0; SameSite=Lax';
+    document.cookie = 'admin-authenticated=; Path=/admin; Max-Age=0; SameSite=Lax'; // Clear old path too
+    setIsAuthenticated(false);
+    router.push('/admin/dashboard');
   };
 
   const currentSectionTitle = useMemo(() => {
@@ -74,6 +125,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Get the active component based on selected tab
   const ActiveTabComponent = TabComponents[activeTab];
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 text-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show password dialog if not authenticated
+  if (!isAuthenticated) {
+    return <PasswordDialog onAuthenticate={handleAuthenticate} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 text-slate-100">
@@ -99,6 +167,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center ring-2 ring-indigo-400/30">
             <Shield className="w-4 h-4 text-white" />
           </div>
+          <button
+            onClick={handleLogout}
+            className="px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition-colors flex items-center gap-2"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
       </header>
 

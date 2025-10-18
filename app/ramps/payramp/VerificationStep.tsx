@@ -227,9 +227,9 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-emerald-400 bg-gradient-to-r from-emerald-900/50 to-green-900/50 rounded-full px-3 py-1">
+        {/* <span className="text-xs font-medium text-emerald-400 bg-gradient-to-r from-emerald-900/50 to-green-900/50 rounded-full px-3 py-1">
           Step 2
-        </span>
+        </span> */}
         <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
           Recipient Details
         </h3>
@@ -243,7 +243,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
           >
             Choose Bank or Mobile Network
           </label>
-          {fiat === "TZS" ? (<span className="text-white text-xs md:text-sm bg-blue-800/50 rounded-xl px-2 py-1">cashouts to Bank in Tanzania are unavailable at the moment!</span>) : null}
+          {/* {fiat === "TZS" ? (<span className="text-white text-xs md:text-sm bg-blue-800/50 rounded-xl px-2 py-1">cashouts to Bank in Tanzania are unavailable at the moment!</span>) : null} */}
           <select
             id="institution"
             value={institution}

@@ -73,12 +73,14 @@ export const HeaderChainBalance = () => {
       setCurrentChain(matchedChain);
 
       // Sync with global chain context - find matching payramp chain
-      if (matchedChain && globalSelectedChain?.id !== matchedChain.id) {
+      // Only sync if global context is null or if wallet chain actually changed
+      if (matchedChain && (!globalSelectedChain || globalSelectedChain?.id !== matchedChain.id)) {
         const payrampChains = await import('@/ramps/payramp/offrampHooks/constants');
         const matchingPayrampChain = payrampChains.SUPPORTED_CHAINS.find(
           (c: any) => c.id === matchedChain.id
         );
         if (matchingPayrampChain) {
+          console.log('HeaderChainBalance: Syncing wallet chain to context:', matchingPayrampChain.name);
           setGlobalSelectedChain(matchingPayrampChain);
         }
       }

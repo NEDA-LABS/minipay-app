@@ -91,8 +91,8 @@ export default function WalletEmbeddedContent() {
   const { sendTransaction } = useSendTransaction();
   const { exportWallet, user } = usePrivy();
   
-  // Use useBalance hook for native balance
-  const { data: nativeBalance, refetch: refetchNativeBalance } = useBalance({
+  // Use useBalance hook for native balance - always tied to actual wallet chain
+  const { data: nativeBalance, refetch: refetchNativeBalance, isLoading: isLoadingNative } = useBalance({
     address,
     chainId: chainId,
   });
@@ -102,6 +102,16 @@ export default function WalletEmbeddedContent() {
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
+  
+  // Keep activeChain synced with actual wallet chainId
+  useEffect(() => {
+    const chain = SUPPORTED_CHAINS.find(c => c.id === chainId);
+    if (chain && chain.id !== activeChain.id) {
+      console.log(`Syncing activeChain to wallet chainId: ${chain.name}`);
+      setActiveChain(chain);
+      setBalances([]); // Clear balances when chain changes
+    }
+  }, [chainId]);
 
   // Fund states
   const [fundAmount, setFundAmount] = useState('');
@@ -168,15 +178,23 @@ export default function WalletEmbeddedContent() {
     return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
   };
 
-  // Fetch balances when chain changes - using individual readContract calls
+  // Fetch balances when chain changes - with proper chain validation
   useEffect(() => {
-    if (!address || !publicClient || !nativeBalance) return;
+    // Critical: Only fetch if activeChain matches actual wallet chainId
+    if (!address || !publicClient || !nativeBalance || activeChain.id !== chainId) {
+      console.log('Skipping balance fetch - chain mismatch or missing data');
+      return;
+    }
     
     const fetchBalances = async () => {
       setIsLoading(true);
       try {
         const tokenBalances: TokenBalance[] = [];
 
+        // Validate native token belongs to current chain
+        console.log(`Loading balances for ${activeChain.name} (chainId: ${activeChain.id})`);
+        console.log(`Native balance symbol: ${nativeBalance.symbol}`);
+        
         // Add native token balance with better formatting
         const formatted = parseFloat(formatUnits(nativeBalance.value, nativeBalance.decimals));
         const price = NATIVE_TOKEN_PRICES[activeChain.id] || 1;
@@ -248,27 +266,37 @@ export default function WalletEmbeddedContent() {
     };
 
     fetchBalances();
-  }, [address, activeChain, publicClient, nativeBalance, relevantTokens]);
+  }, [address, activeChain.id, chainId, publicClient, nativeBalance?.value, relevantTokens.length]);
 
-  // Refetch native balance when chain changes
+  // Refetch native balance when chain actually changes in wallet
   useEffect(() => {
-    if (address && refetchNativeBalance) {
+    if (address && refetchNativeBalance && !isLoadingNative) {
+      console.log(`Refetching native balance for chainId: ${chainId}`);
       refetchNativeBalance();
     }
-  }, [activeChain.id, address]);
+  }, [chainId, address]);
 
   const switchChain = async (chain: Chain) => {
-    if (chain.id === activeChain.id) return;
+    if (chain.id === chainId) {
+      console.log('Already on this chain');
+      return;
+    }
     
+    console.log(`Initiating chain switch from ${activeChain.name} to ${chain.name}`);
     setIsSwitchingChain(true);
     setIsLoading(true);
+    setBalances([]); // Clear immediately to prevent stale data
+    
     try {
       await switchChainAsync({ chainId: chain.id });
-      setActiveChain(chain);
-      setBalances([]);
+      // activeChain will be updated by the chainId useEffect
       toast.success(`Switched to ${chain.name}`);
     } catch (error: any) {
+      console.error('Chain switch error:', error);
       toast.error(error.message || 'Failed to switch chain');
+      // Revert to actual chain on error
+      const currentChain = SUPPORTED_CHAINS.find(c => c.id === chainId);
+      if (currentChain) setActiveChain(currentChain);
     } finally {
       setIsSwitchingChain(false);
       setIsLoading(false);

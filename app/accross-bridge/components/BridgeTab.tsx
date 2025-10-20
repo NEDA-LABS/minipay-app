@@ -1,7 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
+import dynamic from "next/dynamic";
+import { Loader2 } from "lucide-react";
+
+const BridgePage = dynamic(() => import("../page").then((mod) => mod.BridgePageContent), {
+  loading: () => (
+    <div className="flex items-center justify-center py-16">
+      <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+    </div>
+  ),
+  ssr: false
+});
 
 interface BridgeTabProps {
   walletAddress?: string;
@@ -15,12 +25,7 @@ export default function BridgeTab({ walletAddress }: BridgeTabProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <iframe
-          src="/accross-bridge?embedded=true"
-          className="w-full h-[850px] border-0 rounded-3xl"
-          title="Cross-Chain Bridge"
-          style={{ colorScheme: 'dark', background: 'transparent' }}
-        />
+        <BridgePage />
       </motion.div>
     </div>
   );

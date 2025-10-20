@@ -230,7 +230,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         {/* <span className="text-xs font-medium text-emerald-400 bg-gradient-to-r from-emerald-900/50 to-green-900/50 rounded-full px-3 py-1">
           Step 2
         </span> */}
-        <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
+        <h3 className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-2">
           Recipient Details
         </h3>
       </div>
@@ -239,7 +239,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         <div>
           <label
             htmlFor="institution"
-            className="block text-sm font-semibold mb-3 text-gray-100"
+            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
           >
             Choose Bank or Mobile Network
           </label>
@@ -249,7 +249,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
             value={institution}
             onChange={handleInstitutionChange}
             onFocus={fetchInstitutions}
-            className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
             required
             disabled={isAccountVerified}
           >
@@ -278,7 +278,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         <div>
           <label
             htmlFor="accountNumber"
-            className="block text-sm font-semibold mb-3 text-gray-100"
+            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
           >
             {isMobileNetwork ? "Mobile Number" : "Bank Account Number"}
           </label>
@@ -292,11 +292,11 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center space-x-2 px-3 py-3 bg-gray-200 border border-gray-300 border-r-0 rounded-l-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all min-w-[100px]"
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 sm:py-3 bg-gray-200 border border-gray-300 border-r-0 rounded-l-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all min-w-[80px] sm:min-w-[100px]"
                     disabled={isAccountVerified}
                   >
-                    <span className="text-lg">{selectedCountry?.flag}</span>
-                    <span className="text-gray-900 font-medium text-sm">{selectedCountryCode}</span>
+                    <span className="text-base sm:text-lg">{selectedCountry?.flag}</span>
+                    <span className="text-gray-900 font-medium text-xs sm:text-sm">{selectedCountryCode}</span>
                     <ChevronDown size={14} className="text-gray-600" />
                   </button>
 
@@ -310,8 +310,8 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                           onClick={() => handleCountryCodeChange(country.code)}
                           className="flex items-center space-x-3 px-3 py-2 hover:bg-gray-100 text-left transition-colors"
                         >
-                          <span className="text-lg">{country.flag}</span>
-                          <span className="font-medium text-gray-900 text-sm">{country.code}</span>
+                          <span className="text-base sm:text-lg">{country.flag}</span>
+                          <span className="font-medium text-gray-900 text-xs sm:text-sm">{country.code}</span>
                           <span className="text-xs text-gray-600">{country.country}</span>
                         </button>
                       ))}
@@ -325,7 +325,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                   id="accountNumber"
                   value={phoneNumber}
                   onChange={handlePhoneNumberChange}
-                  className={`flex-1 w-50 md:w-full px-4 py-3 text-base text-gray-900 rounded-r-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500 ${
+                  className={`flex-1 w-50 md:w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-r-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500 ${
                     inputError ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
                   placeholder="123 456 789"
@@ -363,7 +363,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                 id="accountNumber"
                 value={accountIdentifier}
                 onChange={handleRegularAccountChange}
-                className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
                 placeholder="1234567890"
                 required
                 disabled={isAccountVerified}
@@ -378,7 +378,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         <div>
           <label
             htmlFor="accountName"
-            className="block text-sm font-semibold mb-3 text-gray-100"
+            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
           >
             Account Holder Name
           </label>
@@ -389,7 +389,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
             onChange={(e) => {
               setAccountName(e.target.value);
             }}
-            className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
             placeholder="As it appears on your account"
             required
             disabled={isAccountVerified}
@@ -409,7 +409,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
               !accountName
               // (isMobileNetwork && inputError)
             }
-            className="w-full px-4 py-3 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base transform hover:-translate-y-0.5 flex items-center justify-center"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transform hover:-translate-y-0.5 flex items-center justify-center"
           >
             {isLoading ? (
               <>

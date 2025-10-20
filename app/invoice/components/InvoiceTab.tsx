@@ -176,28 +176,29 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
         transition={{ duration: 0.3 }}
       >
         <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden">
-          <CardContent className="p-7">
+          <CardContent className="p-4 sm:p-7">
             <Tabs value={innerTab} onValueChange={setInnerTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
+              <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50 h-auto">
                 <TabsTrigger 
                   value="history" 
-                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:!text-white data-[state=active]:shadow-lg transition-all duration-200"
+                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:!text-white data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm py-2"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  History
+                  <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">History</span>
+                  <span className="xs:hidden">Hist</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="create" 
-                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg transition-all duration-200"
+                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm py-2"
                 >
-                  <FaPlus className="w-4 h-4 mr-2" />
+                  <FaPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Create
                 </TabsTrigger>
                 <TabsTrigger 
                   value="stats" 
-                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-teal-600 data-[state=active]:!text-white data-[state=active]:shadow-lg transition-all duration-200"
+                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-teal-600 data-[state=active]:!text-white data-[state=active]:shadow-lg transition-all duration-200 text-xs sm:text-sm py-2"
                 >
-                  <BarChart3 className="w-4 h-4 mr-2" />
+                  <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Stats
                 </TabsTrigger>
               </TabsList>
@@ -214,7 +215,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                         setActiveTab(tab);
                         setPage(1);
                       }}
-                      className={`transition-all duration-200 rounded-lg ${
+                      className={`transition-all duration-200 rounded-lg text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 ${
                         activeTab === tab
                           ? "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg border-0"
                           : "bg-slate-800/60 border-slate-600/60 text-slate-300 hover:bg-slate-700/70 hover:border-slate-500 hover:text-white"
@@ -227,14 +228,15 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
 
                 {/* Invoice Table */}
                 <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 overflow-hidden">
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-700/60 hover:bg-slate-800/50">
-                        <TableHead className="text-slate-300 font-semibold">ID</TableHead>
-                        <TableHead className="text-slate-300 font-semibold">Client</TableHead>
-                        <TableHead className="text-slate-300 font-semibold">Status</TableHead>
-                        <TableHead className="text-slate-300 font-semibold">Amount</TableHead>
-                        <TableHead className="text-slate-300 font-semibold">Actions</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">ID</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Client</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Status</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Amount</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -256,21 +258,21 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                       ) : (
                         invoices.map((invoice) => (
                           <TableRow key={invoice.id} className="border-slate-700/60 hover:bg-slate-800/30 transition-colors">
-                            <TableCell className="text-slate-300 font-mono text-sm">
+                            <TableCell className="text-slate-300 font-mono text-xs sm:text-sm whitespace-nowrap">
                               #{invoice.id.slice(0, 8)}
                             </TableCell>
-                            <TableCell className="text-slate-200">
+                            <TableCell className="text-slate-200 text-xs sm:text-sm whitespace-nowrap">
                               {invoice.recipient}
                             </TableCell>
-                            <TableCell>
-                              <Badge className={`${getStatusColor(invoice.status)} font-medium`}>
+                            <TableCell className="whitespace-nowrap">
+                              <Badge className={`${getStatusColor(invoice.status)} font-medium text-xs`}>
                                 {invoice.status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-slate-200 font-semibold">
+                            <TableCell className="text-slate-200 font-semibold text-xs sm:text-sm whitespace-nowrap">
                               {invoice.totalAmount.toFixed(2)} {invoice.currency}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="whitespace-nowrap">
                               <div className="flex gap-1">
                                 <Button 
                                   size="sm" 
@@ -303,21 +305,22 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                       )}
                     </TableBody>
                   </Table>
+                  </div>
                 </div>
 
                 {/* Pagination */}
                 {invoices.length > 0 && totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center justify-between gap-2 pt-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                       disabled={page === 1}
-                      className="bg-slate-800/60 border-slate-600/60 hover:bg-slate-700/70 disabled:opacity-50"
+                      className="bg-slate-800/60 border-slate-600/60 hover:bg-slate-700/70 disabled:opacity-50 text-xs sm:text-sm px-2 sm:px-4"
                     >
                       Previous
                     </Button>
-                    <span className="text-sm text-slate-400 font-medium">
+                    <span className="text-xs sm:text-sm text-slate-400 font-medium">
                       Page {page} of {totalPages}
                     </span>
                     <Button
@@ -325,7 +328,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                       size="sm"
                       onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={page === totalPages}
-                      className="bg-slate-800/60 border-slate-600/60 hover:bg-slate-700/70 disabled:opacity-50"
+                      className="bg-slate-800/60 border-slate-600/60 hover:bg-slate-700/70 disabled:opacity-50 text-xs sm:text-sm px-2 sm:px-4"
                     >
                       Next
                     </Button>

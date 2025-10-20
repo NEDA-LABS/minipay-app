@@ -411,7 +411,7 @@ const WalletSelector = forwardRef<
   if (!ready) {
     return (
       <div className="wallet-button flex items-center bg-gradient-to-r from-blue-600 to-purple-700 px-2 sm:px-3 py-1 rounded-lg text-white shadow-lg">
-        <span className="text-xs sm:text-sm text-black">Loading...</span>
+        <span className="text-xs sm:text-sm text-white">Loading...</span>
       </div>
     );
   }
@@ -509,7 +509,7 @@ const WalletSelector = forwardRef<
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button onClick={handleEmailLogin} disabled={isConnecting} className="bg-[#3E55E6] hover:bg-blue-700 rounded-lg">
+        <Button onClick={handleEmailLogin} disabled={isConnecting} className="bg-[#3E55E6] hover:bg-blue-700 rounded-lg text-white">
           {isConnecting ? "Connecting..." : "Sign in"}
         </Button>
       )}

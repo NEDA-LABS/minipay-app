@@ -315,7 +315,7 @@ const OffRampForm: React.FC<{
               <X className="w-5 h-5" />
             </button>
             
-            <h3 className="text-lg font-bold text-white mb-6 text-center">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-white mb-4 sm:mb-6 text-center">
               Confirm Payment Details, Ensure Account number is Correct!
             </h3>
             
@@ -394,10 +394,10 @@ const OffRampForm: React.FC<{
             className="w-10 h-10 rounded-full border-2 border-slate-700/50 shadow-sm"
           />
           <div>
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-sm sm:text-base font-semibold text-white">
               Convert {token.toUpperCase()} to Cash
             </h3>
-            <p className="text-slate-400 text-xs">
+            <p className="text-slate-400 text-[10px] sm:text-xs">
               {chain.name} • Balance: 
               <span className="font-medium ml-1">
                 {balanceLoading ? (
@@ -434,14 +434,14 @@ const OffRampForm: React.FC<{
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className={`text-xs font-medium rounded-full px-3 py-1 ${
+              <span className={`text-[10px] sm:text-xs font-medium rounded-full px-2 sm:px-3 py-0.5 sm:py-1 ${
                 currentStep === 1 
                   ? 'text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50' 
                   : 'text-green-400 bg-green-900/30'
               }`}>
                 {currentStep > 1 ? '✓ Step 1' : 'Step 1'}
               </span>
-              <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-2">
                 Enter Amount and Currency
               </h3>
             </div>
@@ -459,10 +459,10 @@ const OffRampForm: React.FC<{
           {/* Fiat Currency Display (pre-selected) */}
           {preselectedCurrency && fiat ? (
             <div>
-              <label className="block text-sm font-semibold mb-3 text-gray-100">
+              <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100">
                 Fiat Currency
               </label>
-              <div className="w-full px-4 py-3 text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
+              <div className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
                 <span>
                   {currencies.find(c => c.code === fiat)?.name || fiat} ({fiat})
                 </span>
@@ -473,7 +473,7 @@ const OffRampForm: React.FC<{
             <div>
               <label
                 htmlFor="fiat"
-                className="block text-sm font-semibold mb-3 text-gray-100"
+                className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
               >
                 Select Fiat Currency *
               </label>
@@ -491,7 +491,7 @@ const OffRampForm: React.FC<{
                   setAmount('');
                   setFiatInput('');
                 }}
-                className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
                 required
               >
                 <option value="" className="bg-gray-100 text-gray-500">Select Currency</option>
@@ -515,14 +515,14 @@ const OffRampForm: React.FC<{
                 <button
                   type="button"
                   onClick={() => handleModeChange('crypto')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${inputMode === 'crypto' ? 'bg-purple-700 text-white' : 'text-gray-400'}`}
+                  className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${inputMode === 'crypto' ? 'bg-purple-700 text-white' : 'text-gray-400'}`}
                 >
                   {token.toUpperCase()}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleModeChange('fiat')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${inputMode === 'fiat' ? 'bg-purple-700 text-white' : 'text-gray-400'}`}
+                  className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${inputMode === 'fiat' ? 'bg-purple-700 text-white' : 'text-gray-400'}`}
                 >
                   {fiat}
                 </button>
@@ -532,7 +532,7 @@ const OffRampForm: React.FC<{
               <div>
                 <label
                   htmlFor="amount"
-                  className="block text-sm font-semibold mb-3 text-gray-100"
+                  className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
                 >
                   {inputMode === 'crypto' ? `Amount to Send (${token.toUpperCase()})` : `Amount to Send (${fiat})`} *
                 </label>
@@ -554,7 +554,7 @@ const OffRampForm: React.FC<{
                         }
                       }
                     }}
-                    className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
                     placeholder={`Minimum ${inputMode === 'crypto' ? '1' : (minimumAmount || '...')} ${inputMode === 'crypto' ? token.toUpperCase() : fiat}`}
                     min="0.01"
                     step="0.01"
@@ -578,8 +578,8 @@ const OffRampForm: React.FC<{
           {/* Exchange Rate Display */}
           {amount && (
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-semibold text-gray-100">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <label className="text-xs sm:text-sm font-semibold text-gray-100">
                   Exchange Rate
                 </label>
                 {/* {(isRateFetching || (!rate && !rateError)) && (
@@ -615,7 +615,7 @@ const OffRampForm: React.FC<{
                 ) : rate && parseFloat(rate) > 0 ? (
                   <div className="grid grid-rows-1 gap-2">
                     <div>
-                      <p className="text-blue-400 font-medium text-sm">
+                      <p className="text-blue-400 font-medium text-xs sm:text-sm">
                         1 {token.toUpperCase()} = {rate} {fiat}
                       </p>
                       {/* <p className="text-gray-400 text-xs">
@@ -624,10 +624,10 @@ const OffRampForm: React.FC<{
                     </div>
                     {((inputMode === 'crypto' && amount) || (inputMode === 'fiat' && fiatInput)) && (
                       <div className="border-l-2 border-blue-700 pl-3">
-                        <p className="text-green-400 font-medium text-sm">
+                        <p className="text-green-400 font-medium text-xs sm:text-sm">
                           {inputMode === 'crypto' ? 'You will receive:' : 'You will send:'}
                         </p>
-                        <p className="text-green-300 font-semibold">
+                        <p className="text-green-300 font-semibold text-sm sm:text-base">
                           {inputMode === 'crypto' 
                             ? `${receivedFiat} ${fiat}`
                             : `${amount} ${token.toUpperCase()}`}
@@ -650,7 +650,7 @@ const OffRampForm: React.FC<{
             <button
               type="button"
               onClick={handleStepForward}
-              className="w-full py-3 px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-base rounded-xl shadow-lg transition-all"
+              className="w-full py-2.5 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-sm sm:text-base rounded-xl shadow-lg transition-all"
             >
               Continue to Recipient Details
             </button>
@@ -663,7 +663,7 @@ const OffRampForm: React.FC<{
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium rounded-full px-3 py-1 ${
+                <span className={`text-[10px] sm:text-xs font-medium rounded-full px-2 sm:px-3 py-0.5 sm:py-1 ${
                   currentStep === 2 
                     ? 'text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50' 
                     : currentStep > 2 
@@ -672,7 +672,7 @@ const OffRampForm: React.FC<{
                 }`}>
                   {currentStep > 2 ? '✓ Step 2' : 'Step 2'}
                 </span>
-                <h3 className="text-sm font-medium text-gray-300">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-300">
                   Recipient Details
                 </h3>
               </div>
@@ -705,7 +705,7 @@ const OffRampForm: React.FC<{
               <button
                 type="button"
                 onClick={handleStepForward}
-                className="w-full py-3 px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-base rounded-xl shadow-lg transition-all"
+                className="w-full py-2.5 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-sm sm:text-base rounded-xl shadow-lg transition-all"
               >
                 Continue to Transaction Details
               </button>
@@ -717,17 +717,17 @@ const OffRampForm: React.FC<{
         {currentStep >= 3 && rate && !rateError && isAccountVerified && (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-full px-3 py-1">
+              <span className="text-[10px] sm:text-xs font-medium text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-full px-2 sm:px-3 py-0.5 sm:py-1">
                 Step 3
               </span>
-              <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-2">
                 Transaction Description
               </h3>
             </div>
             <div>
               <label
                 htmlFor="memo"
-                className="block text-sm font-semibold mb-3 text-gray-400"
+                className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-400"
               >
                 Transaction Memo *
               </label>
@@ -735,7 +735,7 @@ const OffRampForm: React.FC<{
                 id="memo"
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
-                className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
                 rows={3}
                 placeholder="Add a memo for this transaction..."
                 required
@@ -760,7 +760,7 @@ const OffRampForm: React.FC<{
             <button
               type="submit"
               disabled={isLoading || !rate || !isAccountVerified || !amount || !memo || isRateFetching}
-              className="w-full py-3 px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 flex items-center justify-center"
+              className="w-full py-2.5 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white font-medium text-sm sm:text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 flex items-center justify-center"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />

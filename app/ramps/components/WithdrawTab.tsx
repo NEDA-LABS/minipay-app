@@ -11,7 +11,8 @@ import {
   Wallet,
   AlertCircle,
   Sparkles,
-  DollarSign
+  DollarSign,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,13 +98,60 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1); // 1: Country & Chain, 2: Form
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(countries[0]); // Default to Tanzania
   const [isAccountVerified, setIsAccountVerified] = useState(false);
+  const [isChainSwitching, setIsChainSwitching] = useState(false);
+  const [targetChainId, setTargetChainId] = useState<number | null>(null);
 
-  // Debug: Log context changes
+  // Debug: Log context changes and clear loading when chain matches
   useEffect(() => {
     console.log('Context updated - selectedChain:', selectedChain?.name, 'selectedToken:', selectedToken);
     console.log('Context updated - selectedChain FULL OBJECT:', selectedChain);
     console.log('Context updated - selectedChain type:', typeof selectedChain);
-  }, [selectedChain, selectedToken]);
+    
+    // Clear loading state when global context syncs with target chain
+    if (isChainSwitching && targetChainId && selectedChain?.id === targetChainId) {
+      console.log('Chain switch completed - context synced!');
+      setIsChainSwitching(false);
+      setTargetChainId(null);
+    }
+  }, [selectedChain, selectedToken, isChainSwitching, targetChainId]);
+
+  // Timeout fallback: Clear loading after 10 seconds if chain hasn't synced
+  useEffect(() => {
+    if (isChainSwitching) {
+      const timeout = setTimeout(() => {
+        console.warn('Chain switch timeout - clearing loading state');
+        setIsChainSwitching(false);
+        setTargetChainId(null);
+      }, 10000); // 10 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isChainSwitching]);
+
+  // Sync wallet chain changes to global context (when user switches via header)
+  useEffect(() => {
+    // Use wallets[0] directly to access chainId (Privy wallet type has chainId property)
+    const currentWalletChainId = wallets[0]?.chainId;
+    
+    if (currentWalletChainId && selectedChain) {
+      const walletChainIdNum = typeof currentWalletChainId === 'string' 
+        ? parseInt(currentWalletChainId.replace('eip155:', ''))
+        : currentWalletChainId;
+      
+      // If wallet chain differs from global context, update context (unless we're in the middle of switching)
+      if (!isChainSwitching && walletChainIdNum !== selectedChain.id) {
+        const matchingChain = SUPPORTED_CHAINS.find(c => c.id === walletChainIdNum);
+        if (matchingChain) {
+          console.log(`Wallet chain changed externally to ${matchingChain.name} - syncing global context`);
+          setSelectedChain(matchingChain);
+          // Keep the same token if supported, otherwise use first token
+          if (!matchingChain.tokens.includes(selectedToken)) {
+            setSelectedToken(matchingChain.tokens[0] as "USDC" | "USDT" | "CNGN");
+          }
+        }
+      }
+    }
+  }, [wallets, selectedChain, isChainSwitching, selectedToken, setSelectedChain, setSelectedToken]);
 
   // Detect user's country on mount
   useEffect(() => {
@@ -148,16 +196,17 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
     console.log('handleCountrySelect - Current selectedToken:', selectedToken);
     console.log('handleCountrySelect - selectedChain object:', selectedChain);
     
-    // Don't auto-select if chain is already selected - just proceed
+    // Always use the chain from global context (should already be set)
+    // The chain selection happens in ChainSelector which updates global context
     if (!selectedChain) {
-      // Default to Base chain with USDC for all countries (except Indonesia)
+      console.warn('No chain selected - this should not happen if ChainSelector was used');
+      // Fallback to default chain if somehow no chain is selected
       const defaultChain = SUPPORTED_CHAINS.find(c => c.name === 'Base') || SUPPORTED_CHAINS[0];
-      console.log(`Auto-selecting chain:`, defaultChain);
+      console.log(`Fallback: Auto-selecting chain:`, defaultChain);
       setSelectedChain(defaultChain);
       setSelectedToken('USDC');
-      console.log(`Auto-selected chain: ${defaultChain.name}, token: USDC`);
     } else {
-      console.log(`Using manually selected chain: ${selectedChain.name}, token: ${selectedToken}`);
+      console.log(`Using selected chain from context: ${selectedChain.name}, token: ${selectedToken}`);
     }
     
     // Move to form step (step 2)
@@ -168,7 +217,11 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
     console.log(`handleChainSelect called with: ${chain.name}, token: ${token}`);
     console.log(`Before update - selectedChain:`, selectedChain?.name);
     
-    // Update context first
+    // Set loading state and target chain BEFORE updating context
+    setIsChainSwitching(true);
+    setTargetChainId(chain.id);
+    
+    // Update global context (this will trigger the header ChainSwitcher to update)
     if (chain.tokens.includes(token)) {
       setSelectedChain(chain);
       setSelectedToken(token as "USDC" | "USDT" | "CNGN");
@@ -180,19 +233,20 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
       console.log(`Chain selected: ${chain.name}, token: ${defaultToken} (default)`);
     }
     
-    // Also switch the wallet's chain to keep them in sync
+    // Also switch the wallet's chain to keep them in sync with the global context
     try {
       if (activeWallet && typeof activeWallet.switchChain === 'function') {
         console.log(`Switching wallet to chain: ${chain.name} (${chain.id})`);
         await activeWallet.switchChain(chain.id);
-        console.log(`Wallet switched successfully`);
+        console.log(`Wallet chain switched successfully to ${chain.name}`);
       }
     } catch (error) {
       console.warn('Failed to switch wallet chain:', error);
-      // Continue anyway - user can manually switch if needed
+      // Continue anyway - the loading state will clear when context syncs
+      // User can manually switch if needed via the header chain switcher
     }
     
-    console.log(`After setSelectedChain call (state may not be updated yet)`);
+    console.log(`Chain selection complete - waiting for global context to sync`);
   };
 
   const handleStepBack = () => {
@@ -348,6 +402,7 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
                     chains={SUPPORTED_CHAINS}
                     onSelectChain={handleChainSelect}
                     userAddress={activeWallet?.address || ''}
+                    initialChain={selectedChain}
                   />
                 </div>
               )}
@@ -356,11 +411,21 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
               {selectedCountry && (selectedCountry.id === 'indonesia' || selectedChain) && (
                 <Button
                   onClick={() => handleCountrySelect(selectedCountry)}
-                  className="w-full bg-gradient-to-r from-purple-600 via-purple-500 to-violet-600 hover:from-purple-700 hover:via-purple-600 hover:to-violet-700 text-white font-semibold py-6 rounded-xl shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                  disabled={isChainSwitching}
+                  className="w-full bg-gradient-to-r from-purple-600 via-purple-500 to-violet-600 hover:from-purple-700 hover:via-purple-600 hover:to-violet-700 text-white font-semibold py-6 rounded-xl shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   <span className="flex items-center justify-center gap-2 text-base">
-                    Continue
-                    <ArrowRight className="w-4 h-4" />
+                    {isChainSwitching ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Switching Chain...
+                      </>
+                    ) : (
+                      <>
+                        Continue
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </span>
                 </Button>
               )}
@@ -379,6 +444,23 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
               {/* Offramp Form - Conditional based on country */}
               {selectedCountry.id === 'indonesia' ? (
                 <RedeemForm />
+              ) : isChainSwitching ? (
+                // Show loading state while chain is switching
+                <Card className="bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-slate-700/50">
+                  <CardContent className="flex flex-col items-center justify-center py-16 px-6">
+                    <div className="relative mb-6">
+                      <Loader2 className="w-16 h-16 text-purple-500 animate-spin" />
+                      <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full animate-pulse" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Switching Chain</h3>
+                    <p className="text-slate-400 text-center max-w-md">
+                      Waiting for network to sync with your wallet...
+                    </p>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Target: {SUPPORTED_CHAINS.find(c => c.id === targetChainId)?.name}
+                    </p>
+                  </CardContent>
+                </Card>
               ) : selectedChain ? (
                 <>
                   {console.log('Rendering OffRampForm with:', { 

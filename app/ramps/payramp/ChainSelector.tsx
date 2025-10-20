@@ -12,14 +12,21 @@ interface ChainSelectorProps {
   chains: ChainConfig[];
   onSelectChain: (chain: ChainConfig, token: string) => void;
   userAddress: string;
+  initialChain?: ChainConfig | null; // Default chain from global context
 }
 
-const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, userAddress }) => {
+const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, userAddress, initialChain }) => {
   const { balances, loading } = useBalances(chains, userAddress);
   const { wallets } = useWallets();
 
   const [selectedTokens, setSelectedTokens] = useState<Record<string, string>>({});
-  const [activeChainId, setActiveChainId] = useState<string>(() => (chains?.[0]?.id ?? 0).toString());
+  const [activeChainId, setActiveChainId] = useState<string>(() => {
+    // Use initialChain from global context if available, otherwise default to first chain
+    if (initialChain) {
+      return initialChain.id.toString();
+    }
+    return (chains?.[0]?.id ?? 0).toString();
+  });
 
   const activeChain = useMemo(() => {
     return chains.find(c => c.id === Number(activeChainId)) ?? chains[0];

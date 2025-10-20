@@ -160,16 +160,22 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
   }, [address]);
 
   // native token balance - use actual connected chainId instead of activeChain
-  const { data: nativeBalance, refetch: refetchNativeBalance } = useBalance({
+  const { data: nativeBalance, refetch: refetchNativeBalance, isLoading: isLoadingNative } = useBalance({
     address,
     chainId: chainId, // Use actual connected chain instead of activeChain
   });
 
+  // Keep activeChain synced with actual wallet chainId
   useEffect(() => {
     if (chainId) {
       const chain = SUPPORTED_CHAINS.find((c) => c.id === chainId);
-      if (chain) setActiveChain(chain);
-      else setActiveChain(base);
+      if (chain && chain.id !== activeChain?.id) {
+        console.log(`[Modal] Syncing activeChain to wallet chainId: ${chain.name}`);
+        setActiveChain(chain);
+        setBalances([]); // Clear balances when chain changes
+      } else if (!chain) {
+        setActiveChain(base);
+      }
     }
   }, [chainId]);
 
@@ -293,11 +299,18 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
 
   // Optimized effect for loading balances - ensure chain consistency
   useEffect(() => {
-    if (!isOpen || !address || !publicClient || !nativeBalance) return;
+    if (!isOpen || !address || !publicClient || !nativeBalance) {
+      console.log('[Modal] Skipping balance load - missing data or modal closed');
+      return;
+    }
     
-    // Only load if activeChain matches the actual connected chain
-    if (activeChain.id !== chainId) return;
+    // Critical: Only load if activeChain matches the actual connected chain
+    if (activeChain?.id !== chainId) {
+      console.log(`[Modal] Skipping balance load - chain mismatch (active: ${activeChain?.id}, wallet: ${chainId})`);
+      return;
+    }
     
+    console.log(`[Modal] Loading balances for ${activeChain.name}`);
     setIsLoading(true);
     // Add small delay to prevent rapid successive calls
     const timeoutId = setTimeout(() => {
@@ -305,25 +318,39 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
     }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [isOpen, address, activeChain.id, nativeBalance?.value, chainId]);
+  }, [isOpen, address, activeChain?.id, nativeBalance?.value, chainId]);
 
   // Separate effect for native balance refetch on chain switch
   useEffect(() => {
-    if (isOpen && address && refetchNativeBalance) {
+    if (isOpen && address && refetchNativeBalance && !isLoadingNative) {
+      console.log(`[Modal] Refetching native balance for chainId: ${chainId}`);
       refetchNativeBalance();
     }
-  }, [activeChain.id, isOpen, address]);
+  }, [chainId, isOpen, address]);
 
   const switchChain = async (chain: any) => {
+    if (chain.id === chainId) {
+      console.log('[Modal] Already on this chain');
+      return;
+    }
+    
+    console.log(`[Modal] Initiating chain switch from ${activeChain?.name} to ${chain.name}`);
+    setIsSwitchingChain(true);
+    setIsLoading(true);
+    setBalances([]); // Clear immediately to prevent stale data
+    
     try {
-      setIsSwitchingChain(true);
-      setIsLoading(true);
-      if (switchChainAsync) await switchChainAsync({ chainId: chain.id });
-      setActiveChain(chain);
-      setBalances([]);
+      if (switchChainAsync) {
+        await switchChainAsync({ chainId: chain.id });
+      }
+      // activeChain will be updated by the chainId useEffect
       toast.success(`Switched to ${chain.name}`);
     } catch (e: any) {
+      console.error('[Modal] Chain switch error:', e);
       toast.error(e.message || 'Failed to switch chain');
+      // Revert to actual chain on error
+      const currentChain = SUPPORTED_CHAINS.find(c => c.id === chainId);
+      if (currentChain) setActiveChain(currentChain);
     } finally {
       setIsSwitchingChain(false);
       setIsLoading(false);

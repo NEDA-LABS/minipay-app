@@ -63,14 +63,14 @@ export const NormalLinkFields: React.FC<NormalLinkFieldsProps> = ({
         </div>
         {formData.specifyChain && (
           <div className="pl-6">
-            <Label htmlFor="chain" className="block text-sm font-semibold text-white mb-2">
+            <Label htmlFor="chain" className="block text-xs sm:text-sm font-semibold text-white mb-2">
               Blockchain Network
             </Label>
             <Select
               value={String(formData.chainId)}
               onValueChange={(value: string) => onUpdate({ chainId: Number(value) })}
             >
-              <SelectTrigger id="chain" className="w-full h-12 text-base bg-slate-800/50 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white">
+              <SelectTrigger id="chain" className="w-full h-11 sm:h-12 text-sm sm:text-base bg-slate-800/50 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white">
                 <SelectValue placeholder="Select a chain" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900/80 backdrop-blur-md border-slate-700 text-white rounded-xl">
@@ -102,14 +102,14 @@ export const NormalLinkFields: React.FC<NormalLinkFieldsProps> = ({
         </div>
         {formData.specifyCurrency && (
           <div className="pl-6">
-            <Label htmlFor="currency" className="block text-sm font-semibold text-white mb-2">
+            <Label htmlFor="currency" className="block text-xs sm:text-sm font-semibold text-white mb-2">
               Currency
             </Label>
             <Select
               value={formData.currency}
               onValueChange={(value: string) => onUpdate({ currency: value })}
             >
-              <SelectTrigger id="currency" className="w-full h-12 text-base bg-slate-800/50 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white">
+              <SelectTrigger id="currency" className="w-full h-11 sm:h-12 text-sm sm:text-base bg-slate-800/50 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white">
                 <SelectValue placeholder="Select a currency" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900/80 backdrop-blur-md border-slate-700 text-white rounded-xl">

@@ -51,8 +51,6 @@ function HomeContent() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
-
   return (
     <div
       className="min-h-screen w-full bg-slate-950"

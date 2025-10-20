@@ -136,7 +136,7 @@ export const PaymentLinkForm: React.FC = () => {
             <Button 
               type="submit" 
               disabled={isLoading || !isConnected}
-              className="w-full text-lg py-7 font-bold text-white rounded-2xl transition-all duration-300 ease-in-out bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/20 hover:shadow-purple-500/30 focus:ring-4 focus:ring-purple-500/50 disabled:bg-slate-700 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
+              className="w-full text-sm sm:text-base py-5 sm:py-6 font-semibold text-white rounded-xl transition-all duration-300 ease-in-out bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/20 hover:shadow-purple-500/30 focus:ring-4 focus:ring-purple-500/50 disabled:bg-slate-700 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

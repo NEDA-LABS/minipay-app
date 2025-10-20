@@ -282,27 +282,36 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
 
   // Fetch exchange rate
   const handleFetchRate = async () => {
-    if (!amount || !fiat) return;
+    if (!fiat) return;
 
     try {
+      // Use actual amount if available, otherwise use 1 for rate calculation
+      const amountForRate = amount && parseFloat(amount) > 0 ? parseFloat(amount) : 1;
+      
+      console.log('Fetching rate for:', { token, amount: amountForRate, fiat, chain: formatChainName(chain.name) });
+      
       const fetchedRate = await fetchTokenRate(
         token,
-        parseFloat(amount),
+        amountForRate,
         fiat,
         formatChainName(chain.name)
       );
+      
+      console.log('Rate fetched:', fetchedRate, `(${amountForRate} ${token} = ${fetchedRate} ${fiat})`);
+      
       setRate(fetchedRate);
       setError("");
     } catch (err) {
+      console.error('Rate fetch error:', err);
       setError("Failed to fetch rate");
     }
   };
 
-  // Clear rate when amount or currency changes
+  // Clear rate when currency changes (but not when amount changes, to avoid loops in fiat mode)
   useEffect(() => {
     setRate("");
     setError("");
-  }, [amount, fiat]);
+  }, [fiat]);
 
   // Execute normal transaction (without gas abstraction)
   const executeNormalTransaction = async (

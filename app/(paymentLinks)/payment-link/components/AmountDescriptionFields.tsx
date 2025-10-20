@@ -20,7 +20,7 @@ export const AmountDescriptionFields: React.FC<AmountDescriptionFieldsProps> = (
   return (
     <div className="space-y-6">
       <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
-        <Label htmlFor="amount" className="flex items-center text-white">
+        <Label htmlFor="amount" className="flex items-center text-sm sm:text-base text-white">
           Payment Amount
           <span className="ml-2 text-xs text-slate-400">
             {linkType === "OFF_RAMP" ? "(Required)" : "(Optional)"}
@@ -34,13 +34,13 @@ export const AmountDescriptionFields: React.FC<AmountDescriptionFieldsProps> = (
             value={formData.amount}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ amount: e.target.value })}
             placeholder="0.00"
-            className="pl-10 h-12 text-lg bg-slate-800/50 border-slate-700 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 text-white placeholder:text-slate-400 transition-colors duration-300"
+            className="pl-10 h-11 sm:h-12 text-sm sm:text-base bg-slate-800/50 border-slate-700 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 text-white placeholder:text-slate-400 transition-colors duration-300"
           />
         </div>
       </div>
 
       <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
-        <Label htmlFor="description" className="text-white">Description</Label>
+        <Label htmlFor="description" className="text-sm sm:text-base text-white">Description</Label>
         <Textarea
           id="description"
           value={formData.description}

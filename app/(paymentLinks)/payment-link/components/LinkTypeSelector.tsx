@@ -12,7 +12,7 @@ export const LinkTypeSelector: React.FC<LinkTypeSelectorProps> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <Label className="text-base font-semibold text-slate-300">Link Type</Label>
+      <Label className="text-sm sm:text-base font-semibold text-slate-300">Link Type</Label>
       <ToggleGroup
         type="single"
         value={linkType}
@@ -23,13 +23,13 @@ export const LinkTypeSelector: React.FC<LinkTypeSelectorProps> = ({
       >
         <ToggleGroupItem 
           value="NORMAL" 
-          className="py-3 text-base rounded-xl text-slate-400 transition-all hover:bg-slate-700/50 hover:text-slate-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg data-[state=on]:shadow-blue-600/20"
+          className="py-2.5 sm:py-3 text-sm sm:text-base rounded-xl text-slate-400 transition-all hover:bg-slate-700/50 hover:text-slate-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg data-[state=on]:shadow-blue-600/20"
         >
           Stablecoin Payment
         </ToggleGroupItem>
         <ToggleGroupItem 
           value="OFF_RAMP" 
-          className="py-3 text-base rounded-xl text-slate-400 transition-all hover:bg-slate-700/50 hover:text-slate-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg data-[state=on]:shadow-purple-600/20"
+          className="py-2.5 sm:py-3 text-sm sm:text-base rounded-xl text-slate-400 transition-all hover:bg-slate-700/50 hover:text-slate-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg data-[state=on]:shadow-purple-600/20"
         >
           Fiat Payment
         </ToggleGroupItem>

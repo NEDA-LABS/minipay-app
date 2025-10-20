@@ -132,7 +132,10 @@ const OffRampForm: React.FC<{
 
     if (hasValidInput) {
       const timer = setTimeout(() => {
-        handleFetchRate();
+        // Only refetch in crypto mode to avoid infinite loops in fiat mode
+        if (inputMode === 'crypto') {
+          handleFetchRate();
+        }
       }, 2000); // Longer debounce for input changes
 
       return () => clearTimeout(timer);
@@ -142,8 +145,16 @@ const OffRampForm: React.FC<{
   // Calculate crypto amount when in fiat mode
   useEffect(() => {
     if (inputMode === 'fiat' && fiatInput && rate && parseFloat(rate) > 0 && parseFloat(fiatInput) > 0) {
+      console.log('Fiat to Crypto conversion:', {
+        fiatInput,
+        rate,
+        rateType: 'TZS per USDC',
+        calculation: `${fiatInput} TZS / ${rate} = ${parseFloat(fiatInput) / parseFloat(rate)} USDC`
+      });
+      
       const netRate = parseFloat(rate) * 0.995; // 0.5% fee
       const requiredCrypto = parseFloat(fiatInput) / netRate;
+      console.log('Required USDC (with 0.5% fee):', requiredCrypto);
       setAmount(requiredCrypto.toFixed(6));
     } else if (inputMode === 'fiat' && !fiatInput) {
       setAmount('');
@@ -170,7 +181,9 @@ const OffRampForm: React.FC<{
         const received = parseFloat(amount) * 0.995 * parseFloat(rate);
         setFiatInput(received.toFixed(2));
       } 
-      
+    } else if (newMode === 'fiat') {
+      // If switching to fiat mode and no rate, fetch it
+      handleFetchRate();
     }
 
     setInputMode(newMode);
@@ -192,14 +205,16 @@ const OffRampForm: React.FC<{
     fetchFiatBalance();
   }, [balance, fiat, chain]);
 
-  // Calculate minimum amount
+  // Calculate minimum amount in fiat (1 USDC minimum)
   useEffect(() => {
-    const fetchFiatBalance = async () => {
-      const minimumAmount = await calculateFiatBalance("1", "USDC", fiat, chain);
-      setMinimumAmount(minimumAmount || null);
-    };
-    fetchFiatBalance();
-  }, [balance, fiat, chain]);
+    if (rate && parseFloat(rate) > 0) {
+      // 1 USDC minimum, converted to fiat
+      const minInFiat = (1 * parseFloat(rate)).toFixed(2);
+      setMinimumAmount(minInFiat);
+    } else {
+      setMinimumAmount(null);
+    }
+  }, [rate, fiat]);
   
 
   // Calculate available based on mode
@@ -535,13 +550,12 @@ const OffRampForm: React.FC<{
                       } else {
                         if (/^\d*\.?\d{0,2}$/.test(value) || value === '') {
                           setFiatInput(value);
-                          calculateTokenAmount(parseFloat(value));
-                          
+                          // The useEffect on line 143-149 will handle the conversion
                         }
                       }
                     }}
                     className="w-full px-4 py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
-                    placeholder={`Minimum ${inputMode === 'crypto' ? 1 : minimumAmount} ${inputMode === 'crypto' ? token.toUpperCase() : fiat}`}
+                    placeholder={`Minimum ${inputMode === 'crypto' ? '1' : (minimumAmount || '...')} ${inputMode === 'crypto' ? token.toUpperCase() : fiat}`}
                     min="0.01"
                     step="0.01"
                     required

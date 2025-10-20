@@ -9,9 +9,11 @@ import Image from "next/image";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import ShinyText from "./ShinyText";
 import CurrencyTicker from "@/ramps/payramp/RatesComponents";
+import HeroSectionSkeleton from "./HeroSectionSkeleton";
 
 const HeroSection = () => {
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [expandedFaqs, setExpandedFaqs] = useState<{ [key: number]: boolean }>(
     {}
   );
@@ -29,6 +31,15 @@ useEffect(() => {
   return () => window.removeEventListener('resize', checkHeight);
 }, []);
 
+useEffect(() => {
+  // Simulate loading for images and content
+  setMounted(true);
+  const timer = setTimeout(() => {
+    setIsLoading(false);
+  }, 800);
+  return () => clearTimeout(timer);
+}, []);
+
 const avatars = [
   { id: 1, color: 'bg-yellow-400', image: '/base.svg' },
   { id: 2, color: 'bg-blue-400', image: '/polygon.svg' },
@@ -38,6 +49,10 @@ const avatars = [
   { id: 6, color: 'bg-green-400', image: '/celo.svg' },
   { id: 7, color: 'bg-teal-400', image: '/optimism.svg' }
 ];
+
+  if (!mounted || isLoading) {
+    return <HeroSectionSkeleton />;
+  }
 
   return (
     <div className="h-[95vh] w-[100vw] mt-[-100px] pt-[100px] sm:mb-[120px] md:pt-[50px] bg-gradient-to-b from-[#0B0F24]  via-[#121738] from-[#0B0F24]">

@@ -99,12 +99,12 @@ This document outlines the root causes of high RAM consumption during developmen
 
 **Problem**: Configuring 8 chains with 30+ RPC endpoints creates unnecessary HTTP clients in dev.
 
-**Solution**: Use minimal chain configuration in development, full config in production.
+**Solution**: Keep all chains available but reduce fallback RPCs in development.
 
 **Implementation**:
 1. Detect environment in `app/providers.tsx`
-2. Use single chain (Base) with one RPC endpoint in dev
-3. Keep full multi-chain config for production
+2. Use all 8 chains with single RPC endpoint each in dev (8 connections)
+3. Keep full fallback config for production (32+ connections)
 
 ---
 
@@ -224,18 +224,24 @@ This document outlines the root causes of high RAM consumption during developmen
 
 ---
 
-#### Step 1.4: Optimize Wagmi Configuration
+#### Step 1.4: Optimize Wagmi Configuration ✅
 **Files to Modify**:
 - `app/providers.tsx`
 
 **Tasks**:
-- [ ] Add environment detection
-- [ ] Create dev-only config with single chain
-- [ ] Create production config with all chains
+- [x] Add environment detection
+- [x] Create dev config with all chains, single RPC each
+- [x] Create production config with all chains and fallback RPCs
 - [ ] Test wallet connections in both environments
-- [ ] Document configuration differences
+- [x] Document configuration differences
 
-**Estimated Time**: 1 hour
+**Implementation Details**:
+- **Development**: All 8 chains with single RPC endpoint each (8 chains, 8 RPCs)
+- **Production**: All 8 chains with 4-5 fallback RPCs each (8 chains, 32+ RPCs)
+- **Memory Reduction**: 75% fewer HTTP clients/watchers in development (32 → 8 connections)
+- **Impact**: All chains remain available for testing, but with reduced memory footprint
+
+**Estimated Time**: 1 hour → **Completed**
 
 ---
 

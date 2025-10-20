@@ -22,7 +22,20 @@
 
 ## Fixes Applied
 
-### Fix 1: Automatic Chain Synchronization
+### Fix 1: Initialize activeChain from Current Chain
+```typescript
+// Initialize activeChain from current chainId instead of hardcoding to base
+const [activeChain, setActiveChain] = useState<Chain>(() => {
+  return SUPPORTED_CHAINS.find(c => c.id === chainId) || base;
+});
+```
+
+**What this does:**
+- Initializes `activeChain` to match the wallet's current chain on component mount
+- Prevents showing wrong chain (e.g., Base) when wallet is on a different chain
+- Uses lazy initialization with a function to get chainId at the right time
+
+### Fix 2: Automatic Chain Synchronization
 ```typescript
 // Keep activeChain synced with actual wallet chainId
 useEffect(() => {
@@ -40,7 +53,7 @@ useEffect(() => {
 - Clears stale balances immediately on chain change
 - Ensures UI always reflects actual wallet chain
 
-### Fix 2: Balance Loading with Chain Validation
+### Fix 3: Balance Loading with Chain Validation
 ```typescript
 useEffect(() => {
   // Critical: Only fetch if activeChain matches actual wallet chainId
@@ -62,7 +75,7 @@ useEffect(() => {
 - Prevents fetching tokens for one chain while native balance is from another
 - Eliminates the race condition
 
-### Fix 3: Improved Chain Switching
+### Fix 4: Improved Chain Switching
 ```typescript
 const switchChain = async (chain: Chain) => {
   if (chain.id === chainId) {
@@ -98,7 +111,7 @@ const switchChain = async (chain: Chain) => {
 - Reverts to actual chain on error
 - Better error handling
 
-### Fix 4: Smart Native Balance Refetch
+### Fix 5: Smart Native Balance Refetch
 ```typescript
 // Refetch native balance when chain actually changes in wallet
 useEffect(() => {

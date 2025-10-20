@@ -91,6 +91,9 @@ export default function WalletEmbeddedContent() {
   const { sendTransaction } = useSendTransaction();
   const { exportWallet, user } = usePrivy();
   
+  const isPrivyEmbedded = wallets?.[0]?.walletClientType.toLowerCase() === 'privy';
+  const SUPPORTED_CHAINS = [base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet];
+  
   // Use useBalance hook for native balance - always tied to actual wallet chain
   const { data: nativeBalance, refetch: refetchNativeBalance, isLoading: isLoadingNative } = useBalance({
     address,
@@ -98,7 +101,10 @@ export default function WalletEmbeddedContent() {
   });
 
   const [activeTab, setActiveTab] = useState<'overview' | 'send' | 'receive' | 'settings'>('overview');
-  const [activeChain, setActiveChain] = useState<Chain>(base);
+  // Initialize activeChain from current chainId instead of hardcoding to base
+  const [activeChain, setActiveChain] = useState<Chain>(() => {
+    return SUPPORTED_CHAINS.find(c => c.id === chainId) || base;
+  });
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
@@ -127,9 +133,6 @@ export default function WalletEmbeddedContent() {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [privateKey, setPrivateKey] = useState('');
   const [isExporting, setIsExporting] = useState(false);
-
-  const isPrivyEmbedded = wallets?.[0]?.walletClientType.toLowerCase() === 'privy';
-  const SUPPORTED_CHAINS = [base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet];
 
   const [ensName, setEnsName] = useState<string | null>(null);
   

@@ -74,7 +74,7 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
         <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
           Select Network & Token
         </h2>
-        <p className="text-slate-400 text-[10px] sm:text-xs mt-1.5">Choose your blockchain network and token to cash-out</p>
+        {/* <p className="text-slate-400 text-[10px] sm:text-xs mt-1.5">Choose your blockchain network and token to cash-out</p> */}
       </div>
 
       {/* Network and Token Selection - Responsive Layout */}

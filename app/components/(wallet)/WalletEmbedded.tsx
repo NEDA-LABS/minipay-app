@@ -110,8 +110,14 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
   const { sendTransaction } = useSendTransaction();
   const { exportWallet, user } = usePrivy();
 
+  const isPrivyEmbedded = wallets?.[0]?.walletClientType.toLowerCase() === 'privy';
+  const SUPPORTED_CHAINS = [base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet];
+
   const [activeTab, setActiveTab] = useState<'overview' | 'send' | 'receive' | 'settings'>(defaultTab);
-  const [activeChain, setActiveChain] = useState<any>(base);
+  // Initialize activeChain from current chainId instead of hardcoding to base
+  const [activeChain, setActiveChain] = useState<any>(() => {
+    return SUPPORTED_CHAINS.find((c) => c.id === chainId) || base;
+  });
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
@@ -131,8 +137,6 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
   const [privateKey, setPrivateKey] = useState('');
   const [isExporting, setIsExporting] = useState(false);
 
-  const isPrivyEmbedded = wallets?.[0]?.walletClientType.toLowerCase() === 'privy';
-  const SUPPORTED_CHAINS = [base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet];
   const CHAINS_ICONS = {
     [base.id]: '/base.svg',
     [bsc.id]: '/bnb.svg',

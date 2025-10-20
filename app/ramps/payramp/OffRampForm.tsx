@@ -395,7 +395,7 @@ const OffRampForm: React.FC<{
           />
           <div>
             <h3 className="text-sm sm:text-base font-semibold text-white">
-              Convert {token.toUpperCase()} to Cash
+              {token.toUpperCase()}
             </h3>
             <p className="text-slate-400 text-[10px] sm:text-xs">
               {chain.name} • Balance: 
@@ -424,7 +424,7 @@ const OffRampForm: React.FC<{
           className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/60 border border-slate-600/60 rounded-lg text-slate-200 hover:bg-purple-500/20 hover:border-purple-500/60 hover:text-purple-300 transition-all duration-200 text-xs font-medium"
         >
           <ArrowLeft className="w-3 h-3" />
-          Change Network
+          Back
         </button>
       </div>
 
@@ -459,9 +459,9 @@ const OffRampForm: React.FC<{
           {/* Fiat Currency Display (pre-selected) */}
           {preselectedCurrency && fiat ? (
             <div>
-              <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100">
+              {/* <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100">
                 Fiat Currency
-              </label>
+              </label> */}
               <div className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
                 <span>
                   {currencies.find(c => c.code === fiat)?.name || fiat} ({fiat})

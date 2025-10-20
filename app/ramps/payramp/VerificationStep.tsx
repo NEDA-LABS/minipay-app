@@ -226,15 +226,6 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   console.log("isAccountVerified vvv",isAccountVerified) //debugg
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        {/* <span className="text-xs font-medium text-emerald-400 bg-gradient-to-r from-emerald-900/50 to-green-900/50 rounded-full px-3 py-1">
-          Step 2
-        </span> */}
-        <h3 className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-2">
-          Recipient Details
-        </h3>
-      </div>
-      
       <div className="space-y-4">
         <div>
           <label

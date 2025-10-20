@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WithdrawTab from "@/ramps/components/WithdrawTab";
-import WalletTab from "@/components/WalletTab";
+import WalletTab from "@/components/(wallet)/WalletTab";
 import InvoiceTab from "@/invoice/components/InvoiceTab";
 import PaymentLinkTab from "@/(paymentLinks)/payment-link/components/PaymentLinkTab";
 import BridgeTab from "@/accross-bridge/components/BridgeTab";
@@ -34,10 +34,10 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Tab Navigation */}
         <div className="flex justify-center mb-4 sm:mb-6 overflow-x-auto px-2 sm:px-0">
-          <TabsList className="inline-flex items-center bg-slate-900/90 backdrop-blur-sm rounded-full p-1 sm:p-1.5 border border-slate-700/50 shadow-lg">
+          <TabsList className="inline-flex items-center bg-slate-900/90 backdrop-blur-sm rounded-full p-1 sm:p-1.5 border border-slate-700/50 shadow-lg font-semibold">
           <TabsTrigger 
             value="withdraw" 
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
+            className="flex !font-bold items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
           >
             <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Withdraw</span>
@@ -45,7 +45,7 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
           
           <TabsTrigger 
             value="wallet" 
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
+            className="flex !font-bold items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
           >
             <Wallet className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Wallet</span>
@@ -53,7 +53,7 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
           
           <TabsTrigger 
             value="invoice" 
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
+            className="flex !font-bold items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
           >
             <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Invoice</span>
@@ -61,7 +61,7 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
           
           <TabsTrigger 
             value="request" 
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
+            className="flex !font-bold items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
           >
             <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Request</span>
@@ -69,7 +69,7 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
           
           <TabsTrigger 
             value="bridge" 
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-red-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
+            className="flex !font-bold items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-200 text-[10px] sm:text-sm font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-red-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
           >
             <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Bridge</span>

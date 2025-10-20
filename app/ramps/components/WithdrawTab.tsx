@@ -321,15 +321,15 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
       {/* Single Card with Progressive Steps */}
       <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden">
         <CardHeader className="pb-6 pt-7 px-7 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent">
-          <CardTitle className="text-xl text-white flex items-center gap-3 font-semibold">
+          <CardTitle className="text-lg text-white flex items-center gap-3 font-semibold">
             {/* <div className="p-2 bg-gradient-to-br from-purple-500/20 to-violet-500/20 rounded-xl border border-purple-500/30">
               <Globe className="w-5 h-5 text-purple-400" />
             </div> */}
             Withdraw to Fiat
           </CardTitle>
           <CardDescription className="text-slate-400 text-sm mt-2">
-            {currentStep === 1 && 'Choose your destination and blockchain network'}
-            {currentStep === 2 && 'Enter withdrawal details'}
+            {currentStep === 1 && ''}
+            {currentStep === 2 && ''}
           </CardDescription>
         </CardHeader>
         

@@ -3,13 +3,22 @@ import { useEffect, useState } from "react";
 import {usePrivy} from "@privy-io/react-auth";
 
 export function useHasSavedConsent() {
-  const {user, getAccessToken} = usePrivy();
+  const {user, getAccessToken, authenticated} = usePrivy();
   const [loading, setLoading] = useState(true);
   const [hasConsent, setHasConsent] = useState(false);
 
   useEffect(() => {
     let active = true;
     async function run() {
+      // Only check consent if user is authenticated
+      if (!authenticated) {
+        if (active) {
+          setHasConsent(false);
+          setLoading(false);
+        }
+        return;
+      }
+
       // First check client-side cookie immediately
       try {
         const raw = document.cookie
@@ -55,7 +64,7 @@ export function useHasSavedConsent() {
     return () => {
       active = false;
     };
-  }, [user, getAccessToken]);
+  }, [user, getAccessToken, authenticated]);
 
   return { loading, hasConsent };
 }

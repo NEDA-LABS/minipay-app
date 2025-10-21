@@ -15,7 +15,6 @@ import { Name } from "@coinbase/onchainkit/identity";
 import { getBasename } from "../utils/getBaseName";
 import { useUserSync } from "../hooks/useUserSync";
 import { useLinkAccount } from "@privy-io/react-auth";
-import AuthenticationModal from "./AuthenticationModal";
 import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3, Gift } from "lucide-react";
 import {
   DropdownMenu,
@@ -188,7 +187,6 @@ const WalletSelector = forwardRef<
     `;
 
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
-  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -232,7 +230,7 @@ const WalletSelector = forwardRef<
   const emailAddress = user?.email?.address;
   const isConnected = authenticated && (walletAddress || emailAddress);
 
-  // Show authentication modal only on / and once per session
+  // Automatically redirect authenticated users to dashboard from homepage
   useEffect(() => {
     if (
       ready &&
@@ -240,13 +238,10 @@ const WalletSelector = forwardRef<
       (walletAddress || emailAddress) &&
       pathname === "/"
     ) {
-      const hasShown = sessionStorage.getItem("hasShownAuthModal") === "true";
-      if (!hasShown) {
-        setShowAuthModal(true);
-        sessionStorage.setItem("hasShownAuthModal", "true");
-      }
+      // Redirect to dashboard automatically
+      router.push("/dashboard");
     }
-  }, [ready, authenticated, walletAddress, emailAddress, pathname]);
+  }, [ready, authenticated, walletAddress, emailAddress, pathname, router]);
 
   // Expose handleEmailLogin via ref
   const handleEmailLogin = useCallback(async () => {
@@ -258,13 +253,9 @@ const WalletSelector = forwardRef<
     setIsConnecting(true);
     try {
       await login();
-      // Trigger modal if on /
-      if (
-        pathname === "/" &&
-        sessionStorage.getItem("hasShownAuthModal") !== "true"
-      ) {
-        setShowAuthModal(true);
-        sessionStorage.setItem("hasShownAuthModal", "true");
+      // Redirect to dashboard after login
+      if (pathname === "/") {
+        router.push("/dashboard");
       }
     } catch (error: any) {
       console.error("Error with email login:", error);
@@ -272,7 +263,7 @@ const WalletSelector = forwardRef<
     } finally {
       setIsConnecting(false);
     }
-  }, [ready, login, pathname]);
+  }, [ready, login, pathname, router]);
 
   useImperativeHandle(ref, () => ({
     triggerLogin: handleEmailLogin,
@@ -512,16 +503,6 @@ const WalletSelector = forwardRef<
         <Button onClick={handleEmailLogin} disabled={isConnecting} className="bg-[#3E55E6] hover:bg-blue-700 rounded-lg text-white">
           {isConnecting ? "Connecting..." : "Sign in"}
         </Button>
-      )}
-
-      {showAuthModal && isConnected && (
-        <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4">
-          <AuthenticationModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            address={walletAddress || emailAddress || ""}
-          />
-        </div>
       )}
     </div>
   );

@@ -33,7 +33,7 @@ function readConsent(): Prefs | null {
 }
 
 export function CookieConsentModal() {
-  const { user, getAccessToken } = usePrivy();
+  const { user, getAccessToken, authenticated } = usePrivy();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -48,8 +48,9 @@ export function CookieConsentModal() {
 
   useEffect(() => {
     if (suppress) return;
-    if (!loading && !hasConsent) setOpen(true);
-  }, [suppress, loading, hasConsent]);
+    // Only show modal if user is authenticated and hasn't given consent yet
+    if (authenticated && !loading && !hasConsent) setOpen(true);
+  }, [suppress, loading, hasConsent, authenticated]);
 
   async function save(preferences: Prefs) {
     // optimistic local write to avoid flicker

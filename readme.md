@@ -327,7 +327,7 @@ npm start
 npm run lint
 ```
 
-### Force Build (for Netlify/CI)
+### Force Build (for CI/CD)
 
 ```bash
 npm run force-build

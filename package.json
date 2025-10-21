@@ -118,7 +118,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@netlify/plugin-nextjs": "^5.10.6",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20",
@@ -131,11 +130,20 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
-    "netlify-cli": "^21.2.1",
     "pino-pretty": "^13.0.0",
     "postcss": "^8.5.4",
     "prisma": "^6.14.0",
     "tailwindcss": "^4.1.8",
     "typescript": "^5"
+  },
+  "overrides": {
+    "form-data": "^4.0.1",
+    "ws": "^8.18.0",
+    "semver": "^7.6.0",
+    "tar-fs": "^3.1.1",
+    "tough-cookie": "^5.0.0",
+    "cookie": "^1.0.2",
+    "tmp": "^0.2.3",
+    "on-headers": "^1.1.0"
   }
 }

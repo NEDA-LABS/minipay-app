@@ -218,7 +218,6 @@ Features:
 ├── ESLint error bypassing for builds
 ├── Webpack polyfills for crypto libraries
 ├── Package transpilation for Web3 libraries
-├── Netlify deployment optimization
 └── SVG and static asset handling
 ```
 
@@ -230,11 +229,11 @@ Features:
 
 ### Deployment Strategy
 
-**Netlify Deployment**
-- Static site generation
+**Next.js Deployment**
+- Static site generation support
 - Serverless function deployment
 - Edge computing optimization
-- CDN distribution
+- Production-ready build system
 
 **Docker Support**
 - Multi-stage build configuration

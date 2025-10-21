@@ -40,7 +40,6 @@ const nextConfig = {
   // Use standard Next.js settings
   poweredByHeader: false,
   reactStrictMode: false,
-  // Optimize for Netlify deployment
   trailingSlash: false,
   // Ensure proper handling of SVG and other static assets
   images: {

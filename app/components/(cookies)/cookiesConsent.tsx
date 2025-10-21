@@ -48,6 +48,14 @@ export function CookieConsentModal() {
 
   useEffect(() => {
     if (suppress) return;
+    
+    // Check for client-side cookie immediately to prevent flashing
+    const existingConsent = readConsent();
+    if (existingConsent) {
+      setOpen(false);
+      return;
+    }
+    
     // Only show modal if user is authenticated and hasn't given consent yet
     if (authenticated && !loading && !hasConsent) setOpen(true);
   }, [suppress, loading, hasConsent, authenticated]);

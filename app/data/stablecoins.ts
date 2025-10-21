@@ -46,14 +46,13 @@ export const stablecoins = [
       534352:6, // Scroll Mainnet
     },
     addresses: {
-      8453:   '0xF1e92B575dcAA24fFA1B3334499a8F3B6E2F9Eb2', // Base Mainnet
       42161: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // Arbitrum One
       137:   '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', // Polygon Mainnet
       42220: '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e', // Celo Mainnet
       56:    '0x55d398326f99059fF775485246999027B3197955', // BNB Smart Chain
       10:    '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // Optimism
       534352:'0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df', // Scroll Mainnet
-      1135: '0x05d032ac25d322df992303dca074ee7392c117b9', // Lisk Mainnet 
+      1135: '0x05D032ac25d322df992303dCa074EE7392C117b9', // Lisk Mainnet 
     },
     issuer: 'Tether',
     description: 'USD-backed stablecoin by Tether',

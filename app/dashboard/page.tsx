@@ -149,7 +149,7 @@ export default function DashboardContent() {
       setIsBalanceLoading(true);
       try {
         const baseStablecoins = stablecoins.filter((coin) =>
-          coin.chainIds.includes(8453)
+          coin.chainIds.includes(8453) && coin.addresses[8453]
         );
         const calls = baseStablecoins.flatMap((coin) => [
           {

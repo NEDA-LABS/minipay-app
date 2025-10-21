@@ -42,22 +42,40 @@ export function CookieConsentModal() {
     analytics: false,
   });
   const { loading, hasConsent } = useHasSavedConsent();
+  const [checkedConsent, setCheckedConsent] = useState(false);
 
   // Show the modal if no consent cookie is present (except on /legal pages)
   const suppress = useMemo(() => pathname?.startsWith("/legal"), [pathname]);
 
   useEffect(() => {
-    if (suppress) return;
-    
-    // Check for client-side cookie immediately to prevent flashing
-    const existingConsent = readConsent();
-    if (existingConsent) {
-      setOpen(false);
+    if (suppress) {
+      setCheckedConsent(true);
       return;
     }
     
-    // Only show modal if user is authenticated and hasn't given consent yet
-    if (authenticated && !loading && !hasConsent) setOpen(true);
+    // Don't show anything while still loading
+    if (loading) {
+      setCheckedConsent(false);
+      return;
+    }
+    
+    // Check for client-side cookie first (synchronous check)
+    const existingConsent = readConsent();
+    if (existingConsent) {
+      setOpen(false);
+      setCheckedConsent(true);
+      return;
+    }
+    
+    // Mark as checked
+    setCheckedConsent(true);
+    
+    // Only show modal if user is authenticated, loading is done, and no consent found
+    if (authenticated && !hasConsent) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
   }, [suppress, loading, hasConsent, authenticated]);
 
   async function save(preferences: Prefs) {
@@ -68,6 +86,10 @@ export function CookieConsentModal() {
     const cookieValue = JSON.stringify({ ...preferences, v: "v1" });
     const sixMonths = 60 * 60 * 24 * 30 * 6;
     document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(cookieValue)}; path=/; max-age=${sixMonths}; SameSite=Lax; Secure`;
+    
+    // Close modal immediately
+    setOpen(false);
+    setCheckedConsent(true);
     
     try {
       const tk = await getAccessToken();
@@ -81,8 +103,6 @@ export function CookieConsentModal() {
       });
     } catch (e) {
       console.error("Failed to persist cookie consent", e);
-    } finally {
-      setOpen(false);
     }
   }
 
@@ -102,7 +122,8 @@ export function CookieConsentModal() {
     setExpanded(true);
   };
 
-  if (!open) return null;
+  // Don't render until we've checked consent status
+  if (!checkedConsent || !open) return null;
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">

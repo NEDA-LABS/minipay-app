@@ -238,8 +238,11 @@ const WalletSelector = forwardRef<
       (walletAddress || emailAddress) &&
       pathname === "/"
     ) {
-      // Redirect to dashboard automatically
-      router.push("/dashboard");
+      // Small delay to ensure auth state is fully settled
+      const timer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [ready, authenticated, walletAddress, emailAddress, pathname, router]);
 

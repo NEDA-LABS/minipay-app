@@ -83,7 +83,7 @@ type Transaction = {
 };
 
 export default function DashboardContent() {
-  const { user, authenticated } = usePrivy();
+  const { user, authenticated, ready } = usePrivy();
   const walletAddress = user?.wallet?.address;
   const walletType = user?.wallet?.walletClientType;
 
@@ -96,6 +96,7 @@ export default function DashboardContent() {
   const [swapFromSymbol, setSwapFromSymbol] = useState<string>("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isTransactionLoading, setIsTransactionLoading] = useState(true);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   // const { state, toggleSidebar } = useSidebar();
   // const isCollapsed = state === "collapsed";
   const [metrics, setMetrics] = useState({
@@ -121,29 +122,29 @@ export default function DashboardContent() {
   // State for ENS name
   const [ensName, setEnsName] = useState<string | null>(null);
 
-  // Resolve ENS name
+  // Resolve ENS name (deferred - not critical for initial load)
   useEffect(() => {
-    const resolveEnsName = async () => {
-      if (!walletAddress) return;
-      
+    if (!ready || !authenticated || !walletAddress) return;
+
+    // Defer ENS resolution by 1 second to prioritize critical data
+    const timer = setTimeout(async () => {
       try {
         const name = await resolveName({ address: walletAddress as `0x${string}` });
-        console.log("Resolved ENS name:", name); //debugg
         setEnsName(name);
       } catch (error) {
-        console.error("Error resolving ENS name:", error); //debugg
+        console.error("Error resolving ENS name:", error);
         setEnsName(null);
       }
-    };
+    }, 1000);
 
-    resolveEnsName();
-  }, [walletAddress]);
+    return () => clearTimeout(timer);
+  }, [ready, authenticated, walletAddress]);
 
 
 
   // Fetch balances when walletAddress changes
   useEffect(() => {
-    if (!walletAddress) return;
+    if (!ready || !authenticated || !walletAddress) return;
 
     const fetchBalances = async () => {
       setIsBalanceLoading(true);
@@ -212,11 +213,11 @@ export default function DashboardContent() {
     };
 
     fetchBalances();
-  }, [walletAddress, multicallContract]);
+  }, [ready, authenticated, walletAddress, multicallContract]);
 
   // Fetch transactions and set initial selected stablecoin
   useEffect(() => {
-    if (!walletAddress) return;
+    if (!ready || !authenticated || !walletAddress) return;
 
     const fetchTransactions = async () => {
       setIsTransactionLoading(true);
@@ -260,7 +261,7 @@ export default function DashboardContent() {
     };
 
     fetchTransactions();
-  }, [walletAddress]);
+  }, [ready, authenticated, walletAddress]);
 
   // Calculate metrics based on selected stablecoin
   useEffect(() => {
@@ -343,6 +344,27 @@ export default function DashboardContent() {
         return "bg-gradient-to-br from-indigo-500 to-violet-600";
     }
   };
+
+  // Set page as loaded once authenticated and ready
+  useEffect(() => {
+    if (ready && authenticated) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => setIsPageLoading(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [ready, authenticated]);
+
+  // Show loading state while Privy is initializing or authenticating
+  if (!ready || isPageLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-950">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-4"></div>
+          <p className="text-white text-lg">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2 w-full">

@@ -30,6 +30,12 @@ model User {
 
   // IDRX onboarding (one-to-one)
   idrxOnboarded     IdrxOnboarded?
+
+  // Contacts - contacts owned by this user (contacts they created)
+  ownedContacts     Contact[]  @relation("OwnedContacts")
+  
+  // Contacts that link to this user (other users saved this user as a contact)
+  linkedAsContact   Contact[]  @relation("LinkedContacts")
 }
 
 model Referral {
@@ -393,5 +399,113 @@ model AdminSettings {
   lastModifiedBy        String?  // Admin who last modified
   
   @@map("admin_settings")
+}
+
+// ============================================================================
+// CONTACTS MANAGEMENT SYSTEM
+// ============================================================================
+
+// Contact - Save recipient details for quick transactions
+model Contact {
+  id                String                 @id @default(uuid())
+  userId            String                 // Contact owner (who created this contact)
+  user              User                   @relation("OwnedContacts", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Optional link to existing NedaPay user (recipient)
+  linkedUserId      String?                // If recipient is a NedaPay user
+  linkedUser        User?                  @relation("LinkedContacts", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  
+  // Basic Information
+  name              String                 // Display name
+  nickname          String?                // Optional nickname
+  country           String?                // ISO country code (TZ, KE, etc) - optional
+  notes             String?                // User notes
+  isNedaPayUser     Boolean                @default(false) // Quick flag for linked users
+  
+  // Relations
+  bankAccounts      ContactBankAccount[]
+  phoneNumbers      ContactPhoneNumber[]
+  cryptoAddresses   ContactCryptoAddress[]
+  
+  // Metadata
+  favorite          Boolean                @default(false)
+  lastUsed          DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  
+  @@index([userId])
+  @@index([userId, name])
+  @@index([userId, favorite])
+  @@index([userId, lastUsed])
+  @@index([linkedUserId])
+}
+
+// ContactBankAccount - Bank account details for a contact
+model ContactBankAccount {
+  id                String    @id @default(uuid())
+  contactId         String
+  contact           Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  
+  // Bank Account Details
+  accountNumber     String
+  accountName       String    // Account holder name
+  bankName          String    // Institution name
+  bankCode          String?   // Bank identifier/code
+  currency          String    @default("TZS") // Account currency
+  
+  // Metadata
+  isPrimary         Boolean   @default(false) // Primary account for this contact
+  isVerified        Boolean   @default(false) // Has been used successfully
+  label             String?   // User-defined label (e.g., "Salary Account")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([contactId])
+  @@index([contactId, isPrimary])
+}
+
+// ContactPhoneNumber - Phone number details for a contact
+model ContactPhoneNumber {
+  id                String    @id @default(uuid())
+  contactId         String
+  contact           Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  
+  // Phone Number Details
+  phoneNumber       String    // E.164 format (e.g., +255712345678)
+  provider          String    // MNO (Mobile Network Operator) name
+  country           String    // ISO country code
+  
+  // Metadata
+  isPrimary         Boolean   @default(false)
+  isVerified        Boolean   @default(false)
+  label             String?   // User-defined label (e.g., "Work Phone")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([contactId])
+  @@index([contactId, isPrimary])
+}
+
+// ContactCryptoAddress - Cryptocurrency address details for a contact
+model ContactCryptoAddress {
+  id                String    @id @default(uuid())
+  contactId         String
+  contact           Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  
+  // Crypto Address Details
+  address           String    // Wallet address (0x...)
+  ensName           String?   // ENS name if available
+  chainId           Int?      // Preferred chain ID
+  
+  // Metadata
+  isPrimary         Boolean   @default(false)
+  isVerified        Boolean   @default(false)
+  label             String?   // User-defined label (e.g., "Hardware Wallet")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([contactId])
+  @@index([contactId, isPrimary])
+  @@index([address])
 }
 

@@ -15,7 +15,7 @@ import { Name } from "@coinbase/onchainkit/identity";
 import { getBasename } from "../utils/getBaseName";
 import { useUserSync } from "../hooks/useUserSync";
 import { useLinkAccount } from "@privy-io/react-auth";
-import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3, Gift } from "lucide-react";
+import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3, Gift, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ interface BasenameDisplayProps {
   basenameClassName?: string;
   addressClassName?: string;
   isMobile?: boolean;
+  username?: string | null;
 }
 
 // Reusable BasenameDisplay Component
@@ -40,6 +41,7 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
   basenameClassName = "",
   addressClassName = "",
   isMobile = false,
+  username = null,
 }) => {
   const [baseName, setBaseName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -116,6 +118,7 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
     );
   }
 
+  // Priority: ENS name → username → address
   if (baseName) {
     return (
       <span
@@ -126,7 +129,18 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
     );
   }
 
-  // Fallback to Name component from OnchainKit
+  // Fallback to username if available
+  if (username) {
+    return (
+      <span
+        className={`text-[8px] sm:text-sm text-white font-bold ${basenameClassName}`}
+      >
+        {username}
+      </span>
+    );
+  }
+
+  // Final fallback to Name component from OnchainKit (shows address)
   return (
     <div className={`${addressClassName}`}>
       <Name address={address as `0x${string}`} chain={base} />
@@ -188,6 +202,7 @@ const WalletSelector = forwardRef<
 
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -209,6 +224,7 @@ const WalletSelector = forwardRef<
     logout,
     ready,
     login,
+    getAccessToken,
   } = usePrivy();
 
   // Link account hook
@@ -229,6 +245,28 @@ const WalletSelector = forwardRef<
   
   const emailAddress = user?.email?.address;
   const isConnected = authenticated && (walletAddress || emailAddress);
+
+  // Fetch username from settings
+  useEffect(() => {
+    if (!authenticated) return;
+    
+    const fetchUsername = async () => {
+      try {
+        const token = await getAccessToken();
+        const res = await fetch('/api/settings', { 
+          headers: { Authorization: `Bearer ${token}` } 
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsername(data.settings?.businessName || null);
+        }
+      } catch (error) {
+        console.error('Error fetching username:', error);
+      }
+    };
+    
+    fetchUsername();
+  }, [authenticated, getAccessToken]);
 
   // Automatically redirect authenticated users to dashboard from homepage
   useEffect(() => {
@@ -428,6 +466,7 @@ const WalletSelector = forwardRef<
                         basenameClassName="basename-display"
                         addressClassName="address-display !text-white"
                         isMobile={true}
+                        username={username}
                       />
                     </div>
                   ) : emailAddress ? (
@@ -460,6 +499,7 @@ const WalletSelector = forwardRef<
                     address={walletAddress}
                     basenameClassName="text-xs"
                     isMobile={false}
+                    username={username}
                   />
                 ) : emailAddress ? (
                   emailAddress
@@ -484,6 +524,10 @@ const WalletSelector = forwardRef<
             <DropdownMenuItem onClick={() => router.push('/referrals')} className="cursor-pointer hover:bg-slate-800">
               <Gift className="mr-2 h-4 w-4" />
               <span>Referrals</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/contacts')} className="cursor-pointer hover:bg-slate-800">
+              <Users className="mr-2 h-4 w-4" />
+              <span>Contacts</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/support')} className="cursor-pointer hover:bg-slate-800">
               <HelpCircle className="mr-2 h-4 w-4" />

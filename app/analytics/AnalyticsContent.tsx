@@ -202,17 +202,34 @@ export default function AnalyticsContent() {
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-            {/* Compact Header Card */}
-            <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-xl p-3 sm:p-4 shadow-xl border border-slate-700/60 mb-3 sm:mb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                <div>
-                  {/* <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    Analytics Dashboard
-                  </h1>
-                  <p className="text-slate-400 text-xs mt-0.5">
-                    Comprehensive insights and reports
-                  </p> */}
+          <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+            {/* Single Unified Card - Mobile First */}
+            <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-700/60">
+              
+              {/* Header Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-5 pb-4 border-b border-slate-700/50">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1">
+                  <CurrencyFilter
+                    currencies={[...new Set(transactions.map((tx) => tx.currency))].filter(Boolean)}
+                    selected={selectedCurrency}
+                    onChange={setSelectedCurrency}
+                  />
+                  <div className="inline-flex rounded-lg border border-slate-700/50 bg-slate-900/50 p-0.5">
+                    {["7d", "30d", "90d", "all"].map((range) => (
+                      <button
+                        key={range}
+                        type="button"
+                        onClick={() => setDateRange(range)}
+                        className={`px-2 sm:px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          dateRange === range
+                            ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg"
+                            : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                        }`}
+                      >
+                        {range === "7d" ? "7D" : range === "30d" ? "30D" : range === "90d" ? "90D" : "All"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <button
                   className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-lg px-3 py-1.5 text-white text-xs font-semibold transition-all duration-200 disabled:opacity-50 shadow-lg whitespace-nowrap"
@@ -222,34 +239,10 @@ export default function AnalyticsContent() {
                   Export CSV
                 </button>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <CurrencyFilter
-                  currencies={[...new Set(transactions.map((tx) => tx.currency))].filter(Boolean)}
-                  selected={selectedCurrency}
-                  onChange={setSelectedCurrency}
-                />
-                <div className="inline-flex rounded-lg border border-slate-700/50 bg-slate-900/50 p-0.5">
-                  {["7d", "30d", "90d", "all"].map((range) => (
-                    <button
-                      key={range}
-                      type="button"
-                      onClick={() => setDateRange(range)}
-                      className={`px-2 sm:px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                        dateRange === range
-                          ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg"
-                          : "text-slate-300 hover:text-white hover:bg-slate-800/50"
-                      }`}
-                    >
-                      {range === "7d" ? "7D" : range === "30d" ? "30D" : range === "90d" ? "90D" : "All"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            {/* Stats cards */}
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-xl p-2 sm:p-3 shadow-xl border border-slate-700/60 hover:border-purple-500/50 transition-all duration-300">
+              {/* Stats cards */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-5">
+              <div className="bg-slate-800/40 rounded-xl p-2 sm:p-3 border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300">
                 <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                   <h3 className="text-[9px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-tight">
                     Total Revenue
@@ -320,7 +313,7 @@ export default function AnalyticsContent() {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-xl p-2 sm:p-3 shadow-xl border border-slate-700/60 hover:border-blue-500/50 transition-all duration-300">
+              <div className="bg-slate-800/40 rounded-xl p-2 sm:p-3 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300">
                 <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                   <h3 className="text-[9px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-tight">
                     Transactions
@@ -362,7 +355,7 @@ export default function AnalyticsContent() {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-xl p-2 sm:p-3 shadow-xl border border-slate-700/60 hover:border-emerald-500/50 transition-all duration-300">
+              <div className="bg-slate-800/40 rounded-xl p-2 sm:p-3 border border-slate-700/50 hover:border-emerald-500/50 transition-all duration-300">
                 <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                   <h3 className="text-[9px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-tight">
                     Average Transaction
@@ -442,13 +435,13 @@ export default function AnalyticsContent() {
               </div>
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-              <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-700/60 hover:border-purple-500/50 transition-all duration-300">
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                  Revenue Over Time
-                </h3>
+              {/* Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-5">
+                <div className="bg-slate-800/40 rounded-xl p-3 sm:p-4 border border-slate-700/50">
+                  <h3 className="text-xs sm:text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                    Revenue Over Time
+                  </h3>
                 {isTransactionLoading ? (
                   <div className="h-64 flex items-center justify-center">
                     <div className="flex items-center gap-2">
@@ -463,59 +456,12 @@ export default function AnalyticsContent() {
                 )}
               </div>
 
-              <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-700/60 hover:border-blue-500/50 transition-all duration-300">
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  Transactions Per Day
-                </h3>
-                {isTransactionLoading ? (
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-                      <p className="text-sm text-slate-400">Loading chart...</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-64">
-                    <TransactionsBarChart data={transactionsData} />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-              <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-700/60 hover:border-emerald-500/50 transition-all duration-300">
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  Currency Distribution
-                </h3>
-                {isTransactionLoading ? (
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-                      <p className="text-sm text-slate-400">Loading chart...</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-64">
-                    <CurrencyDoughnutChart data={currencyDistributionData} />
-                  </div>
-                )}
-              </div>
-
-              <div className="col-span-1 lg:col-span-2 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-700/60 hover:border-cyan-500/50 transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                <div className="bg-slate-800/40 rounded-xl p-3 sm:p-4 border border-slate-700/50">
+                  <h3 className="text-xs sm:text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
                     Transaction History
                   </h3>
-                  <a href="/all-transactions" className="flex items-center gap-1 text-xs sm:text-sm text-cyan-400 hover:text-cyan-300 transition-colors font-medium">
-                    <span>View All</span>
-                    <ArrowRight size={16} />
-                  </a>
-                </div>
-                
-                <div className="overflow-x-auto rounded-xl border border-slate-700/50">
+                  <div className="overflow-x-auto rounded-lg border border-slate-700/50 max-h-64">
                   <table className="min-w-full divide-y divide-slate-700/50">
                     <thead className="bg-slate-800/50">
                       <tr>
@@ -577,13 +523,10 @@ export default function AnalyticsContent() {
                       )}
                     </tbody>
                   </table>
-                  <div className="mt-4 px-3 sm:px-6 py-3 bg-slate-800/30 rounded-b-xl">
-                    <p className="text-xs sm:text-sm text-slate-400">
-                      Showing <span className="font-semibold text-white">{filteredTxs.length}</span> of <span className="font-semibold text-white">{transactions.length}</span> transactions
-                    </p>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         )}

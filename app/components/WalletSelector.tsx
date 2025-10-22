@@ -135,7 +135,7 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
       <span
         className={`text-[8px] sm:text-sm text-white font-bold ${basenameClassName}`}
       >
-        {username}
+        @{username}
       </span>
     );
   }

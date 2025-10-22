@@ -462,7 +462,7 @@ const OffRampForm: React.FC<{
               {/* <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100">
                 Fiat Currency
               </label> */}
-              <div className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
+              <div className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
                 <span>
                   {currencies.find(c => c.code === fiat)?.name || fiat} ({fiat})
                 </span>
@@ -491,7 +491,7 @@ const OffRampForm: React.FC<{
                   setAmount('');
                   setFiatInput('');
                 }}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
                 required
               >
                 <option value="" className="bg-gray-100 text-gray-500">Select Currency</option>
@@ -554,7 +554,7 @@ const OffRampForm: React.FC<{
                         }
                       }
                     }}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
                     placeholder={`Minimum ${inputMode === 'crypto' ? '1' : (minimumAmount || '...')} ${inputMode === 'crypto' ? token.toUpperCase() : fiat}`}
                     min="0.01"
                     step="0.01"
@@ -735,7 +735,7 @@ const OffRampForm: React.FC<{
                 id="memo"
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
                 rows={3}
                 placeholder="Add a memo for this transaction..."
                 required

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, ChevronDown, UserPlus } from 'lucide-react';
+import ContactPicker from './ContactPicker';
+import { usePrivy } from '@privy-io/react-auth';
 
 interface VerificationStepProps {
   institution: string;
@@ -46,6 +48,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   fetchInstitutions,
   fiat
 }) => {
+  const { getAccessToken } = usePrivy();
   const isMobileNetwork = institution && institutions.find(i => i.code === institution)?.type === "mobile_money";
 
   
@@ -54,6 +57,11 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [inputError, setInputError] = useState('');
+  
+  // Contact saving states
+  const [loadedFromContact, setLoadedFromContact] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [isSavingContact, setIsSavingContact] = useState(false);
 
   // Format phone number as user types with country-specific formatting
   const formatPhoneNumber = (value: string, countryCode: string) => {
@@ -144,12 +152,142 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
     if (validationError) {
       setInputError(validationError);
     }
+    
+    // Mark as manually entered
+    setLoadedFromContact(false);
   };
 
   const handleRegularAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAccountIdentifier(e.target.value);
     setInputError('');
+    // Mark as manually entered
+    setLoadedFromContact(false);
   };
+
+  const handleAccountNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAccountName(e.target.value);
+    // Mark as manually entered
+    setLoadedFromContact(false);
+  };
+
+  // Handle contact selection for mobile numbers
+  const handleContactSelectPhone = (data: { accountName: string; phoneNumber?: string }) => {
+    if (data.phoneNumber) {
+      // Set the phone number (already stripped of country code by ContactPicker)
+      const formatted = formatPhoneNumber(data.phoneNumber, selectedCountryCode);
+      setPhoneNumber(formatted);
+      
+      // Update account identifier with full number
+      const cleanDigits = data.phoneNumber.replace(/\D/g, '');
+      const fullNumber = selectedCountryCode + cleanDigits;
+      setAccountIdentifier(fullNumber);
+      
+      // Validate
+      const validationError = validatePhoneNumber(cleanDigits, selectedCountryCode);
+      setInputError(validationError || '');
+    }
+    
+    if (data.accountName) {
+      setAccountName(data.accountName);
+    }
+    
+    // Mark that this data came from contacts
+    setLoadedFromContact(true);
+  };
+
+  // Handle contact selection for bank accounts
+  const handleContactSelectBank = (data: { accountName: string; accountNumber?: string; bankDetails?: any }) => {
+    if (data.accountNumber) {
+      setAccountIdentifier(data.accountNumber);
+      setInputError('');
+    }
+    
+    if (data.accountName) {
+      setAccountName(data.accountName);
+    }
+    
+    // Mark that this data came from contacts
+    setLoadedFromContact(true);
+  };
+
+  // Save to contacts function
+  const handleSaveToContacts = async () => {
+    setIsSavingContact(true);
+    try {
+      const token = await getAccessToken();
+      const institutionName = institutions.find(i => i.code === institution)?.name || '';
+      
+      // Map currency to country code
+      const currencyToCountry: Record<string, string> = {
+        'TZS': 'TZ',
+        'KES': 'KE',
+        'UGX': 'UG',
+        'NGN': 'NG',
+        'GHS': 'GH',
+        'IDR': 'ID',
+      };
+      
+      const contactData: any = {
+        name: accountName,
+        country: currencyToCountry[fiat] || 'TZ',
+      };
+
+      if (isMobileNetwork) {
+        // Save phone number with provider (institution name)
+        contactData.phoneNumbers = [{
+          phoneNumber: accountIdentifier,
+          provider: institutionName,
+          country: currencyToCountry[fiat] || 'TZ',
+          isPrimary: true,
+        }];
+      } else {
+        // Save bank account
+        contactData.bankAccounts = [{
+          bankName: institutionName,
+          accountNumber: accountIdentifier,
+          accountName: accountName,
+          isPrimary: true,
+        }];
+      }
+
+      const res = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(contactData),
+      });
+
+      if (res.ok) {
+        setShowSaveDialog(false);
+        setLoadedFromContact(true); // Prevent showing dialog again
+        // Could show a success toast here
+      } else {
+        console.error('Failed to save contact');
+      }
+    } catch (error) {
+      console.error('Error saving contact:', error);
+    } finally {
+      setIsSavingContact(false);
+    }
+  };
+
+  // Wrapper for verification that shows save dialog
+  const handleVerifyWithDialog = () => {
+    handleVerifyAccount();
+  };
+
+  // Watch for verification success to show save dialog
+  useEffect(() => {
+    if (isAccountVerified && !loadedFromContact && accountName && accountIdentifier && institution) {
+      // Small delay to ensure verification UI updates first
+      const timer = setTimeout(() => {
+        setShowSaveDialog(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAccountVerified, loadedFromContact, accountName, accountIdentifier, institution]);
 
   // Update country code and rebuild full number
   const handleCountryCodeChange = (newCode: string) => {
@@ -220,6 +358,8 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
     setAccountIdentifier("");
     setPhoneNumber('');
     setInputError('');
+    setLoadedFromContact(false);
+    setShowSaveDialog(false);
   };
 
   const selectedCountry = COUNTRY_CODES.find(c => c.code === selectedCountryCode);
@@ -240,7 +380,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
             value={institution}
             onChange={handleInstitutionChange}
             onFocus={fetchInstitutions}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
             required
             disabled={isAccountVerified}
           >
@@ -267,12 +407,19 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         </div>
         
         <div>
-          <label
-            htmlFor="accountNumber"
-            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
-          >
-            {isMobileNetwork ? "Mobile Number" : "Bank Account Number"}
-          </label>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <label
+              htmlFor="accountNumber"
+              className="block text-xs sm:text-sm font-semibold text-gray-100"
+            >
+              {isMobileNetwork ? "Mobile Number" : "Bank Account Number"}
+            </label>
+            <ContactPicker
+              mode={isMobileNetwork ? 'phone' : 'bank'}
+              onSelectContact={isMobileNetwork ? handleContactSelectPhone : handleContactSelectBank}
+              disabled={isAccountVerified}
+            />
+          </div>
 
           {isMobileNetwork ? (
             <div className="space-y-2">
@@ -316,7 +463,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                   id="accountNumber"
                   value={phoneNumber}
                   onChange={handlePhoneNumberChange}
-                  className={`flex-1 w-50 md:w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-r-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500 ${
+                  className={`flex-1 w-50 md:w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-r-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500 ${
                     inputError ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
                   placeholder="123 456 789"
@@ -354,7 +501,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                 id="accountNumber"
                 value={accountIdentifier}
                 onChange={handleRegularAccountChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
                 placeholder="1234567890"
                 required
                 disabled={isAccountVerified}
@@ -377,10 +524,8 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
             type="text"
             id="accountName"
             value={accountName}
-            onChange={(e) => {
-              setAccountName(e.target.value);
-            }}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+            onChange={handleAccountNameChange}
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
             placeholder="As it appears on your account"
             required
             disabled={isAccountVerified}
@@ -392,7 +537,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         {!isAccountVerified ? (
           <button
             type="button"
-            onClick={handleVerifyAccount}
+            onClick={handleVerifyWithDialog}
             disabled={
               isLoading ||
               !institution ||
@@ -400,7 +545,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
               !accountName
               // (isMobileNetwork && inputError)
             }
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transform hover:-translate-y-0.5 flex items-center justify-center"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-base transform hover:-translate-y-0.5 flex items-center justify-center"
           >
             {isLoading ? (
               <>
@@ -430,13 +575,86 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         {isAccountVerified && (
           <button
             type="button"
-            onClick={() => setIsAccountVerified(false)}
+            onClick={() => {
+              setIsAccountVerified(false);
+              setShowSaveDialog(false);
+            }}
             className="w-full text-sm text-gray-100 hover:text-gray-300 underline transition-colors duration-200"
           >
             Edit account details
           </button>
         )}
       </div>
+
+      {/* Save to Contacts Dialog */}
+      {showSaveDialog && isAccountVerified && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-purple-900/30 rounded-lg">
+                <UserPlus className="w-6 h-6 text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  Save to Contacts?
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Would you like to save these details to your contacts for faster transactions next time?
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Name:</span>
+                <span className="text-white font-medium">{accountName}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">
+                  {isMobileNetwork ? 'Phone:' : 'Account:'}
+                </span>
+                <span className="text-white font-medium font-mono text-xs">
+                  {accountIdentifier}
+                </span>
+              </div>
+              {!isMobileNetwork && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Bank:</span>
+                  <span className="text-white font-medium">
+                    {institutions.find(i => i.code === institution)?.name}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSaveDialog(false)}
+                className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-all"
+                disabled={isSavingContact}
+              >
+                No, Thanks
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveToContacts}
+                disabled={isSavingContact}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSavingContact ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Contact'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* {isMobileNetwork && (
         <div className="p-3 bg-gradient-to-r from-amber-900/20 to-orange-900/20 rounded-lg border border-amber-700/50">

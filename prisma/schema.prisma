@@ -472,8 +472,8 @@ model ContactPhoneNumber {
   
   // Phone Number Details
   phoneNumber       String    // E.164 format (e.g., +255712345678)
-  provider          String    // MNO (Mobile Network Operator) name
-  country           String    // ISO country code
+  provider          String?   // MNO (Mobile Network Operator) name - optional
+  country           String?   // ISO country code - optional
   
   // Metadata
   isPrimary         Boolean   @default(false)

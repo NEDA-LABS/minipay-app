@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, CheckCircle2, AlertCircle, ChevronDown, UserPlus } from 'lucide-react';
 import ContactPicker from './ContactPicker';
-import { usePrivy } from '@privy-io/react-auth';
+import { useContacts } from '../../hooks/useContacts';
 
 interface VerificationStepProps {
   institution: string;
@@ -48,7 +48,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   fetchInstitutions,
   fiat
 }) => {
-  const { getAccessToken } = usePrivy();
+  const { createContact, isCreating } = useContacts();
   const isMobileNetwork = institution && institutions.find(i => i.code === institution)?.type === "mobile_money";
 
   
@@ -61,7 +61,6 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   // Contact saving states
   const [loadedFromContact, setLoadedFromContact] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [isSavingContact, setIsSavingContact] = useState(false);
 
   // Format phone number as user types with country-specific formatting
   const formatPhoneNumber = (value: string, countryCode: string) => {
@@ -210,67 +209,53 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
     setLoadedFromContact(true);
   };
 
-  // Save to contacts function
-  const handleSaveToContacts = async () => {
-    setIsSavingContact(true);
-    try {
-      const token = await getAccessToken();
-      const institutionName = institutions.find(i => i.code === institution)?.name || '';
-      
-      // Map currency to country code
-      const currencyToCountry: Record<string, string> = {
-        'TZS': 'TZ',
-        'KES': 'KE',
-        'UGX': 'UG',
-        'NGN': 'NG',
-        'GHS': 'GH',
-        'IDR': 'ID',
-      };
-      
-      const contactData: any = {
-        name: accountName,
+  // Save to contacts function using cached mutation
+  const handleSaveToContacts = () => {
+    const institutionName = institutions.find(i => i.code === institution)?.name || '';
+    
+    // Map currency to country code
+    const currencyToCountry: Record<string, string> = {
+      'TZS': 'TZ',
+      'KES': 'KE',
+      'UGX': 'UG',
+      'NGN': 'NG',
+      'GHS': 'GH',
+      'IDR': 'ID',
+    };
+    
+    const contactData: any = {
+      name: accountName,
+      country: currencyToCountry[fiat] || 'TZ',
+    };
+
+    if (isMobileNetwork) {
+      // Save phone number with provider (institution name)
+      contactData.phoneNumbers = [{
+        phoneNumber: accountIdentifier,
+        provider: institutionName,
         country: currencyToCountry[fiat] || 'TZ',
-      };
+        isPrimary: true,
+      }];
+    } else {
+      // Save bank account
+      contactData.bankAccounts = [{
+        bankName: institutionName,
+        accountNumber: accountIdentifier,
+        accountName: accountName,
+        isPrimary: true,
+      }];
+    }
 
-      if (isMobileNetwork) {
-        // Save phone number with provider (institution name)
-        contactData.phoneNumbers = [{
-          phoneNumber: accountIdentifier,
-          provider: institutionName,
-          country: currencyToCountry[fiat] || 'TZ',
-          isPrimary: true,
-        }];
-      } else {
-        // Save bank account
-        contactData.bankAccounts = [{
-          bankName: institutionName,
-          accountNumber: accountIdentifier,
-          accountName: accountName,
-          isPrimary: true,
-        }];
-      }
-
-      const res = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(contactData),
-      });
-
-      if (res.ok) {
+    // Use cached mutation - automatically updates cache
+    createContact(contactData, {
+      onSuccess: () => {
         setShowSaveDialog(false);
         setLoadedFromContact(true); // Prevent showing dialog again
-        // Could show a success toast here
-      } else {
-        console.error('Failed to save contact');
-      }
-    } catch (error) {
-      console.error('Error saving contact:', error);
-    } finally {
-      setIsSavingContact(false);
-    }
+      },
+      onError: (error) => {
+        console.error('Failed to save contact:', error);
+      },
+    });
   };
 
   // Wrapper for verification that shows save dialog
@@ -632,17 +617,17 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                 type="button"
                 onClick={() => setShowSaveDialog(false)}
                 className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-all"
-                disabled={isSavingContact}
+                disabled={isCreating}
               >
                 No, Thanks
               </button>
               <button
                 type="button"
                 onClick={handleSaveToContacts}
-                disabled={isSavingContact}
+                disabled={isCreating}
                 className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isSavingContact ? (
+                {isCreating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Saving...

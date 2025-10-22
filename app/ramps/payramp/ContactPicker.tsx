@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Users, X, Search, Phone, Building2, Wallet, Loader2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { Contact } from '../../contacts/types';
+import { useFilteredContacts } from '../../hooks/useContacts';
 
 interface ContactPickerProps {
   onSelectContact: (data: {
@@ -24,60 +24,26 @@ interface ContactPickerProps {
 }
 
 export default function ContactPicker({ onSelectContact, mode, disabled }: ContactPickerProps) {
-  const { getAccessToken } = usePrivy();
   const [isOpen, setIsOpen] = useState(false);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch contacts when modal opens
+  // Use cached contacts with automatic filtering by mode
+  const { contacts, isLoading, prefetchContacts } = useFilteredContacts(mode);
+
+  // Prefetch contacts on component mount for instant loading
   useEffect(() => {
-    if (isOpen) {
-      fetchContacts();
-    }
-  }, [isOpen]);
+    prefetchContacts();
+  }, [prefetchContacts]);
 
-  // Filter contacts based on search and mode
-  useEffect(() => {
-    let filtered = contacts;
-
-    // Filter by mode: only show contacts with relevant payment methods
-    if (mode === 'phone') {
-      filtered = filtered.filter(c => c.phoneNumbers && c.phoneNumbers.length > 0);
-    } else if (mode === 'bank') {
-      filtered = filtered.filter(c => c.bankAccounts && c.bankAccounts.length > 0);
-    }
-
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.name.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredContacts(filtered);
-  }, [contacts, searchQuery, mode]);
-
-  const fetchContacts = async () => {
-    setIsLoading(true);
-    try {
-      const token = await getAccessToken();
-      const res = await fetch('/api/contacts', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setContacts(data.contacts || []);
-      }
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Filter by search query (memoized for performance)
+  const filteredContacts = useMemo(() => {
+    if (!searchQuery) return contacts;
+    
+    const query = searchQuery.toLowerCase();
+    return contacts.filter((c: Contact) =>
+      c.name.toLowerCase().includes(query)
+    );
+  }, [contacts, searchQuery]);
 
   const handleSelectContact = (contact: Contact) => {
     if (mode === 'phone' && contact.phoneNumbers?.[0]) {
@@ -196,7 +162,7 @@ export default function ContactPicker({ onSelectContact, mode, disabled }: Conta
                 </p>
               </div>
             ) : (
-              filteredContacts.map((contact) => (
+              filteredContacts.map((contact: Contact) => (
                 <button
                   key={contact.id}
                   onClick={() => handleSelectContact(contact)}

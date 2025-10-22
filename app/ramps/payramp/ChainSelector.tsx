@@ -71,9 +71,9 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
   return (
     <div className="bg-gradient-to-br from-slate-800/80 via-slate-800/60 to-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 shadow-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-300">
       <div className="mb-4 sm:mb-5">
-        <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+        {/* <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
           Select Network & Token
-        </h2>
+        </h2> */}
         {/* <p className="text-slate-400 text-[10px] sm:text-xs mt-1.5">Choose your blockchain network and token to cash-out</p> */}
       </div>
 

@@ -163,7 +163,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto px-2 sm:px-4">
       {error && (
         <Alert className="mb-6 border-red-500/50 bg-red-500/10 rounded-xl">
           <AlertDescription className="text-red-400">{error}</AlertDescription>
@@ -174,9 +174,10 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+        className="w-full"
       >
-        <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden">
-          <CardContent className="p-4 sm:p-7">
+        <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden w-full">
+          <CardContent className="p-3 sm:p-4 md:p-7 w-full overflow-x-hidden">
             <Tabs value={innerTab} onValueChange={setInnerTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50 h-auto">
                 <TabsTrigger 
@@ -203,9 +204,9 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="history" className="mt-6 space-y-6">
+              <TabsContent value="history" className="mt-6 space-y-6 w-full">
                 {/* Status Filter */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 w-full">
                   {["All", "Draft", "Outstanding", "Paid", "Overdue"].map((tab) => (
                     <Button
                       key={tab}
@@ -227,9 +228,9 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                 </div>
 
                 {/* Invoice Table */}
-                <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 overflow-hidden">
-                  <div className="overflow-x-auto">
-                  <Table>
+                <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 overflow-hidden w-full">
+                  <div className="overflow-x-auto w-full">
+                  <Table className="w-full">
                     <TableHeader>
                       <TableRow className="border-slate-700/60 hover:bg-slate-800/50">
                         <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">ID</TableHead>
@@ -273,7 +274,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                               {invoice.totalAmount.toFixed(2)} {invoice.currency}
                             </TableCell>
                             <TableCell className="whitespace-nowrap">
-                              <div className="flex gap-1">
+                              <div className="flex gap-1 flex-nowrap">
                                 <Button 
                                   size="sm" 
                                   variant="ghost" 
@@ -310,7 +311,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
 
                 {/* Pagination */}
                 {invoices.length > 0 && totalPages > 1 && (
-                  <div className="flex items-center justify-between gap-2 pt-2">
+                  <div className="flex items-center justify-between gap-2 pt-2 w-full">
                     <Button
                       variant="outline"
                       size="sm"
@@ -358,8 +359,8 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="stats" className="mt-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <TabsContent value="stats" className="mt-6 w-full">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full">
                   <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200">
                     <h3 className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Total Invoices</h3>
                     <p className="text-3xl font-bold text-white">{invoices.length}</p>

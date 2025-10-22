@@ -144,6 +144,10 @@ export default function AuthenticationModal({
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setIsClosing(true);
+                    // Set flag to prevent race condition with automatic redirect
+                    if (typeof window !== "undefined") {
+                      sessionStorage.setItem("isNavigatingToDashboard", "true");
+                    }
                     // Navigate to dashboard after a short delay to show loading animation
                     setTimeout(() => {
                       router.push("/dashboard");

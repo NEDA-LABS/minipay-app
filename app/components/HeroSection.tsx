@@ -21,6 +21,7 @@ const HeroSection = () => {
   const { authenticated, user, login, logout } = usePrivy();
   const walletSelectorRef = useRef<{ triggerLogin: () => void } | null>(null);
   const [isShortScreen, setIsShortScreen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
 useEffect(() => {
   const checkHeight = () => setIsShortScreen(window.innerHeight <= 667);
@@ -48,6 +49,15 @@ const avatars = [
   { id: 6, color: 'bg-green-400', image: '/celo.svg' },
   { id: 7, color: 'bg-teal-400', image: '/optimism.svg' }
 ];
+
+const handleNavigateToDashboard = () => {
+  setIsNavigating(true);
+  // Set flag to prevent race condition with automatic redirect
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("isNavigatingToDashboard", "true");
+  }
+  router.push("/dashboard");
+};
 
   if (!mounted || isLoading) {
     return <HeroSectionSkeleton />;
@@ -102,12 +112,22 @@ const avatars = [
             <div className="flex flex-row items-start gap-6">
               <div className="flex flex-row gap-2">
                 <button
-                  onClick={() => router.push("/dashboard")}
-                  className="relative items-center !px-4 !py-2 !bg-[#3E55E6] hover:!from-blue-700 hover:!to-indigo-700 text-white font-semibold rounded-xl md:!rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                  onClick={handleNavigateToDashboard}
+                  disabled={isNavigating}
+                  className="relative items-center !px-4 !py-2 !bg-[#3E55E6] hover:!from-blue-700 hover:!to-indigo-700 text-white font-semibold rounded-xl md:!rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex gap-2"
                 >
-                  <span className="text-xs md:text-sm xl:text-xl text-white text-center">
-                    Explore Dashboard
-                  </span>
+                  {isNavigating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-xs md:text-sm xl:text-xl text-white text-center">
+                        Loading...
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs md:text-sm xl:text-xl text-white text-center">
+                      Explore Dashboard
+                    </span>
+                  )}
                 </button>
                 <YouTubeEmbedButton />
               </div>

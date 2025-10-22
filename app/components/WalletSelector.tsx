@@ -269,6 +269,7 @@ const WalletSelector = forwardRef<
   }, [authenticated, getAccessToken]);
 
   // Automatically redirect authenticated users to dashboard from homepage
+  // Only triggers once per session to avoid race conditions with manual navigation
   useEffect(() => {
     if (
       ready &&
@@ -276,11 +277,28 @@ const WalletSelector = forwardRef<
       (walletAddress || emailAddress) &&
       pathname === "/"
     ) {
+      // Check if navigation is already in progress to prevent race condition
+      const isNavigating = sessionStorage.getItem("isNavigatingToDashboard");
+      if (isNavigating === "true") {
+        return;
+      }
+
+      // Mark that we're navigating
+      sessionStorage.setItem("isNavigatingToDashboard", "true");
+      
       // Small delay to ensure auth state is fully settled
       const timer = setTimeout(() => {
         router.push("/dashboard");
+        // Clear the flag after navigation attempt
+        setTimeout(() => {
+          sessionStorage.removeItem("isNavigatingToDashboard");
+        }, 1000);
       }, 100);
-      return () => clearTimeout(timer);
+      
+      return () => {
+        clearTimeout(timer);
+        sessionStorage.removeItem("isNavigatingToDashboard");
+      };
     }
   }, [ready, authenticated, walletAddress, emailAddress, pathname, router]);
 

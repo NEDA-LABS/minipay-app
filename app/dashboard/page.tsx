@@ -347,14 +347,24 @@ export default function DashboardContent() {
 
   // Set page as loaded once authenticated and ready
   useEffect(() => {
+    // Check if navigation was triggered manually (from button click)
+    const isNavigating = sessionStorage.getItem("isNavigatingToDashboard");
+    
+    if (isNavigating === "true") {
+      // Clear the flag immediately
+      sessionStorage.removeItem("isNavigatingToDashboard");
+    }
+
     if (ready && authenticated) {
-      // Small delay to ensure smooth transition
-      const timer = setTimeout(() => setIsPageLoading(false), 300);
-      return () => clearTimeout(timer);
+      // Immediately set page as loaded to avoid unnecessary loading screen
+      setIsPageLoading(false);
+    } else if (ready && !authenticated) {
+      // If not authenticated, also mark as loaded to show the proper message
+      setIsPageLoading(false);
     }
   }, [ready, authenticated]);
 
-  // Show loading state while Privy is initializing or authenticating
+  // Show loading state ONLY while Privy is initializing
   if (!ready || isPageLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-950">

@@ -28,6 +28,10 @@ export default function HowItWorksSection() {
     if (!authenticated && walletSelectorRef.current) {
       walletSelectorRef.current.triggerLogin();
     } else {
+      // Set flag to prevent race condition with automatic redirect
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("isNavigatingToDashboard", "true");
+      }
       router.push("/dashboard");
     }
   };
@@ -278,7 +282,13 @@ export default function HowItWorksSection() {
               <div className="text-center">
                 <div className="">
                   <button
-                    onClick={() => router.push("/dashboard")}
+                    onClick={() => {
+                      // Set flag to prevent race condition with automatic redirect
+                      if (typeof window !== "undefined") {
+                        sessionStorage.setItem("isNavigatingToDashboard", "true");
+                      }
+                      router.push("/dashboard");
+                    }}
                     className="inline-flex items-center px-6 py-3 !rounded-full !bg-gradient-to-r !from-blue-600 !to-indigo-600 !text-white !font-semibold !shadow-lg !hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
                   >
                     <span>Ready to get Started?</span>

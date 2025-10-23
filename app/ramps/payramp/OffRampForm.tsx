@@ -430,7 +430,7 @@ const OffRampForm: React.FC<{
 
       <form onSubmit={handleFormSubmit} className="space-y-8">
         {/* Step 1: Amount and Currency */}
-        {currentStep >= 1 && (
+        {currentStep === 1 ? (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -656,10 +656,56 @@ const OffRampForm: React.FC<{
             </button>
           )}
         </div>
+        ) : currentStep > 1 && (
+          /* Summary of Step 1 */
+          <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-slate-600 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] sm:text-xs font-medium text-green-400 bg-green-900/30 rounded-full px-2 sm:px-3 py-0.5 sm:py-1">
+                  ✓ Step 1
+                </span>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-300">
+                  Amount and Currency
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="text-xs text-purple-400 hover:text-purple-300 underline"
+              >
+                Edit
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p className="text-gray-400">Currency</p>
+                <p className="text-white font-medium">{fiat}</p>
+              </div>
+              <div>
+                <p className="text-gray-400">Network</p>
+                <p className="text-white font-medium">{chain.name}</p>
+              </div>
+              <div>
+                <p className="text-gray-400">Sending</p>
+                <p className="text-white font-medium">{amount} {token.toUpperCase()}</p>
+              </div>
+              <div>
+                <p className="text-gray-400">Receiving</p>
+                <p className="text-green-400 font-medium">{receivedFiat} {fiat}</p>
+              </div>
+            </div>
+            
+            <div className="mt-3 pt-3 border-t border-slate-600">
+              <p className="text-[10px] text-gray-400">
+                Rate: 1 {token.toUpperCase()} = {rate} {fiat}
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Step 2: Recipient Details */}
-        {currentStep >= 2 && rate && !rateError && (
+        {currentStep === 2 && rate && !rateError && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -713,8 +759,46 @@ const OffRampForm: React.FC<{
           </div>
         )}
 
+        {/* Summary of Step 2 */}
+        {currentStep > 2 && isAccountVerified && (
+          <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-slate-600 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] sm:text-xs font-medium text-green-400 bg-green-900/30 rounded-full px-2 sm:px-3 py-0.5 sm:py-1">
+                  ✓ Step 2
+                </span>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-300">
+                  Recipient Details
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCurrentStep(2)}
+                className="text-xs text-purple-400 hover:text-purple-300 underline"
+              >
+                Edit
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p className="text-gray-400">Institution</p>
+                <p className="text-white font-medium">{institution}</p>
+              </div>
+              <div>
+                <p className="text-gray-400">Account Number</p>
+                <p className="text-white font-medium">{accountIdentifier}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-400">Account Name</p>
+                <p className="text-white font-medium">{accountName}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Step 3: Transaction Memo */}
-        {currentStep >= 3 && rate && !rateError && isAccountVerified && (
+        {currentStep === 3 && rate && !rateError && isAccountVerified && (
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <span className="text-[10px] sm:text-xs font-medium text-purple-400 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-full px-2 sm:px-3 py-0.5 sm:py-1">

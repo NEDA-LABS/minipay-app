@@ -31,6 +31,9 @@ model User {
   // IDRX onboarding (one-to-one)
   idrxOnboarded     IdrxOnboarded?
 
+  // Smile ID KYC verifications
+  smileIdVerifications SmileIDVerification[]
+
   // Contacts - contacts owned by this user (contacts they created)
   ownedContacts     Contact[]  @relation("OwnedContacts")
   
@@ -507,5 +510,98 @@ model ContactCryptoAddress {
   @@index([contactId])
   @@index([contactId, isPrimary])
   @@index([address])
+}
+
+// ============================================================================
+// SMILE ID KYC INTEGRATION
+// ============================================================================
+
+enum SmileIDVerificationStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+enum SmileIDVerificationMethod {
+  DOC_VERIFICATION     // Document verification only
+  BIOMETRIC_KYC       // Document + biometric matching
+}
+
+// Main Smile ID verification tracking
+model SmileIDVerification {
+  id                    String                      @id @default(cuid())
+  userId                String
+  walletAddress         String                      @unique
+  platform              String                      @default("smile_id")
+  platformRef           String                      // Smile ID reference ID
+  verificationUrl       String                      // Smile Link URL
+  status                SmileIDVerificationStatus   @default(PENDING)
+  
+  // Verification details
+  country               String?                     // ISO country code
+  idType                String?                     // ID document type
+  verificationMethod    SmileIDVerificationMethod?  // Verification method used
+  
+  // Results
+  resultCode            String?                     // Smile ID result code
+  resultText            String?                     // Smile ID result description
+  
+  // Timestamps
+  expiresAt             DateTime                    // When verification URL expires
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+  submittedAt           DateTime?                   // When user submitted documents
+  completedAt           DateTime?                   // When verification completed
+  
+  // Relations
+  user                  User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  webhookEvents         SmileIDWebhookEvent[]
+  
+  @@index([walletAddress])
+  @@index([userId])
+  @@index([status])
+  @@index([platformRef])
+  @@map("smile_id_verifications")
+}
+
+// Track all webhook events from Smile ID
+model SmileIDWebhookEvent {
+  id                    String                @id @default(cuid())
+  smileIdVerificationId String
+  correlationId         String?               // For idempotency
+  resultCode            String                // Smile ID result code
+  resultText            String?               // Result description
+  payload               Json                  // Full webhook payload
+  signature             String                // Webhook signature for validation
+  processed             Boolean               @default(false)
+  processedAt           DateTime?
+  errorMessage          String?               // If processing failed
+  createdAt             DateTime              @default(now())
+  
+  // Relations
+  smileIdVerification   SmileIDVerification   @relation(fields: [smileIdVerificationId], references: [id], onDelete: Cascade)
+  
+  @@index([smileIdVerificationId])
+  @@index([resultCode])
+  @@index([createdAt])
+  @@map("smile_id_webhook_events")
+}
+
+// Store supported ID types configuration
+model SmileIDSupportedType {
+  id                    String                      @id @default(cuid())
+  country               String                      // ISO country code
+  countryName           String                      // Full country name
+  idType                String                      // ID document type
+  verificationMethod    SmileIDVerificationMethod   // Supported verification method
+  isActive              Boolean                     @default(true)
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+  
+  @@unique([country, idType])
+  @@index([country])
+  @@index([verificationMethod])
+  @@map("smile_id_supported_types")
 }
 

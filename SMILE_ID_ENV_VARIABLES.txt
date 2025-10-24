@@ -1,0 +1,18 @@
+# Add these environment variables to your existing .env file:
+
+# Smile ID KYC Configuration (Sandbox)
+SMILE_ID_PARTNER_ID=your_partner_id_here
+SMILE_ID_API_KEY=your_api_key_here
+SMILE_ID_BASE_URL=https://testapi.smileidentity.com
+SMILE_ID_WEBHOOK_SECRET=your_webhook_secret_here
+
+# App URL for webhook callbacks (update with your domain)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# For sandbox testing, you can use these test credentials:
+# SMILE_ID_PARTNER_ID=001
+# SMILE_ID_API_KEY=test_api_key
+# (Check Smile ID documentation for actual test credentials)
+
+# Production URLs (when ready):
+# SMILE_ID_BASE_URL=https://api.smileidentity.com

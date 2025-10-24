@@ -15,7 +15,7 @@ import { Name } from "@coinbase/onchainkit/identity";
 import { getBasename } from "../utils/getBaseName";
 import { useUserSync } from "../hooks/useUserSync";
 import { useLinkAccount } from "@privy-io/react-auth";
-import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3, Gift, Users } from "lucide-react";
+import { Wallet, LogOut, PlusCircle, ChevronDown, User, HelpCircle, History, BarChart3, Gift, Users, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -546,6 +546,10 @@ const WalletSelector = forwardRef<
             <DropdownMenuItem onClick={() => router.push('/contacts')} className="cursor-pointer hover:bg-slate-800">
               <Users className="mr-2 h-4 w-4" />
               <span>Contacts</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/kyc')} className="cursor-pointer hover:bg-slate-800">
+              <Shield className="mr-2 h-4 w-4" />
+              <span>Identity Verification</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/support')} className="cursor-pointer hover:bg-slate-800">
               <HelpCircle className="mr-2 h-4 w-4" />

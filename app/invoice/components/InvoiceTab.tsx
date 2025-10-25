@@ -229,15 +229,15 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
 
                 {/* Invoice Table */}
                 <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 overflow-hidden w-full">
-                  <div className="overflow-x-auto w-full">
-                  <Table className="w-full">
+                  <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch] scrollbar-hide">
+                  <Table className="w-full min-w-max">
                     <TableHeader>
                       <TableRow className="border-slate-700/60 hover:bg-slate-800/50">
-                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">ID</TableHead>
-                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Client</TableHead>
-                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Status</TableHead>
-                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Amount</TableHead>
-                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm whitespace-nowrap">Actions</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">ID</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">Client</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">Status</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">Amount</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -259,27 +259,27 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                       ) : (
                         invoices.map((invoice) => (
                           <TableRow key={invoice.id} className="border-slate-700/60 hover:bg-slate-800/30 transition-colors">
-                            <TableCell className="text-slate-300 font-mono text-xs sm:text-sm whitespace-nowrap">
+                            <TableCell className="text-slate-300 font-mono text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">
                               #{invoice.id.slice(0, 8)}
                             </TableCell>
-                            <TableCell className="text-slate-200 text-xs sm:text-sm whitespace-nowrap">
+                            <TableCell className="text-slate-200 text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap max-w-xs truncate">
                               {invoice.recipient}
                             </TableCell>
-                            <TableCell className="whitespace-nowrap">
+                            <TableCell className="px-2 sm:px-4 py-3 whitespace-nowrap">
                               <Badge className={`${getStatusColor(invoice.status)} font-medium text-xs`}>
                                 {invoice.status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-slate-200 font-semibold text-xs sm:text-sm whitespace-nowrap">
+                            <TableCell className="text-slate-200 font-semibold text-xs sm:text-sm px-2 sm:px-4 py-3 whitespace-nowrap">
                               {invoice.totalAmount.toFixed(2)} {invoice.currency}
                             </TableCell>
-                            <TableCell className="whitespace-nowrap">
+                            <TableCell className="px-2 sm:px-4 py-3 whitespace-nowrap">
                               <div className="flex gap-1 flex-nowrap">
                                 <Button 
                                   size="sm" 
                                   variant="ghost" 
                                   onClick={() => handleView(invoice.id)}
-                                  className="hover:bg-blue-500/20 hover:text-blue-400 transition-colors"
+                                  className="hover:bg-blue-500/20 hover:text-blue-400 transition-colors p-1.5"
                                 >
                                   <FaEye className="w-3.5 h-3.5" />
                                 </Button>
@@ -287,7 +287,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                                   size="sm" 
                                   variant="ghost" 
                                   onClick={() => handleDownload(invoice)}
-                                  className="hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors"
+                                  className="hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors p-1.5"
                                 >
                                   <FaDownload className="w-3.5 h-3.5" />
                                 </Button>
@@ -295,7 +295,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
                                   size="sm" 
                                   variant="ghost" 
                                   onClick={() => handleShare(invoice)}
-                                  className="hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
+                                  className="hover:bg-purple-500/20 hover:text-purple-400 transition-colors p-1.5"
                                 >
                                   <FaShare className="w-3.5 h-3.5" />
                                 </Button>

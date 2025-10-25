@@ -417,3 +417,18 @@ input:-webkit-autofill:focus {
 .dark .bg-gray-800 p, .dark .bg-gray-800 span, .dark .bg-gray-800 div {
   color: #f3f4f6 ;
 } */
+
+/* Hide scrollbar while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scrolling for Safari */
+.scrollbar-hide {
+  -webkit-overflow-scrolling: touch;
+}

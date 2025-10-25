@@ -19,7 +19,7 @@ interface BridgeTabProps {
 
 export default function BridgeTab({ walletAddress }: BridgeTabProps) {
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-2 sm:px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

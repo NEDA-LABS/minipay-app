@@ -29,11 +29,11 @@ function KYCPage() {
       
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-6">
         {/* Header Section */}
-        <div className="text-center mb-8">
+        {/* <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
             Identity Verification
           </h1>
-        </div>
+        </div> */}
 
         {/* Important Information */}
         <div className="mb-8">

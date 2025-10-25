@@ -188,7 +188,7 @@ export function SmileIDVerificationFlow({
     <Card className={`${className} bg-slate-900/90 border-slate-700 !rounded-3xl`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white">
-          <span>Identity Verification</span>
+          <span className="text-base">Identity Verification</span>
           {verificationState.status === 'success' && (
             <CheckCircle className="h-5 w-5 text-green-500" />
           )}

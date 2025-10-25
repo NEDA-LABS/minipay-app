@@ -44,10 +44,6 @@ function KYCPage() {
               </div>
               <div>
                 <p className="text-yellow-200 font-medium mb-1">Sandbox Testing Environment</p>
-                <p className="text-yellow-200/80 text-sm">
-                  This is a test environment. Use test documents and data only. 
-                  Real verification will be available in production.
-                </p>
               </div>
             </div>
           </div>

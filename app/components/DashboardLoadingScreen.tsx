@@ -89,9 +89,9 @@ export default function DashboardLoadingScreen() {
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Preparing Your Dashboard
           </h2>
-          <p className="text-slate-400 text-sm md:text-base max-w-xs mx-auto">
+          {/* <p className="text-slate-400 text-sm md:text-base max-w-xs mx-auto">
             Setting up your account and loading your data
-          </p>
+          </p> */}
         </motion.div>
 
         {/* Animated dots */}

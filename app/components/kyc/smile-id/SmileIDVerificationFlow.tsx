@@ -221,11 +221,11 @@ export function SmileIDVerificationFlow({
         {verificationState.status === 'idle' && (
           <div className="space-y-4">
             {!user?.wallet?.address ? (
-              <Alert variant="destructive">
-                <AlertDescription>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                <p className="text-sm text-red-200">
                   Please connect your wallet to start identity verification.
-                </AlertDescription>
-              </Alert>
+                </p>
+              </div>
             ) : (
               <>
                 <CountrySelector
@@ -276,29 +276,39 @@ export function SmileIDVerificationFlow({
         {/* Loading State */}
         {verificationState.status === 'loading' && (
           <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-6 w-6 animate-spin mr-2" />
-            <span>Starting verification...</span>
+            <Loader2 className="h-6 w-6 animate-spin mr-2 text-blue-400" />
+            <span className="text-slate-200">Starting verification...</span>
           </div>
         )}
 
         {/* Pending State with Link */}
         {verificationState.status === 'pending' && verificationState.verificationUrl && (
           <div className="space-y-4">
-            <Alert>
-              <AlertDescription>
-                Your verification is in progress. Click the button below to continue with Smile ID.
-              </AlertDescription>
-            </Alert>
+            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-200 mb-1">
+                    Verification in Progress
+                  </p>
+                  <p className="text-sm text-blue-100/80">
+                    Click the button below to continue with Smile ID.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <Button
               asChild
-              className="w-full"
+              className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <a
                 href={verificationState.verificationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2"
               >
                 Continue Verification
                 <ExternalLink className="h-4 w-4" />
@@ -309,12 +319,19 @@ export function SmileIDVerificationFlow({
 
         {/* Error State */}
         {verificationState.status === 'failed' && verificationState.error && (
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              {verificationState.error}
-            </AlertDescription>
-          </Alert>
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <XCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-200 mb-1">
+                  Verification Failed
+                </p>
+                <p className="text-sm text-red-100/80">
+                  {verificationState.error}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

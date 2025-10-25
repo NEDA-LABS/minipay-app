@@ -5,7 +5,7 @@ import { useAccount, useBalance, useSwitchChain, useChainId, usePublicClient } f
 import { useFundWallet, useSendTransaction, useWallets, usePrivy } from '@privy-io/react-auth';
 import { formatUnits, parseEther, parseUnits, isAddress, encodeFunctionData } from 'viem';
 import { base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet, type Chain } from 'viem/chains';
-import { Copy, Eye, EyeOff, Download, Send, Plus, Wallet, ArrowUpDown, ExternalLink, X, ChevronDown, AlertTriangle, Shield, Zap } from 'lucide-react';
+import { Copy, Eye, EyeOff, Download, Send, Plus, Wallet, ExternalLink, X, ChevronDown, AlertTriangle, Shield, Zap, Settings, ArrowLeftRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { stablecoins } from '@/data/stablecoins';
 import { resolveName } from '@/utils/ensUtils';
@@ -13,6 +13,7 @@ import EnsAddressInput from '@/components/(wallet)/EnsAddressInput';
 import Image from 'next/image';
 import { getTokenIcon, getNativeTokenIcon } from '@/utils/tokenIcons';
 import { motion, AnimatePresence } from 'framer-motion';
+import SwapPanel from '@/components/(wallet)/SwapPanel';
 
 // shadcn/ui components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -100,7 +101,7 @@ export default function WalletEmbeddedContent() {
     chainId: chainId,
   });
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'send' | 'receive' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'send' | 'swap' | 'receive' | 'settings'>('overview');
   // Initialize activeChain from current chainId instead of hardcoding to base
   const [activeChain, setActiveChain] = useState<Chain>(() => {
     return SUPPORTED_CHAINS.find(c => c.id === chainId) || base;
@@ -453,7 +454,7 @@ export default function WalletEmbeddedContent() {
 
       {/* Compact Tabs */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-b border-slate-700/50 rounded-none h-10">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border-b border-slate-700/50 rounded-none h-10">
           <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white text-slate-400 rounded-lg text-xs">
             <Wallet className="h-3 w-3 mr-1" />
             Overview
@@ -462,12 +463,16 @@ export default function WalletEmbeddedContent() {
             <Send className="h-3 w-3 mr-1" />
             Send
           </TabsTrigger>
+          <TabsTrigger value="swap" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-orange-600 data-[state=active]:!text-white text-slate-400 rounded-lg text-xs">
+            <ArrowLeftRight className="h-3 w-3 mr-1" />
+            Swap
+          </TabsTrigger>
           <TabsTrigger value="receive" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:!text-white text-slate-400 rounded-lg text-xs">
             <Download className="h-3 w-3 mr-1" />
             Receive
           </TabsTrigger>
           <TabsTrigger value="settings" className="data-[state=active]:bg-slate-600 data-[state=active]:!text-white text-slate-300 hover:text-white transition-all rounded-lg text-xs">
-            <ArrowUpDown className="h-3 w-3 mr-1" />
+            <Settings className="h-3 w-3 mr-1" />
             Settings
           </TabsTrigger>
         </TabsList>
@@ -521,7 +526,7 @@ export default function WalletEmbeddedContent() {
 
         {/* Send Tab */}
         <TabsContent value="send" className="p-6">
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[500px]">
             <div className="space-y-4">
               <Card className="bg-slate-800/50 border-slate-700/50 rounded-2xl">
                 <CardHeader className="pb-3">
@@ -654,6 +659,24 @@ export default function WalletEmbeddedContent() {
                   </Button>
                 </CardContent>
               </Card>
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        {/* Swap Tab */}
+        <TabsContent value="swap" className="p-6">
+          <ScrollArea className="h-[500px]">
+            <div className="space-y-4">
+              <SwapPanel
+                activeChain={activeChain}
+                balances={balances}
+                isLoading={isLoading || isSwitchingChain}
+                onSwapComplete={(fromToken, toToken, amount) => {
+                  toast.success(`Swap completed: ${amount} ${fromToken} → ${toToken}`);
+                  // Refetch balances after swap
+                  setTimeout(() => refetchNativeBalance(), 2000);
+                }}
+              />
             </div>
           </ScrollArea>
         </TabsContent>

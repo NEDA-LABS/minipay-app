@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, CheckCircle2, AlertCircle, ChevronDown, UserPlus } from 'lucide-react';
 import ContactPicker from './ContactPicker';
+import { InstitutionSelector } from './InstitutionSelector';
 import { useContacts } from '../../hooks/useContacts';
 
 interface VerificationStepProps {
@@ -338,8 +339,8 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   }, [fiat]);
 
   // Reset states when institution changes
-  const handleInstitutionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setInstitution(e.target.value);
+  const handleInstitutionChange = (value: string) => {
+    setInstitution(value);
     setAccountIdentifier("");
     setPhoneNumber('');
     setInputError('');
@@ -352,44 +353,14 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="institution"
-            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
-          >
-            Choose Bank or Mobile Network
-          </label>
-          {/* {fiat === "TZS" ? (<span className="text-white text-xs md:text-sm bg-blue-800/50 rounded-xl px-2 py-1">cashouts to Bank in Tanzania are unavailable at the moment!</span>) : null} */}
-          <select
-            id="institution"
-            value={institution}
-            onChange={handleInstitutionChange}
-            onFocus={fetchInstitutions}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
-            required
-            disabled={isAccountVerified}
-          >
-            <option value="" className="bg-gray-100 text-gray-500">Select Institution</option>
-            {institutions
-              .sort((a, b) => {
-                // For Kenyan institutions, put MPESA first
-                if (fiat === "KES") {
-                  if (a.name.toLowerCase().includes('mpesa') || a.name.toLowerCase().includes('m-pesa')) return -1;
-                  if (b.name.toLowerCase().includes('mpesa') || b.name.toLowerCase().includes('m-pesa')) return 1;
-                }
-                // Then sort by type (mobile money first, then banks)
-                if (a.type === "mobile_money" && b.type !== "mobile_money") return -1;
-                if (b.type === "mobile_money" && a.type !== "mobile_money") return 1;
-                // Finally sort alphabetically
-                return a.name.localeCompare(b.name);
-              })
-              .map((inst) => (
-                <option key={inst.code} value={inst.code} className="bg-gray-100 text-gray-900">
-                  {inst.name} {inst.type === "mobile_money" ? "(Mobile Network)" : "(Bank)"}
-                </option>
-              ))}
-          </select>
-        </div>
+        <InstitutionSelector
+          value={institution}
+          onChange={handleInstitutionChange}
+          institutions={institutions}
+          disabled={isAccountVerified}
+          onFocus={fetchInstitutions}
+          fiat={fiat}
+        />
         
         <div>
           <div className="flex items-center justify-between mb-2 sm:mb-3">

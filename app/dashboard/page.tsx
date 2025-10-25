@@ -142,126 +142,133 @@ export default function DashboardContent() {
 
 
 
-  // Fetch balances when walletAddress changes
+  // Fetch balances and transactions in parallel when walletAddress changes
   useEffect(() => {
     if (!ready || !authenticated || !walletAddress) return;
 
-    const fetchBalances = async () => {
+    const fetchAllData = async () => {
       setIsBalanceLoading(true);
+      setIsTransactionLoading(true);
+
       try {
-        const baseStablecoins = stablecoins.filter((coin) =>
-          coin.chainIds.includes(8453) && coin.addresses[8453]
-        );
-        const calls = baseStablecoins.flatMap((coin) => [
-          {
-            target: coin.addresses[8453],
-            allowFailure: true,
-            callData: new ethers.utils.Interface(ERC20_ABI).encodeFunctionData(
-              "balanceOf",
-              [walletAddress]
-            ),
-          },
-          {
-            target: coin.addresses[8453],
-            allowFailure: true,
-            callData: new ethers.utils.Interface(ERC20_ABI).encodeFunctionData(
-              "decimals",
-              []
-            ),
-          },
+        // Fetch balances and transactions in parallel
+        const [balancesResult, transactionsResult] = await Promise.allSettled([
+          // Fetch balances
+          (async () => {
+            const baseStablecoins = stablecoins.filter((coin) =>
+              coin.chainIds.includes(8453) && coin.addresses[8453]
+            );
+            const calls = baseStablecoins.flatMap((coin) => [
+              {
+                target: coin.addresses[8453],
+                allowFailure: true,
+                callData: new ethers.utils.Interface(ERC20_ABI).encodeFunctionData(
+                  "balanceOf",
+                  [walletAddress]
+                ),
+              },
+              {
+                target: coin.addresses[8453],
+                allowFailure: true,
+                callData: new ethers.utils.Interface(ERC20_ABI).encodeFunctionData(
+                  "decimals",
+                  []
+                ),
+              },
+            ]);
+
+            const results = await multicallContract.aggregate3(calls);
+            const realBalances: Record<string, string> = {};
+            baseStablecoins.forEach((coin, index) => {
+              const balanceResult = results[index * 2];
+              const decimalsResult = results[index * 2 + 1];
+
+              if (balanceResult.success && decimalsResult.success) {
+                try {
+                  const balance = ethers.utils.defaultAbiCoder.decode(
+                    ["uint256"],
+                    balanceResult.returnData
+                  )[0];
+                  const decimals = ethers.utils.defaultAbiCoder.decode(
+                    ["uint8"],
+                    decimalsResult.returnData
+                  )[0];
+                  const formatted = ethers.utils.formatUnits(balance, decimals);
+                  realBalances[coin.baseToken] =
+                    parseFloat(formatted).toLocaleString();
+                } catch (err) {
+                  console.error(`Error processing ${coin.baseToken}:`, err);
+                }
+              }
+            });
+
+            return baseStablecoins.map((coin) => ({
+              symbol: coin.baseToken,
+              name: coin.name,
+              balance: realBalances[coin.baseToken] || "0",
+              flag: coin.flag,
+              region: coin.region,
+            }));
+          })(),
+          // Fetch transactions
+          (async () => {
+            const response = await fetch(
+              `/api/transactions?merchantId=${walletAddress}`
+            );
+            if (!response.ok) throw new Error("Failed to fetch transactions");
+            const data = await response.json();
+
+            return data.map((tx: any): Transaction => ({
+              id: tx.txHash,
+              shortId: tx.txHash.slice(0, 6) + "..." + tx.txHash.slice(-4),
+              date: new Date(tx.createdAt)
+                .toISOString()
+                .replace("T", " ")
+                .slice(0, 16),
+              amount: parseFloat(tx.amount),
+              currency: tx.currency,
+              status: tx.status,
+              sender: tx.wallet,
+              senderShort: tx.wallet.slice(0, 6) + "..." + tx.wallet.slice(-4),
+              rawDate: new Date(tx.createdAt),
+              blockExplorerUrl: `https://basescan.org/tx/${tx.txHash}`,
+            }));
+          })(),
         ]);
 
-        const results = await multicallContract.aggregate3(calls);
-        const realBalances: Record<string, string> = {};
-        baseStablecoins.forEach((coin, index) => {
-          const balanceResult = results[index * 2];
-          const decimalsResult = results[index * 2 + 1];
-
-          if (balanceResult.success && decimalsResult.success) {
-            try {
-              const balance = ethers.utils.defaultAbiCoder.decode(
-                ["uint256"],
-                balanceResult.returnData
-              )[0];
-              const decimals = ethers.utils.defaultAbiCoder.decode(
-                ["uint8"],
-                decimalsResult.returnData
-              )[0];
-              const formatted = ethers.utils.formatUnits(balance, decimals);
-              realBalances[coin.baseToken] =
-                parseFloat(formatted).toLocaleString();
-            } catch (err) {
-              console.error(`Error processing ${coin.baseToken}:`, err);
-            }
-          }
-        });
-
-        const processedBalances = baseStablecoins.map((coin) => ({
-          symbol: coin.baseToken,
-          name: coin.name,
-          balance: realBalances[coin.baseToken] || "0",
-          flag: coin.flag,
-          region: coin.region,
-        }));
-
-        setStablecoinBalances(processedBalances);
-      } catch (error) {
-        console.error("Error fetching balances:", error);
-      } finally {
-        setIsBalanceLoading(false);
-      }
-    };
-
-    fetchBalances();
-  }, [ready, authenticated, walletAddress, multicallContract]);
-
-  // Fetch transactions and set initial selected stablecoin
-  useEffect(() => {
-    if (!ready || !authenticated || !walletAddress) return;
-
-    const fetchTransactions = async () => {
-      setIsTransactionLoading(true);
-      try {
-        const response = await fetch(
-          `/api/transactions?merchantId=${walletAddress}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch transactions");
-        const data = await response.json();
-
-        const formattedTransactions: Transaction[] = data.map((tx: any) => ({
-          id: tx.txHash,
-          shortId: tx.txHash.slice(0, 6) + "..." + tx.txHash.slice(-4),
-          date: new Date(tx.createdAt)
-            .toISOString()
-            .replace("T", " ")
-            .slice(0, 16),
-          amount: parseFloat(tx.amount),
-          currency: tx.currency,
-          status: tx.status,
-          sender: tx.wallet,
-          senderShort: tx.wallet.slice(0, 6) + "..." + tx.wallet.slice(-4),
-          rawDate: new Date(tx.createdAt),
-          blockExplorerUrl: `https://basescan.org/tx/${tx.txHash}`,
-        }));
-
-        setTransactions(formattedTransactions);
-
-        const uniqueStablecoins = Array.from(
-          new Set(formattedTransactions.map((tx) => tx.currency))
-        );
-        if (uniqueStablecoins.length > 0 && !selectedStablecoin) {
-          setSelectedStablecoin(uniqueStablecoins[0]);
+        // Handle balances result
+        if (balancesResult.status === "fulfilled") {
+          setStablecoinBalances(balancesResult.value);
+        } else {
+          console.error("Error fetching balances:", balancesResult.reason);
         }
+        setIsBalanceLoading(false);
+
+        // Handle transactions result
+        if (transactionsResult.status === "fulfilled") {
+          const formattedTransactions = transactionsResult.value as Transaction[];
+          setTransactions(formattedTransactions);
+
+          const uniqueStablecoins = Array.from(
+            new Set(formattedTransactions.map((tx: Transaction) => tx.currency))
+          );
+          if (uniqueStablecoins.length > 0 && !selectedStablecoin) {
+            setSelectedStablecoin(uniqueStablecoins[0] as string);
+          }
+        } else {
+          console.error("Error fetching transactions:", transactionsResult.reason);
+          setTransactions([]);
+        }
+        setIsTransactionLoading(false);
       } catch (error) {
-        console.error("Error fetching transactions:", error);
-        setTransactions([]);
-      } finally {
+        console.error("Error fetching data:", error);
+        setIsBalanceLoading(false);
         setIsTransactionLoading(false);
       }
     };
 
-    fetchTransactions();
-  }, [ready, authenticated, walletAddress]);
+    fetchAllData();
+  }, [ready, authenticated, walletAddress, multicallContract]);
 
   // Calculate metrics based on selected stablecoin
   useEffect(() => {
@@ -347,19 +354,9 @@ export default function DashboardContent() {
 
   // Set page as loaded once authenticated and ready
   useEffect(() => {
-    // Check if navigation was triggered manually (from button click)
-    const isNavigating = sessionStorage.getItem("isNavigatingToDashboard");
-    
-    if (isNavigating === "true") {
-      // Clear the flag immediately
-      sessionStorage.removeItem("isNavigatingToDashboard");
-    }
-
     if (ready && authenticated) {
-      // Immediately set page as loaded to avoid unnecessary loading screen
       setIsPageLoading(false);
     } else if (ready && !authenticated) {
-      // If not authenticated, also mark as loaded to show the proper message
       setIsPageLoading(false);
     }
   }, [ready, authenticated]);
@@ -367,10 +364,38 @@ export default function DashboardContent() {
   // Show loading state ONLY while Privy is initializing
   if (!ready || isPageLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-950">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-4"></div>
-          <p className="text-white text-lg">Loading dashboard...</p>
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 z-[9999]">
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-purple-600/20 to-transparent rounded-full blur-3xl"
+            style={{
+              animation: "pulse 8s ease-in-out infinite",
+            }}
+          />
+        </div>
+        <div className="relative z-10 text-center">
+          <div className="mb-8 flex justify-center">
+            <div className="relative w-20 h-20 flex items-center justify-center">
+              <div
+                className="absolute inset-0 rounded-full border-2 border-transparent border-t-purple-500 border-r-blue-500"
+                style={{
+                  animation: "spin 2s linear infinite",
+                }}
+              />
+              <div
+                className="absolute inset-2 rounded-full border-2 border-transparent border-b-purple-400 border-l-blue-400"
+                style={{
+                  animation: "spin 3s linear infinite reverse",
+                }}
+              />
+            </div>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+            Preparing Your Dashboard
+          </h2>
+          <p className="text-slate-400 text-sm md:text-base">
+            Setting up your account and loading your data
+          </p>
         </div>
       </div>
     );

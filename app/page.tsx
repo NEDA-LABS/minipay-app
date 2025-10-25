@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import * as LucideReact from "lucide-react";
+import DashboardLoadingScreen from "./components/DashboardLoadingScreen";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { stablecoins } from "./data/stablecoins";
@@ -35,8 +36,9 @@ function HomeContent() {
     {}
   );
   const router = useRouter();
-  const { authenticated, user, login, logout } = usePrivy();
+  const { authenticated, user, login, logout, ready } = usePrivy();
   const [loading, setLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const { Loader2 } = LucideReact;
   const walletSelectorRef = useRef<{ triggerLogin: () => void } | null>(null);
 
@@ -50,6 +52,20 @@ function HomeContent() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (ready && authenticated && (user?.wallet?.address || user?.email?.address)) {
+      setIsRedirecting(true);
+      const timer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [ready, authenticated, user?.wallet?.address, user?.email?.address, router]);
+
+  if (isRedirecting) {
+    return <DashboardLoadingScreen />;
+  }
 
   return (
     <div

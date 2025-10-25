@@ -94,14 +94,14 @@ export function VerificationStatus({
       </div>
 
       <Alert variant={getAlertVariant()}>
-        <AlertDescription>
+        <AlertDescription className="text-white">
           {getStatusMessage()}
         </AlertDescription>
       </Alert>
 
       {/* Result details for failed verifications */}
       {status === 'failed' && resultCode && (
-        <div className="text-sm text-muted-foreground space-y-1">
+        <div className="text-sm text-muted-foreground text-white space-y-1">
           <p><strong>Error Code:</strong> {resultCode}</p>
           {resultText && <p><strong>Details:</strong> {resultText}</p>}
         </div>

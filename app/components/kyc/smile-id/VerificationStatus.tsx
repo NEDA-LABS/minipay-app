@@ -88,7 +88,7 @@ export function VerificationStatus({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {getStatusIcon()}
-          <span className="font-medium">Verification Status</span>
+          <span className="font-medium text-white">Verification Status</span>
         </div>
         {getStatusBadge()}
       </div>
@@ -110,7 +110,7 @@ export function VerificationStatus({
       {/* Action buttons */}
       <div className="flex gap-2">
         {status === 'pending' && verificationUrl && (
-          <Button asChild className="flex-1">
+          <Button asChild className="flex-1 text-white">
             <a
               href={verificationUrl}
               target="_blank"
@@ -124,7 +124,7 @@ export function VerificationStatus({
         )}
 
         {(status === 'failed' || status === 'expired') && onReset && (
-          <Button onClick={onReset} variant="outline" className="flex items-center gap-2">
+          <Button onClick={onReset} variant="outline" className="flex items-center gap-2 text-white">
             <RefreshCw className="h-4 w-4" />
             Try Again
           </Button>
@@ -133,7 +133,7 @@ export function VerificationStatus({
 
       {/* Help text */}
       {status === 'pending' && (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground text-white">
           <p>
             Complete your verification on Smile ID. This page will automatically update when 
             your verification is processed.
@@ -142,7 +142,7 @@ export function VerificationStatus({
       )}
 
       {status === 'success' && (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground text-white">
           <p>
             Your identity verification is complete. You now have access to all platform features.
           </p>

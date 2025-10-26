@@ -15,7 +15,7 @@ export const ExpirationField: React.FC<ExpirationFieldProps> = ({
   onUpdate,
 }) => {
   return (
-    <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
+    <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
       <div className="flex items-center space-x-2">
         <Checkbox
           id="expirationEnabled"

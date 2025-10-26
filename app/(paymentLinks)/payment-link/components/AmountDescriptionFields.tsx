@@ -18,8 +18,8 @@ export const AmountDescriptionFields: React.FC<AmountDescriptionFieldsProps> = (
   linkType,
 }) => {
   return (
-    <div className="space-y-6">
-      <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
+    <div className="space-y-3">
+      <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
         <Label htmlFor="amount" className="flex items-center text-sm sm:text-base text-white">
           Payment Amount
           <span className="ml-2 text-xs text-slate-400">
@@ -39,7 +39,7 @@ export const AmountDescriptionFields: React.FC<AmountDescriptionFieldsProps> = (
         </div>
       </div>
 
-      <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
+      <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
         <Label htmlFor="description" className="text-sm sm:text-base text-white">Description</Label>
         <Textarea
           id="description"

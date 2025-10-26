@@ -48,8 +48,8 @@ export const NormalLinkFields: React.FC<NormalLinkFieldsProps> = ({
   }, [filteredStablecoins, formData.currency, onUpdate]);
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
+    <div className="space-y-3">
+      <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="specifyChain"
@@ -88,7 +88,7 @@ export const NormalLinkFields: React.FC<NormalLinkFieldsProps> = ({
         )}
       </div>
 
-      <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
+      <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="specifyCurrency"

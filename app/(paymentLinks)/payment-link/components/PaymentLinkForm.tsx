@@ -100,13 +100,13 @@ export const PaymentLinkForm: React.FC = () => {
     <div className="w-full max-w-2xl mx-auto">
       <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden">
         <form onSubmit={handleCreateLink}>
-          <CardHeader>
+          <CardHeader className="pb-4 sm:pb-6 pt-5 sm:pt-7 px-5 sm:px-7">
             <LinkTypeSelector
               linkType={formData.linkType}
               onLinkTypeChange={(type) => updateFormData({ linkType: type })}
             />
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 p-5 sm:p-7">
             {formData.linkType === "OFF_RAMP" ? (
               <OffRampFields
                 formData={formData}
@@ -132,11 +132,11 @@ export const PaymentLinkForm: React.FC = () => {
               onUpdate={updateFormData}
             />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="pb-5 sm:pb-7 px-5 sm:px-7 pt-4">
             <Button 
               type="submit" 
               disabled={isLoading || !isConnected}
-              className="w-full text-sm sm:text-base py-5 sm:py-6 font-semibold text-white rounded-xl transition-all duration-300 ease-in-out bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/20 hover:shadow-purple-500/30 focus:ring-4 focus:ring-purple-500/50 disabled:bg-slate-700 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
+              className="w-full text-sm sm:text-base py-3 sm:py-4 font-semibold text-white rounded-xl transition-all duration-300 ease-in-out bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/20 hover:shadow-purple-500/30 focus:ring-4 focus:ring-purple-500/50 disabled:bg-slate-700 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

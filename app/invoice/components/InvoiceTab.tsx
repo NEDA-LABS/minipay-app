@@ -163,7 +163,7 @@ export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-2 sm:px-4">
+    <div className="w-full max-w-4xl mx-auto">
       {error && (
         <Alert className="mb-6 border-red-500/50 bg-red-500/10 rounded-xl">
           <AlertDescription className="text-red-400">{error}</AlertDescription>

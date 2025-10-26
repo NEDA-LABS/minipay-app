@@ -122,7 +122,7 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
   if (baseName) {
     return (
       <span
-        className={`text-[8px] sm:text-sm text-white font-bold ${basenameClassName}`}
+        className={`text-[10px] sm:text-sm text-white font-bold ${basenameClassName}`}
       >
         {baseName}
       </span>
@@ -133,7 +133,7 @@ const BasenameDisplay: React.FC<BasenameDisplayProps> = ({
   if (username) {
     return (
       <span
-        className={`text-[8px] sm:text-sm text-white font-bold ${basenameClassName}`}
+        className={`text-[10px] sm:text-sm text-white font-bold ${basenameClassName}`}
       >
         @{username}
       </span>
@@ -189,13 +189,13 @@ const WalletSelector = forwardRef<
         
         .wallet-address {
           font-size: 0.65rem;
-          max-width: calc(100vw - 100px);
+          max-width: calc(100vw - 140px);
         }
         .basename-display {
-          max-width: 80px !important;
+          max-width: 60px !important;
         }
         .address-display {
-          max-width: 60px !important;
+          max-width: 50px !important;
         }
       }
     `;
@@ -473,7 +473,7 @@ const WalletSelector = forwardRef<
       {isConnected ? (
         <DropdownMenu open={showOptions} onOpenChange={setShowOptions}>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" className="flex items-center space-x-1 sm:space-x-2 bg-slate-800/80 border border-slate-600/50 text-white hover:bg-slate-700/80 rounded-full px-1.5 sm:px-2">
+            <Button variant="secondary" className="flex items-center space-x-1 sm:space-x-2 bg-slate-800/80 border border-slate-600/50 text-white hover:bg-slate-700/80 rounded-full px-1 sm:px-2">
               {renderAvatarIcon()}
               {pathname !== "/" && (
                 <div className="wallet-address-container flex-1 min-w-0">

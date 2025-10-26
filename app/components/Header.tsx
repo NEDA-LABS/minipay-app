@@ -83,7 +83,7 @@ export default function Header() {
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
       )}
 
-      <div className="mx-auto sm:px-6 lg:px-8">
+      <div className="mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo Section */}
           <div className="flex items-center">
@@ -98,7 +98,7 @@ export default function Header() {
                     NEDAPay
                   </span>
                 </div>
-                <Badge variant="default" className="absolute -right-3 text-[0.6rem] z-10 font-bold px-1 py-0 bg-blue-800 text-white">
+                <Badge variant="default" className="absolute right-0 sm:-right-3 text-[0.6rem] z-10 font-bold px-1 py-0 bg-blue-800 text-white">
                   BETA
                 </Badge>
               </div>
@@ -106,7 +106,7 @@ export default function Header() {
           </div>
 
           {/* Navigation and Actions */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {/* Navigation Links */}
             {pathname === "/" && (
               <nav className="flex items-center space-x-2">
@@ -121,7 +121,7 @@ export default function Header() {
             )}
 
             {/* Action Buttons Container */}
-            <div className="flex items-center space-x-0.5 sm:space-x-3 px-1 sm:px-3 py-1 sm:py-2">
+            <div className="flex items-center space-x-0.5 sm:space-x-2 md:space-x-3 px-0 sm:px-2 md:px-3 py-1 sm:py-2">
               <NotificationTab />
 
               {/* Chain Switcher and Balance - Left of Wallet Selector */}

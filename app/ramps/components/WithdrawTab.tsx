@@ -258,7 +258,7 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
   // Authentication checks
   if (!authenticated) {
     return (
-      <div className="max-w-4xl mx-auto px-2 sm:px-4">
+      <div className="max-w-4xl mx-auto">
       <Card className="bg-slate-800/90 backdrop-blur-sm border-slate-700/50">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
@@ -317,7 +317,7 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-2 sm:px-4">
+    <div className="max-w-4xl mx-auto">
       {/* Single Card with Progressive Steps */}
       <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl !rounded-3xl overflow-hidden">
         <CardHeader className="pb-6 pt-7 px-7 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent">

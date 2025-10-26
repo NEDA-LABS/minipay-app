@@ -10,7 +10,7 @@ const WalletEmbeddedContent = dynamic(
 
 export default function WalletTab() {
   return (
-    <div className="w-full px-2 sm:px-4">
+    <div className="w-full">
       <WalletEmbeddedContent />
     </div>
   );

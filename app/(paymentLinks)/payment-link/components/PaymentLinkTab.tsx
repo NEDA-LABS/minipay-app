@@ -16,7 +16,7 @@ export default function PaymentLinkTab({ walletAddress }: PaymentLinkTabProps) {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto px-2 sm:px-4">
+    <div className="max-w-4xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

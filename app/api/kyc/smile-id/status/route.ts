@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
       where: { privyUserId },
     });
 
-    if (!user || !user.wallet) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'User or wallet not found' },
+        { error: 'User not found' },
         { status: 404 }
       );
     }
@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
     // Create Smile ID service instance
     const smileIdService = new SmileIDService(prisma);
 
-    // Check verification status
-    const status = await smileIdService.checkStatus(user.wallet);
+    // Check verification status (use privyUserId, not wallet address)
+    const status = await smileIdService.checkStatus(privyUserId);
 
     return NextResponse.json({
       success: true,

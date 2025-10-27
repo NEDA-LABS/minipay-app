@@ -251,8 +251,11 @@ export class SmileIDService {
     try {
       const privyUserId = payload.PartnerParams?.user_id;
       if (!privyUserId) {
+        console.error('Missing user_id in webhook payload:', payload);
         throw new SmileIDError('Missing user_id in webhook payload', 'INVALID_PAYLOAD');
       }
+
+      console.log('Processing webhook for privyUserId:', privyUserId);
 
       const verification = await this.prisma.smileIDVerification.findUnique({
         where: { privyUserId },
@@ -260,6 +263,7 @@ export class SmileIDService {
       });
 
       if (!verification) {
+        console.error('Verification not found for privyUserId:', privyUserId);
         throw new SmileIDError('Verification not found for webhook', 'VERIFICATION_NOT_FOUND');
       }
 
@@ -282,9 +286,6 @@ export class SmileIDService {
           completedAt: status !== 'PENDING' ? new Date() : null,
         },
       });
-
-      // Return verification with user data for email sending
-      return { verification, user: verification.user, status };
 
       // Store webhook event
       await this.prisma.smileIDWebhookEvent.create({

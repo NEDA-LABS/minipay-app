@@ -332,39 +332,16 @@ export default function DashboardContent() {
     }
   };
 
-  // Set page as loaded once authenticated and ready
+  // Remove blocking wait for Privy - show dashboard immediately
+  // This eliminates the 2-3 second blank loading screen on first load
   useEffect(() => {
-    if (ready && authenticated) {
-      setIsPageLoading(false);
-    } else if (ready && !authenticated) {
-      setIsPageLoading(false);
-    }
-  }, [ready, authenticated]);
+    // Set page as loaded immediately - don't wait for Privy
+    setIsPageLoading(false);
+  }, []);
 
-  // Show loading state ONLY while Privy is initializing
-  if (!ready || isPageLoading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 z-[9999]">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-purple-600/20 to-transparent rounded-full blur-3xl animate-pulse" />
-        </div>
-        <div className="relative z-10 text-center">
-          <div className="mb-8 flex justify-center">
-            <div className="relative w-20 h-20 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-purple-500 border-r-blue-500 animate-spin" />
-              <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-purple-400 border-l-blue-400 animate-spin [animation-duration:3s] [animation-direction:reverse]" />
-            </div>
-          </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-            Preparing Your Dashboard
-          </h2>
-          <p className="text-slate-400 text-sm md:text-base">
-            Setting up your account and loading your data
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // NO LONGER BLOCKING UI ON PRIVY READY
+  // Dashboard renders immediately with skeleton states
+  // Data loads in background via optimistic fetching
 
   return (
     <div className="space-y-2 w-full">
@@ -375,6 +352,16 @@ export default function DashboardContent() {
         <div className="w-full">
           {authenticated ? (
             <DashboardTabs walletAddress={walletAddress} />
+          ) : !ready ? (
+            // Show skeleton while Privy initializes
+            <div className="p-6 space-y-4">
+              <div className="h-12 w-full bg-white/5 rounded-2xl animate-pulse" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
+                <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
+              </div>
+              <div className="h-64 bg-white/5 rounded-2xl animate-pulse" />
+            </div>
           ) : (
             <Card className="relative border-0 bg-slate-900/90 text-white shadow-2xl rounded-3xl">
               <CardContent className="relative p-6">

@@ -95,8 +95,12 @@ export default function DashboardContent() {
 
 
   // Fetch balances and transactions in parallel when walletAddress changes
+  // CRITICAL: Don't wait for Privy 'ready' - start fetching as soon as we have wallet address
+  // This eliminates the 2-3 second blocking wait on first load
   useEffect(() => {
-    if (!ready || !authenticated || !walletAddress) return;
+    if (!walletAddress) return;
+    // Only check authenticated if ready, otherwise proceed optimistically
+    if (ready && !authenticated) return;
 
     const fetchAllData = async () => {
       setIsBalanceLoading(true);
@@ -253,7 +257,7 @@ export default function DashboardContent() {
     };
 
     fetchAllData();
-  }, [ready, authenticated, walletAddress]);
+  }, [walletAddress, ready, authenticated]); // walletAddress is primary trigger
 
   // Calculate metrics based on selected stablecoin
   useEffect(() => {

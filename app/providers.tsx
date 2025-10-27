@@ -109,13 +109,17 @@ export function Providers(props: { children: ReactNode }) {
           appearance: {
             landingHeader: 'Sign in to NEDAPay',
             walletList: ['metamask', 'coinbase_wallet', 'base_account', 'binance', 'wallet_connect', 'bybit_wallet', 'okx_wallet'],
-            walletChainType: 'ethereum-only'},
+            walletChainType: 'ethereum-only',
+            showWalletLoginFirst: true, // Show wallet options first for faster UX
+          },
           embeddedWallets: {
             ethereum: {
               createOnLogin: "users-without-wallets",
             },
           },
-          supportedChains: [base, bsc, arbitrum, polygon, celo, scroll, optimism, mainnet, lisk]
+          // Only include chains actively used to reduce initialization time
+          supportedChains: [base, bsc, arbitrum, polygon, celo, scroll, lisk],
+          loginMethods: ['wallet', 'email'], // Limit login methods for faster SDK load
         }}
       >
         <QueryClientProvider client={queryClient}>

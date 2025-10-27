@@ -56,10 +56,8 @@ function HomeContent() {
   useEffect(() => {
     if (ready && authenticated && (user?.wallet?.address || user?.email?.address)) {
       setIsRedirecting(true);
-      const timer = setTimeout(() => {
-        router.push("/dashboard");
-      }, 500);
-      return () => clearTimeout(timer);
+      // Redirect immediately - no artificial delay
+      router.push("/dashboard");
     }
   }, [ready, authenticated, user?.wallet?.address, user?.email?.address, router]);
 

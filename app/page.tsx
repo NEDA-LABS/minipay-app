@@ -53,17 +53,27 @@ function HomeContent() {
     setMounted(true);
   }, []);
 
+  // Prefetch the dashboard route early to avoid route chunk stall on Safari
+  useEffect(() => {
+    try {
+      router.prefetch("/dashboard");
+    } catch (_) {
+      // ignore
+    }
+  }, [router]);
+
   useEffect(() => {
     if (ready && authenticated && (user?.wallet?.address || user?.email?.address)) {
       setIsRedirecting(true);
-      // Redirect immediately - no artificial delay
-      router.push("/dashboard");
+      // Use hard navigation immediately to avoid route chunk stalls on Safari
+      if (typeof window !== "undefined") {
+        window.location.replace("/dashboard");
+      }
     }
   }, [ready, authenticated, user?.wallet?.address, user?.email?.address, router]);
 
-  if (isRedirecting) {
-    return <DashboardLoadingScreen />;
-  }
+  // Do not show a blocking loading screen while redirecting.
+  // Keeping the homepage visible avoids the stuck loader in Safari.
 
   return (
     <div

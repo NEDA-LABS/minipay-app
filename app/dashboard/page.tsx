@@ -1,50 +1,35 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { ethers } from "ethers";
 import { stablecoins } from "@/data/stablecoins";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card";
-import { Button } from "@/components/Button";
-import { Badge } from "@/components/Badge";
-import { Copy, Check } from "lucide-react";
-import SwapModal from "@/components/SwapModal";
+import { Card, CardContent } from "@/components/Card";
 import Header from "@/components/Header";
-import {
-  Activity,
-  DollarSign,
-  CreditCard,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreHorizontal,
-  Download,
-  Wallet,
-  Send,
-  BarChart3,
-  PieChart,
-  ExternalLink,
-  Copy as CopyIcon,
-  Sparkles,
-  Zap,
-  Globe,
-  Shield,
-  Repeat,
-  Menu,
-  ChevronLeft,
-} from "lucide-react";
-import DailyRevenueChart from "./DailyRevenueChart";
-import Footer from "@/components/Footer";
-import WalletKit from "./WalletKit";
-import { resolveName, toHexAddress } from '../utils/ensUtils';
+import { Shield } from "lucide-react";
+import dynamic from "next/dynamic";
 
 // import {
 //   SidebarProvider,
 //   useSidebar,
 // } from "@/compliance/user/components/ui/sidebar";
 // Removed StablecoinBalanceButton and StablecoinBalanceTracker - now in header
-import DashboardTabs from "@/components/DashboardTabs";
-import BroadCastNotificationListener from "@/components/pushNotificationsListener";
+// Lazy-load heavy client components to reduce first-load bundle size (notably on Safari)
+const DashboardTabs = dynamic(() => import("@/components/DashboardTabs"), {
+  ssr: false,
+  loading: () => (
+    <div className="p-6">
+      <div className="h-8 w-48 bg-white/10 rounded animate-pulse mb-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
+        <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
+      </div>
+    </div>
+  ),
+});
+
+const BroadCastNotificationListener = dynamic(
+  () => import("@/components/pushNotificationsListener"),
+  { ssr: false }
+);
 
 // Define ABIs and constants
 const ERC20_ABI = [
@@ -57,7 +42,7 @@ const MULTICALL3_ABI = [
 ];
 
 const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
-const BASE_RPC_URL = "https://mainnet.base.org";
+const DEFAULT_BASE_RPC_URL = "https://mainnet.base.org";
 
 // Define type for stablecoin balance
 type StablecoinBalance = {
@@ -92,8 +77,6 @@ export default function DashboardContent() {
     StablecoinBalance[]
   >([]);
   const [isBalanceLoading, setIsBalanceLoading] = useState(false);
-  const [swapModalOpen, setSwapModalOpen] = useState(false);
-  const [swapFromSymbol, setSwapFromSymbol] = useState<string>("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isTransactionLoading, setIsTransactionLoading] = useState(true);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -109,37 +92,6 @@ export default function DashboardContent() {
 
   const [copied, setCopied] = useState(false);
 
-  // Set up provider and multicall contract
-  const provider = useMemo(
-    () => new ethers.providers.JsonRpcProvider(BASE_RPC_URL),
-    []
-  );
-  const multicallContract = useMemo(
-    () => new ethers.Contract(MULTICALL3_ADDRESS, MULTICALL3_ABI, provider),
-    [provider]
-  );
-
-  // State for ENS name
-  const [ensName, setEnsName] = useState<string | null>(null);
-
-  // Resolve ENS name (deferred - not critical for initial load)
-  useEffect(() => {
-    if (!ready || !authenticated || !walletAddress) return;
-
-    // Defer ENS resolution by 1 second to prioritize critical data
-    const timer = setTimeout(async () => {
-      try {
-        const name = await resolveName({ address: walletAddress as `0x${string}` });
-        setEnsName(name);
-      } catch (error) {
-        console.error("Error resolving ENS name:", error);
-        setEnsName(null);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [ready, authenticated, walletAddress]);
-
 
 
   // Fetch balances and transactions in parallel when walletAddress changes
@@ -151,74 +103,89 @@ export default function DashboardContent() {
       setIsTransactionLoading(true);
 
       try {
-        // Fetch balances and transactions in parallel
-        const [balancesResult, transactionsResult] = await Promise.allSettled([
-          // Fetch balances
-          (async () => {
-            const baseStablecoins = stablecoins.filter((coin) =>
-              coin.chainIds.includes(8453) && coin.addresses[8453]
-            );
-            const calls = baseStablecoins.flatMap((coin) => [
-              {
-                target: coin.addresses[8453],
-                allowFailure: true,
-                callData: new ethers.utils.Interface(ERC20_ABI).encodeFunctionData(
-                  "balanceOf",
-                  [walletAddress]
-                ),
-              },
-              {
-                target: coin.addresses[8453],
-                allowFailure: true,
-                callData: new ethers.utils.Interface(ERC20_ABI).encodeFunctionData(
-                  "decimals",
-                  []
-                ),
-              },
-            ]);
+        // Dynamically import ethers to keep initial bundle smaller (helps Safari first load)
+        const ethersLib: any = (await import("ethers")).ethers;
 
-            const results = await multicallContract.aggregate3(calls);
-            const realBalances: Record<string, string> = {};
-            baseStablecoins.forEach((coin, index) => {
-              const balanceResult = results[index * 2];
-              const decimalsResult = results[index * 2 + 1];
+        const rpcUrl =
+          (process.env.NEXT_PUBLIC_BASE_RPC_URL as string) || DEFAULT_BASE_RPC_URL;
+        const provider = new ethersLib.providers.JsonRpcProvider(rpcUrl);
+        const multicallContract = new ethersLib.Contract(
+          MULTICALL3_ADDRESS,
+          MULTICALL3_ABI,
+          provider
+        );
 
-              if (balanceResult.success && decimalsResult.success) {
-                try {
-                  const balance = ethers.utils.defaultAbiCoder.decode(
-                    ["uint256"],
-                    balanceResult.returnData
-                  )[0];
-                  const decimals = ethers.utils.defaultAbiCoder.decode(
-                    ["uint8"],
-                    decimalsResult.returnData
-                  )[0];
-                  const formatted = ethers.utils.formatUnits(balance, decimals);
-                  realBalances[coin.baseToken] =
-                    parseFloat(formatted).toLocaleString();
-                } catch (err) {
-                  console.error(`Error processing ${coin.baseToken}:`, err);
-                }
+        // Helper to fetch balances for a subset of coins
+        const fetchBalancesFor = async (coins: typeof stablecoins) => {
+          const iface = new ethersLib.utils.Interface(ERC20_ABI);
+          const calls = coins.flatMap((coin) => [
+            {
+              target: coin.addresses[8453],
+              allowFailure: true,
+              callData: iface.encodeFunctionData("balanceOf", [walletAddress]),
+            },
+            {
+              target: coin.addresses[8453],
+              allowFailure: true,
+              callData: iface.encodeFunctionData("decimals", []),
+            },
+          ]);
+
+          const results = await multicallContract.aggregate3(calls);
+          const realBalances: Record<string, string> = {};
+          coins.forEach((coin, index) => {
+            const balanceResult = results[index * 2];
+            const decimalsResult = results[index * 2 + 1];
+            if (balanceResult.success && decimalsResult.success) {
+              try {
+                const balance = ethersLib.utils.defaultAbiCoder.decode(
+                  ["uint256"],
+                  balanceResult.returnData
+                )[0];
+                const decimals = ethersLib.utils.defaultAbiCoder.decode(
+                  ["uint8"],
+                  decimalsResult.returnData
+                )[0];
+                const formatted = ethersLib.utils.formatUnits(balance, decimals);
+                realBalances[coin.baseToken] = parseFloat(formatted).toLocaleString();
+              } catch (err) {
+                console.error(`Error processing ${coin.baseToken}:`, err);
               }
-            });
+            }
+          });
 
-            return baseStablecoins.map((coin) => ({
-              symbol: coin.baseToken,
-              name: coin.name,
-              balance: realBalances[coin.baseToken] || "0",
-              flag: coin.flag,
-              region: coin.region,
-            }));
-          })(),
-          // Fetch transactions
+          return coins.map((coin) => ({
+            symbol: coin.baseToken,
+            name: coin.name,
+            balance: realBalances[coin.baseToken] || "0",
+            flag: coin.flag,
+            region: coin.region,
+          }));
+        };
+
+        // Choose Base chain coins once
+        const baseStablecoinsAll = stablecoins.filter(
+          (coin) => coin.chainIds.includes(8453) && coin.addresses[8453]
+        );
+        const primary = baseStablecoinsAll.slice(0, 4); // fetch small subset first
+        const secondary = baseStablecoinsAll.slice(4);
+
+        // Fetch balances (primary) and transactions in parallel first
+        const [balancesPrimaryResult, transactionsResult] = await Promise.allSettled([
+          fetchBalancesFor(primary),
           (async () => {
             const response = await fetch(
-              `/api/transactions?merchantId=${walletAddress}`
+              `/api/transactions?merchantId=${walletAddress}`,
+              {
+                headers: {
+                  'x-app-secret': process.env.NEXT_PUBLIC_APP_ACCESS as string,
+                },
+              }
             );
             if (!response.ok) throw new Error("Failed to fetch transactions");
-            const data = await response.json();
-
-            return data.map((tx: any): Transaction => ({
+            const json = await response.json();
+            const arr = ((json && json.data) ? json.data : []) as any[];
+            return arr.map((tx: any): Transaction => ({
               id: tx.txHash,
               shortId: tx.txHash.slice(0, 6) + "..." + tx.txHash.slice(-4),
               date: new Date(tx.createdAt)
@@ -237,12 +204,30 @@ export default function DashboardContent() {
         ]);
 
         // Handle balances result
-        if (balancesResult.status === "fulfilled") {
-          setStablecoinBalances(balancesResult.value);
+        if (balancesPrimaryResult.status === "fulfilled") {
+          setStablecoinBalances(balancesPrimaryResult.value);
         } else {
-          console.error("Error fetching balances:", balancesResult.reason);
+          console.error(
+            "Error fetching primary balances:",
+            balancesPrimaryResult.reason
+          );
         }
-        setIsBalanceLoading(false);
+        // Kick off secondary balances in background without blocking UI
+        if (secondary.length > 0) {
+          fetchBalancesFor(secondary)
+            .then((more) => {
+              setStablecoinBalances((prev) => {
+                // Merge while preserving order: existing first, then new ones not already present
+                const existingSymbols = new Set(prev.map((p) => p.symbol));
+                const additional = more.filter((m) => !existingSymbols.has(m.symbol));
+                return [...prev, ...additional];
+              });
+            })
+            .catch((e) => console.error("Error fetching secondary balances:", e))
+            .finally(() => setIsBalanceLoading(false));
+        } else {
+          setIsBalanceLoading(false);
+        }
 
         // Handle transactions result
         if (transactionsResult.status === "fulfilled") {
@@ -268,7 +253,7 @@ export default function DashboardContent() {
     };
 
     fetchAllData();
-  }, [ready, authenticated, walletAddress, multicallContract]);
+  }, [ready, authenticated, walletAddress]);
 
   // Calculate metrics based on selected stablecoin
   useEffect(() => {
@@ -326,16 +311,7 @@ export default function DashboardContent() {
     });
   }, [transactions, selectedStablecoin]);
 
-  // Handle swap click
-  const handleSwapClick = (fromSymbol: string) => {
-    setSwapFromSymbol(fromSymbol);
-    setSwapModalOpen(true);
-  };
-
-  const handleSwap = (from: string, to: string, amount: string) => {
-    setSwapModalOpen(false);
-    console.log(`Swapping ${amount} ${from} to ${to}`);
-  };
+  // Removed swap handlers (SwapModal not used on this page anymore)
 
   const getGradientClass = (index: number) => {
     switch (index) {
@@ -366,36 +342,21 @@ export default function DashboardContent() {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 z-[9999]">
         <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-purple-600/20 to-transparent rounded-full blur-3xl"
-            style={{
-              animation: "pulse 8s ease-in-out infinite",
-            }}
-          />
+          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-purple-600/20 to-transparent rounded-full blur-3xl animate-pulse" />
         </div>
         <div className="relative z-10 text-center">
           <div className="mb-8 flex justify-center">
             <div className="relative w-20 h-20 flex items-center justify-center">
-              <div
-                className="absolute inset-0 rounded-full border-2 border-transparent border-t-purple-500 border-r-blue-500"
-                style={{
-                  animation: "spin 2s linear infinite",
-                }}
-              />
-              <div
-                className="absolute inset-2 rounded-full border-2 border-transparent border-b-purple-400 border-l-blue-400"
-                style={{
-                  animation: "spin 3s linear infinite reverse",
-                }}
-              />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-purple-500 border-r-blue-500 animate-spin" />
+              <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-purple-400 border-l-blue-400 animate-spin [animation-duration:3s] [animation-direction:reverse]" />
             </div>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Preparing Your Dashboard
           </h2>
-          {/* <p className="text-slate-400 text-sm md:text-base">
+          <p className="text-slate-400 text-sm md:text-base">
             Setting up your account and loading your data
-          </p> */}
+          </p>
         </div>
       </div>
     );

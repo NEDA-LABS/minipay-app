@@ -10,11 +10,29 @@ import {
   ArrowLeftRight 
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import WithdrawTab from "@/ramps/components/WithdrawTab";
-import WalletTab from "@/components/(wallet)/WalletTab";
-import InvoiceTab from "@/invoice/components/InvoiceTab";
-import PaymentLinkTab from "@/(paymentLinks)/payment-link/components/PaymentLinkTab";
-import BridgeTab from "@/accross-bridge/components/BridgeTab";
+import dynamic from "next/dynamic";
+
+// Lazy-load each tab's content to minimize initial bundle size
+const WithdrawTab = dynamic(() => import("@/ramps/components/WithdrawTab"), {
+  ssr: false,
+  loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
+});
+const WalletTab = dynamic(() => import("@/components/(wallet)/WalletTab"), {
+  ssr: false,
+  loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
+});
+const InvoiceTab = dynamic(() => import("@/invoice/components/InvoiceTab"), {
+  ssr: false,
+  loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
+});
+const PaymentLinkTab = dynamic(
+  () => import("@/(paymentLinks)/payment-link/components/PaymentLinkTab"),
+  { ssr: false, loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" /> }
+);
+const BridgeTab = dynamic(() => import("@/accross-bridge/components/BridgeTab"), {
+  ssr: false,
+  loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
+});
 
 interface DashboardTabsProps {
   walletAddress?: string;

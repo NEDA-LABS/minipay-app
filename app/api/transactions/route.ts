@@ -10,11 +10,25 @@ export async function GET(req: NextRequest) {
     // Return 404 to prevent build/static analysis failures
     return new NextResponse('Not Found', { status: 404 });
   }
+  // Limit payload and select only used fields for faster first load
   const transactions = await prisma.transaction.findMany({
     where: { merchantId },
     orderBy: { createdAt: 'desc' },
+    take: 50, // latest 50
+    select: {
+      txHash: true,
+      createdAt: true,
+      amount: true,
+      currency: true,
+      status: true,
+      wallet: true,
+    },
   });
-  return NextResponse.json({ success: true, data: transactions });
+
+  const res = NextResponse.json({ success: true, data: transactions });
+  // Short-lived browser caching to speed up navigation and Safari reloads
+  res.headers.set('Cache-Control', 'private, max-age=15, stale-while-revalidate=120');
+  return res;
 }
 
 // POST: Add a new transaction

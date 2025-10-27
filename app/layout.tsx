@@ -37,6 +37,14 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        {/* Preconnects to speed up first load on Safari/slow networks */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        {/* Base RPC preconnect to reduce TLS + DNS latency for first balances call */}
+        <link rel="preconnect" href="https://mainnet.base.org" crossOrigin="" />
+        <link rel="dns-prefetch" href="//mainnet.base.org" />
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
       <body className="bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900">

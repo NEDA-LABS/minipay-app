@@ -11,9 +11,7 @@ export interface SmileIDConfig {
 }
 
 export interface SmileIDVerificationRequest {
-  walletAddress: string;
-  signature: string;
-  nonce: string;
+  privyUserId: string;
   country?: string;
   idType?: string;
 }

@@ -36,7 +36,7 @@ function KYCPage() {
         </div> */}
 
         {/* Important Information */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -47,7 +47,7 @@ function KYCPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Main Verification Component */}
         <div className="flex justify-center mb-12">

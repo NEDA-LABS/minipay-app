@@ -26,20 +26,20 @@ export async function POST(request: NextRequest) {
       where: { privyUserId },
     });
 
-    if (!user || !user.wallet) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'User or wallet not found' },
+        { error: 'User not found' },
         { status: 404 }
       );
     }
 
     // Parse request body
     const body = await request.json();
-    const { signature, nonce, country, idType } = body;
+    const { country, idType } = body;
 
-    if (!signature || !nonce) {
+    if (!country || !idType) {
       return NextResponse.json(
-        { error: 'Missing required fields: signature, nonce' },
+        { error: 'Missing required fields: country, idType' },
         { status: 400 }
       );
     }
@@ -49,9 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Request verification
     const verificationResponse = await smileIdService.requestVerification({
-      walletAddress: user.wallet,
-      signature,
-      nonce,
+      privyUserId,
       country,
       idType,
     });

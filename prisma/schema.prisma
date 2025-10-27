@@ -34,6 +34,9 @@ model User {
   // Smile ID KYC verifications
   smileIdVerifications SmileIDVerification[]
 
+  // Email notifications sent to this user
+  emailNotifications EmailNotification[]
+
   // Contacts - contacts owned by this user (contacts they created)
   ownedContacts     Contact[]  @relation("OwnedContacts")
   
@@ -532,7 +535,7 @@ enum SmileIDVerificationMethod {
 model SmileIDVerification {
   id                    String                      @id @default(cuid())
   userId                String
-  walletAddress         String                      @unique
+  privyUserId           String                      @unique // Use Privy ID instead of wallet
   platform              String                      @default("smile_id")
   platformRef           String                      // Smile ID reference ID
   verificationUrl       String                      // Smile Link URL
@@ -547,6 +550,10 @@ model SmileIDVerification {
   resultCode            String?                     // Smile ID result code
   resultText            String?                     // Smile ID result description
   
+  // Email notification tracking
+  emailSent             Boolean                     @default(false)
+  emailSentAt           DateTime?
+  
   // Timestamps
   expiresAt             DateTime                    // When verification URL expires
   createdAt             DateTime                    @default(now())
@@ -558,7 +565,7 @@ model SmileIDVerification {
   user                  User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   webhookEvents         SmileIDWebhookEvent[]
   
-  @@index([walletAddress])
+  @@index([privyUserId])
   @@index([userId])
   @@index([status])
   @@index([platformRef])
@@ -603,5 +610,71 @@ model SmileIDSupportedType {
   @@index([country])
   @@index([verificationMethod])
   @@map("smile_id_supported_types")
+}
+
+// ============================================================================
+// EMAIL NOTIFICATION TRACKING
+// ============================================================================
+
+enum EmailNotificationType {
+  INVOICE_SENT
+  WELCOME
+  KYC_REMINDER
+  KYC_STATUS_APPROVED
+  KYC_STATUS_REJECTED
+  KYC_STATUS_PENDING
+  KYC_STATUS_ADDITIONAL_INFO
+  PASSWORD_RESET
+  PAYMENT_RECEIVED
+  WITHDRAWAL_PROCESSED
+}
+
+enum EmailNotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  BOUNCED
+  DELIVERED
+}
+
+// Track all emails sent by the system
+model EmailNotification {
+  id                    String                      @id @default(cuid())
+  userId                String?                     // Related user (optional)
+  recipientEmail        String                      // Email address
+  recipientName         String?                     // Recipient name
+  
+  // Email details
+  type                  EmailNotificationType       // Type of email
+  subject               String                      // Email subject
+  status                EmailNotificationStatus     @default(PENDING)
+  
+  // Provider details
+  providerMessageId     String?                     // Message ID from email provider (e.g., Resend)
+  providerResponse      Json?                       // Full response from provider
+  
+  // Error tracking
+  errorMessage          String?                     // Error if send failed
+  retryCount            Int                         @default(0)
+  maxRetries            Int                         @default(3)
+  
+  // Metadata
+  metadata              Json?                       // Additional context (e.g., invoice ID, KYC status)
+  
+  // Timestamps
+  createdAt             DateTime                    @default(now())
+  sentAt                DateTime?
+  deliveredAt           DateTime?
+  failedAt              DateTime?
+  
+  // Relations
+  user                  User?                       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([recipientEmail])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_notifications")
 }
 

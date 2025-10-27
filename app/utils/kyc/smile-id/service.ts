@@ -36,7 +36,7 @@ export class SmileIDService {
     try {
       // Check for existing verification
       const existingVerification = await this.prisma.smileIDVerification.findUnique({
-        where: { walletAddress: request.walletAddress },
+        where: { privyUserId: request.privyUserId },
       });
 
       const timestamp = new Date();
@@ -126,7 +126,7 @@ export class SmileIDService {
         data_privacy_policy_url: SMILE_ID_CONSTANTS.DATA_PRIVACY_POLICY_URL,
         logo_url: SMILE_ID_CONSTANTS.LOGO_URL,
         is_single_use: true,
-        user_id: request.walletAddress,
+        user_id: request.privyUserId,
         expires_at: expiresAt.toISOString(),
       };
 
@@ -134,26 +134,32 @@ export class SmileIDService {
       const response = await this.makeSmileIDRequest('/v1/smile_links', linkRequest);
       const linkResponse = response as SmileIDLinkResponse;
 
-      // Find user by wallet address
+      // Find user by Privy ID
       const user = await this.prisma.user.findUnique({
-        where: { wallet: request.walletAddress },
+        where: { privyUserId: request.privyUserId },
       });
 
       if (!user) {
-        throw new SmileIDError('User not found for wallet address', 'USER_NOT_FOUND');
+        throw new SmileIDError('User not found for Privy ID', 'USER_NOT_FOUND');
+      }
+
+      // Check if user has email (required for notifications)
+      if (!user.email) {
+        throw new SmileIDError('Email address is required for KYC verification', 'EMAIL_REQUIRED');
       }
 
       // Store verification in database
       const verification = await this.prisma.smileIDVerification.create({
         data: {
           userId: user.id,
-          walletAddress: request.walletAddress,
+          privyUserId: request.privyUserId,
           platformRef: linkResponse.ref_id,
           verificationUrl: linkResponse.link,
           status: 'PENDING',
           country: request.country,
           idType: request.idType,
           expiresAt,
+          emailSent: false,
         },
       });
 
@@ -176,14 +182,14 @@ export class SmileIDService {
   /**
    * Check verification status
    */
-  async checkStatus(walletAddress: string): Promise<SmileIDVerificationStatus> {
+  async checkStatus(privyUserId: string): Promise<SmileIDVerificationStatus> {
     try {
       const verification = await this.prisma.smileIDVerification.findUnique({
-        where: { walletAddress },
+        where: { privyUserId },
       });
 
       if (!verification) {
-        throw new SmileIDError('No verification found for wallet address', 'NOT_FOUND');
+        throw new SmileIDError('No verification found for Privy user ID', 'NOT_FOUND');
       }
 
       let status = verification.status;
@@ -243,13 +249,14 @@ export class SmileIDService {
    */
   async processWebhook(payload: any): Promise<void> {
     try {
-      const walletAddress = payload.PartnerParams?.user_id;
-      if (!walletAddress) {
+      const privyUserId = payload.PartnerParams?.user_id;
+      if (!privyUserId) {
         throw new SmileIDError('Missing user_id in webhook payload', 'INVALID_PAYLOAD');
       }
 
       const verification = await this.prisma.smileIDVerification.findUnique({
-        where: { walletAddress },
+        where: { privyUserId },
+        include: { user: true },
       });
 
       if (!verification) {
@@ -276,6 +283,9 @@ export class SmileIDService {
         },
       });
 
+      // Return verification with user data for email sending
+      return { verification, user: verification.user, status };
+
       // Store webhook event
       await this.prisma.smileIDWebhookEvent.create({
         data: {
@@ -291,10 +301,10 @@ export class SmileIDService {
     } catch (error) {
       // Store failed webhook event if verification exists
       try {
-        const walletAddress = payload.PartnerParams?.user_id;
-        if (walletAddress) {
+        const privyUserId = payload.PartnerParams?.user_id;
+        if (privyUserId) {
           const verification = await this.prisma.smileIDVerification.findUnique({
-            where: { walletAddress },
+            where: { privyUserId },
           });
           
           if (verification) {

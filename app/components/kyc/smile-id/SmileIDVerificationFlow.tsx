@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useLinkAccount } from '@privy-io/react-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -14,6 +14,8 @@ import { Loader2, CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react
 import { CountrySelector } from './CountrySelector';
 import { IDTypeSelector } from './IDTypeSelector';
 import { VerificationStatus } from './VerificationStatus';
+import { useUserSync } from '@/hooks/useUserSync';
+import toast from 'react-hot-toast';
 
 interface SmileIDVerificationFlowProps {
   onVerificationComplete?: (success: boolean) => void;
@@ -32,16 +34,42 @@ export function SmileIDVerificationFlow({
   onVerificationComplete, 
   className 
 }: SmileIDVerificationFlowProps) {
-  const { user, signMessage, getAccessToken } = usePrivy();
+  const { user, getAccessToken } = usePrivy();
+  const { hasEmail, isLoading: userSyncLoading } = useUserSync();
+  const { linkEmail } = useLinkAccount({
+    onSuccess: () => {
+      toast.success('Email linked successfully!');
+      window.location.reload();
+    },
+    onError: (error) => {
+      console.error('Email linking failed:', error);
+      toast.error('Failed to link email. Please try again.');
+    },
+  });
+  
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedIdType, setSelectedIdType] = useState<string>('');
   const [verificationState, setVerificationState] = useState<VerificationState>({ status: 'idle' });
   const [isInitializing, setIsInitializing] = useState(true);
+  const [linkingEmail, setLinkingEmail] = useState<boolean>(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
+
+  // Initial loading effect with minimum wait time
+  useEffect(() => {
+    if (!user || userSyncLoading) return;
+
+    const timer = setTimeout(() => {
+      setInitialLoadComplete(true);
+    }, 1000); // Minimum 1 second wait to prevent flash
+
+    return () => clearTimeout(timer);
+  }, [user, userSyncLoading]);
 
   // Check existing verification status on mount
   useEffect(() => {
+    if (!initialLoadComplete || !hasEmail) return;
     checkVerificationStatus();
-  }, []);
+  }, [initialLoadComplete, hasEmail]);
 
   // Poll verification status when pending
   useEffect(() => {
@@ -103,28 +131,27 @@ export function SmileIDVerificationFlow({
     }
   };
 
+  const handleEmailLink = async () => {
+    try {
+      setLinkingEmail(true);
+      linkEmail();
+    } catch (error) {
+      setLinkingEmail(false);
+      console.error('Error linking email:', error);
+      toast.error('Failed to initiate email linking. Please try again.');
+    }
+  };
+
   const startVerification = async () => {
-    const walletAddress = user?.wallet?.address;
-    
-    if (!walletAddress || !selectedCountry || !selectedIdType) {
-      console.error('Missing required data:', { walletAddress, selectedCountry, selectedIdType });
+    if (!selectedCountry || !selectedIdType) {
+      console.error('Missing required data:', { selectedCountry, selectedIdType });
       return;
     }
 
     setVerificationState({ status: 'loading' });
 
     try {
-      // Generate nonce and sign message
-      const nonce = Math.random().toString(36).substring(7);
-      const message = `I accept the KYC Policy and hereby request an identity verification check for ${walletAddress} with nonce ${nonce}`;
-      
-      if (!message || message.trim() === '') {
-        throw new Error('Message cannot be empty');
-      }
-      
-      const signature = await signMessage({ message });
-
-      // Request verification
+      // Request verification (no signature needed)
       const token = await getAccessToken();
       if (!token) {
         throw new Error('Authentication required. Please sign in again.');
@@ -137,8 +164,6 @@ export function SmileIDVerificationFlow({
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          signature,
-          nonce,
           country: selectedCountry,
           idType: selectedIdType,
         }),
@@ -184,6 +209,72 @@ export function SmileIDVerificationFlow({
     );
   }
 
+  // No email state - show email requirement
+  if (!hasEmail) {
+    return (
+      <Card className={`${className} bg-slate-900/90 border-slate-700 !rounded-3xl`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-white">
+            <span className="text-base">Email Verification Required</span>
+          </CardTitle>
+          <CardDescription className="text-slate-300">
+            Please add and verify your email address to continue with identity verification
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="bg-blue-500/20 rounded-full h-12 w-12 flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-blue-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-blue-200 mb-2">
+                  Why do we need your email?
+                </h3>
+                <p className="text-sm text-blue-100/80 leading-relaxed">
+                  Your email address is required to send you important updates about your KYC verification status, 
+                  including approval or rejection notifications. This helps ensure the security of your account.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleEmailLink}
+            disabled={linkingEmail}
+            className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {linkingEmail ? (
+              <span className="flex items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Verifying Email...
+              </span>
+            ) : (
+              'Add Email Address'
+            )}
+          </Button>
+
+          <p className="text-slate-400 text-sm text-center leading-relaxed">
+            You'll receive a verification code to confirm your email address. 
+            The process typically takes less than a minute.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className={`${className} bg-slate-900/90 border-slate-700 !rounded-3xl`}>
       <CardHeader>
@@ -220,55 +311,45 @@ export function SmileIDVerificationFlow({
         {/* Verification Form */}
         {verificationState.status === 'idle' && (
           <div className="space-y-4">
-            {!user?.wallet?.address ? (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                <p className="text-sm text-red-200">
-                  Please connect your wallet to start identity verification.
-                </p>
-              </div>
-            ) : (
-              <>
-                <CountrySelector
-                  value={selectedCountry}
-                  onChange={setSelectedCountry}
-                />
+            <CountrySelector
+              value={selectedCountry}
+              onChange={setSelectedCountry}
+            />
 
-                {selectedCountry && (
-                  <IDTypeSelector
-                    country={selectedCountry}
-                    value={selectedIdType}
-                    onChange={setSelectedIdType}
-                  />
-                )}
+            {selectedCountry && (
+              <IDTypeSelector
+                country={selectedCountry}
+                value={selectedIdType}
+                onChange={setSelectedIdType}
+              />
+            )}
 
-                {selectedCountry && selectedIdType && (
-                  <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-blue-200 mb-1">
-                            You will be redirected to Smile ID
-                          </p>
-                          <p className="text-sm text-blue-100/80">
-                            Complete your identity verification with your {selectedIdType.toLowerCase().replace('_', ' ')}. Please have it ready.
-                          </p>
-                        </div>
-                      </div>
+            {selectedCountry && selectedIdType && (
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                     </div>
-
-                    <Button
-                      onClick={startVerification}
-                      disabled={!user?.wallet?.address || !selectedCountry || !selectedIdType}
-                      className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Start Verification
-                    </Button>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-200 mb-1">
+                        You will be redirected to verification page
+                      </p>
+                      <p className="text-sm text-blue-100/80">
+                        Complete your identity verification with your {selectedIdType.toLowerCase().replace('_', ' ')}. Please have it ready.
+                      </p>
+                    </div>
                   </div>
-                )}
-              </>
+                </div>
+
+                <Button
+                  onClick={startVerification}
+                  disabled={!selectedCountry || !selectedIdType}
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Start Verification
+                </Button>
+              </div>
             )}
           </div>
         )}

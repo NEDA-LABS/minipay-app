@@ -60,6 +60,7 @@ export function SmileIDVerificationFlow({
 
     const timer = setTimeout(() => {
       setInitialLoadComplete(true);
+      setIsInitializing(false); // Set initializing to false when load completes
     }, 1000); // Minimum 1 second wait to prevent flash
 
     return () => clearTimeout(timer);
@@ -126,8 +127,6 @@ export function SmileIDVerificationFlow({
         console.error('Failed to check verification status:', error);
       }
       setVerificationState({ status: 'idle' });
-    } finally {
-      setIsInitializing(false);
     }
   };
 

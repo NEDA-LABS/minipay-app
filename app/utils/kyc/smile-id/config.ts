@@ -10,6 +10,15 @@ export function getSmileIDConfig(): SmileIDConfig {
   const baseUrl = process.env.SMILE_ID_BASE_URL || 'https://api.smileidentity.com';
   const webhookSecret = process.env.SMILE_ID_WEBHOOK_SECRET;
 
+  // Log credentials being used (masking sensitive data)
+  // console.log('🔍 [SmileID] Configuration Check:');
+  // console.log('   Environment:', process.env.NODE_ENV || 'undefined');
+  // console.log('   Base URL:', baseUrl);
+  // console.log('   Partner ID:', partnerId || 'NOT_SET');
+  // console.log('   API Key:', apiKey ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}` : 'NOT_SET');
+  // console.log('   Webhook Secret:', webhookSecret ? 'SET' : 'NOT_SET');
+  // console.log('   URL Source:', process.env.SMILE_ID_BASE_URL ? 'Environment Variable' : 'Default');
+
   if (!partnerId || !apiKey) {
     throw new Error('Missing required Smile ID configuration. Please set SMILE_ID_PARTNER_ID and SMILE_ID_API_KEY environment variables.');
   }

@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import useSWR from 'swr'
+import { useReferralCommissionEligibility } from '@/hooks/useReferralCommissionEligibility'
 
 type Props = {
   code: string | null
@@ -13,6 +14,32 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function formatCCY(amount: number) {
   return Number.isFinite(amount) ? amount.toFixed(6) : '0.000000'
+}
+
+function ReferralEligibilityStatus({ wallet }: { wallet: string }) {
+  const { eligible, loading, reasons } = useReferralCommissionEligibility({ 
+    referredWallet: wallet,
+    poll: false 
+  });
+
+  if (loading) {
+    return <span className="text-xs text-gray-500">Checking...</span>
+  }
+
+  if (!eligible) {
+    const missingReqs = []
+    if (!reasons.kycVerified) missingReqs.push('KYC')
+    if (!reasons.hasFirstSettled) missingReqs.push('First TX')
+    if (!reasons.inviteeKycVerified) missingReqs.push('Invitee KYC')
+    
+    return (
+      <span className="text-xs text-orange-400" title={`Missing: ${missingReqs.join(', ')}`}>
+        Ineligible ({missingReqs.join(', ')})
+      </span>
+    )
+  }
+
+  return <span className="text-xs text-green-400">✓ Eligible</span>
 }
 
 export default function InfluencerDetailsModal({ code, open, onClose }: Props) {
@@ -104,15 +131,23 @@ export default function InfluencerDetailsModal({ code, open, onClose }: Props) {
                         <div className="text-xs text-gray-400 break-all">
                           Wallet: {r.user.wallet || '—'}
                         </div>
+                        {r.user.wallet && (
+                          <div className="mt-1">
+                            <ReferralEligibilityStatus wallet={r.user.wallet} />
+                          </div>
+                        )}
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-500">
-                          Earning (10% of first settled)
+                          Earning (10% when eligible*)
                         </div>
                         <div className="font-semibold">
                           {r.earning
                             ? `${formatCCY(r.earning.amount)} ${r.earning.currency}`
                             : '—'}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          *Requires: KYC + First TX
                         </div>
                       </div>
                     </div>

@@ -100,6 +100,7 @@ export async function GET() {
       );
 
       return {
+        influencerProfileId: inf.id, // For disbursement integration
         influencer: inf.displayName,
         code: inf.customCode,
         email: inf.user?.email ?? "",

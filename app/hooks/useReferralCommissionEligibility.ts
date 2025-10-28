@@ -14,7 +14,8 @@ type Options = {
 
 /**
  * Commission eligibility for referrals = current user KYC verified AND
- * the referred user (wallet) has a first settled off-ramp.
+ * the referred user (wallet) has a first settled off-ramp AND
+ * the referred user has completed KYC successfully.
  * Data source matches referral analytics used across the app.
  */
 export function useReferralCommissionEligibility(options: Options = {}) {
@@ -31,6 +32,8 @@ export function useReferralCommissionEligibility(options: Options = {}) {
   const [txCount, setTxCount] = useState<number>(0);
   const [txLoading, setTxLoading] = useState<boolean>(false);
   const [txError, setTxError] = useState<string | null>(null);
+  const [inviteeKycVerified, setInviteeKycVerified] = useState<boolean>(false);
+  const [inviteeKycLoading, setInviteeKycLoading] = useState<boolean>(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch influencer analytics and locate the referred wallet row
@@ -38,9 +41,12 @@ export function useReferralCommissionEligibility(options: Options = {}) {
     if (!referredWallet) return;
     try {
       setTxLoading(true);
+      setInviteeKycLoading(true);
       setTxError(null);
 
       const token = await getAccessToken();
+      
+      // Fetch referral analytics data
       const res = await fetch('/api/referral/analytics/influencer', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -54,12 +60,35 @@ export function useReferralCommissionEligibility(options: Options = {}) {
 
       setTxCount(row?.txCount ?? 0);
       setHasFirstSettled(Boolean(row?.firstSettledTx));
+
+      // Fetch invitee KYC status
+      try {
+        const kycRes = await fetch('/api/kyc/smile-id/status', {
+          method: 'POST',
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ walletAddress: referredWallet }),
+        });
+        if (kycRes.ok) {
+          const kycData = await kycRes.json();
+          setInviteeKycVerified(kycData.verified || false);
+        } else {
+          setInviteeKycVerified(false);
+        }
+      } catch (kycError) {
+        console.warn('Failed to fetch invitee KYC status:', kycError);
+        setInviteeKycVerified(false);
+      }
     } catch (e: any) {
       setTxError(e?.message || 'Unknown error');
       setTxCount(0);
       setHasFirstSettled(false);
+      setInviteeKycVerified(false);
     } finally {
       setTxLoading(false);
+      setInviteeKycLoading(false);
     }
   }, [referredWallet, getAccessToken]);
 
@@ -84,9 +113,9 @@ export function useReferralCommissionEligibility(options: Options = {}) {
     };
   }, [options.poll, options.pollMs, referredWallet, fetchReferralRow, refreshKyc]);
 
-  const eligible = useMemo(() => isVerified && hasFirstSettled, [isVerified, hasFirstSettled]);
+  const eligible = useMemo(() => isVerified && hasFirstSettled && inviteeKycVerified, [isVerified, hasFirstSettled, inviteeKycVerified]);
 
-  const loading = kycLoading || txLoading;
+  const loading = kycLoading || txLoading || inviteeKycLoading;
   const refresh = useCallback(() => {
     refreshKyc();
     fetchReferralRow();
@@ -102,9 +131,12 @@ export function useReferralCommissionEligibility(options: Options = {}) {
     txCount,
     txLoading,
     txError,
+    inviteeKycVerified,
+    inviteeKycLoading,
     reasons: {
       kycVerified: isVerified,
       hasFirstSettled,
+      inviteeKycVerified,
     },
     refresh,
   };

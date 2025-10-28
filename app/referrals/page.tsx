@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { withDashboardLayout } from '@/utils/withDashboardLayout';
+import { useReferralCommissionEligibility } from '@/hooks/useReferralCommissionEligibility';
 import { 
   Users, 
   Copy, 
@@ -14,7 +15,9 @@ import {
   DollarSign,
   Share2,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  UserCheck,
+  AlertCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,12 +35,60 @@ interface ReferralStats {
   }[];
 }
 
+interface InviteeEligibility {
+  wallet: string;
+  eligible: boolean;
+  loading: boolean;
+}
+
+function InviteeEligibilityChecker({ wallet, onEligibilityChange }: { 
+  wallet: string; 
+  onEligibilityChange: (wallet: string, eligible: boolean, loading: boolean) => void;
+}) {
+  const { eligible, loading } = useReferralCommissionEligibility({ 
+    referredWallet: wallet,
+    poll: false // Don't poll for individual invitees
+  });
+
+  useEffect(() => {
+    onEligibilityChange(wallet, eligible, loading);
+  }, [wallet, eligible, loading, onEligibilityChange]);
+
+  return null; // This component doesn't render anything, just tracks eligibility
+}
+
 function ReferralsPage() {
   const { user, getAccessToken, authenticated } = usePrivy();
   const router = useRouter();
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [inviteeEligibility, setInviteeEligibility] = useState<Record<string, boolean>>({});
+  const [eligibilityLoading, setEligibilityLoading] = useState<Record<string, boolean>>({});
+
+  const handleEligibilityChange = useCallback((wallet: string, eligible: boolean, loading: boolean) => {
+    setInviteeEligibility(prev => ({ ...prev, [wallet]: eligible }));
+    setEligibilityLoading(prev => ({ ...prev, [wallet]: loading }));
+  }, []);
+
+  const copyLink = () => {
+    if (!stats) return;
+    navigator.clipboard.writeText(stats.inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Calculate earnings only from eligible invitees (those with KYC and first settled transaction)
+  const totalEarnings = stats?.invitees?.reduce((sum, inv) => {
+    if (!inv.wallet) return sum;
+    const isEligible = inviteeEligibility[inv.wallet];
+    return isEligible ? sum + (inv.volumeUsd * 0.1) : sum;
+  }, 0) || 0;
+
+  // Count eligible invitees
+  const eligibleInviteesCount = stats?.invitees?.filter(inv => 
+    inv.wallet && inviteeEligibility[inv.wallet]
+  ).length || 0;
 
   useEffect(() => {
     if (!authenticated) {
@@ -84,226 +135,223 @@ function ReferralsPage() {
     }
   };
 
-  const copyLink = () => {
-    if (!stats) return;
-    navigator.clipboard.writeText(stats.inviteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const totalEarnings = stats?.invitees?.reduce((sum, inv) => sum + (inv.volumeUsd * 0.1), 0) || 0;
-
   return (
     <div className="min-h-screen w-full">
       <Header />
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-purple-500/30">
-              <Gift className="w-6 h-6 text-purple-400" />
+      <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
+        {/* Compact Header */}
+        <div className="mb-4 sm:mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                <Gift className="w-4 h-4 text-purple-400" />
+              </div>
+              <h1 className="text-lg sm:text-xl font-semibold text-white">
+                Referral Program
+              </h1>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 bg-clip-text text-transparent">
-              Referral Program
-            </h1>
+            <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-300">
+              10% Commission
+            </Badge>
           </div>
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl">
-            Invite friends and earn 10% commission from their first off-ramp transaction
+          <p className="text-slate-400 text-xs sm:text-sm">
+            Earn from verified referrals • KYC required
           </p>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : !stats ? (
-          <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-2xl">
-            <CardContent className="p-12 text-center">
-              <div className="inline-flex p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl mb-6">
-                <Sparkles className="w-12 h-12 text-purple-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">
-                Start Earning Today
-              </h3>
-              <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                Generate your unique referral code and start earning commissions from every successful referral
-              </p>
-              <Button
-                onClick={generateCode}
-                className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 hover:from-purple-700 hover:via-purple-600 hover:to-pink-700 text-white font-semibold px-8 py-6 text-base shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
-              >
-                <Gift className="w-5 h-5 mr-2" />
-                Generate Referral Code
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 sm:p-8 text-center">
+           
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Start Earning Today
+            </h3>
+            <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
+              Generate your referral code and earn commissions
+            </p>
+            <Button
+              onClick={generateCode}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-2 text-sm"
+            >
+              
+              Generate Code
+            </Button>
+          </div>
         ) : (
-          <div className="space-y-6">
-            {/* Combined Stats Card */}
-            <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-purple-500/20 shadow-2xl overflow-hidden">
-              <CardContent className="p-0">
-                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-700/50">
-                  {/* Total Referrals */}
-                  <div className="p-6 sm:p-8 group hover:bg-slate-800/30 transition-all duration-300">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <p className="text-slate-400 text-xs sm:text-sm font-medium uppercase tracking-wider mb-2">Total Referrals</p>
-                        <p className="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                          {stats.invitees?.length || 0}
-                        </p>
-                      </div>
-                      <div className="p-3 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                        <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500">People you've invited</p>
-                  </div>
-
-                  {/* Total Earnings */}
-                  <div className="p-6 sm:p-8 group hover:bg-slate-800/30 transition-all duration-300">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <p className="text-slate-400 text-xs sm:text-sm font-medium uppercase tracking-wider mb-2">Total Earnings</p>
-                        <p className="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
-                          ${totalEarnings.toFixed(2)}
-                        </p>
-                      </div>
-                      <div className="p-3 bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 rounded-xl border border-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
-                        <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500">Commission earned</p>
-                  </div>
-
-                  {/* Commission Rate */}
-                  <div className="p-6 sm:p-8 group hover:bg-slate-800/30 transition-all duration-300">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <p className="text-slate-400 text-xs sm:text-sm font-medium uppercase tracking-wider mb-2">Commission Rate</p>
-                        <p className="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-purple-400 to-pink-600 bg-clip-text text-transparent">
-                          10%
-                        </p>
-                      </div>
-                      <div className="p-3 bg-gradient-to-br from-purple-500/20 to-pink-600/10 rounded-xl border border-purple-500/20 group-hover:scale-110 transition-transform duration-300">
-                        <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500">Per transaction</p>
-                  </div>
+          <div className="space-y-3 sm:space-y-4">
+            {/* Compact Stats Grid */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {/* Total Referrals */}
+              <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Referrals</span>
                 </div>
-              </CardContent>
-            </Card>
+                <p className="text-xl sm:text-2xl font-bold text-white">
+                  {stats.invitees?.length || 0}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Total invited</p>
+              </div>
 
-            {/* Referral Link Card */}
-            <Card className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border border-purple-500/30 shadow-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Share2 className="w-5 h-5 text-purple-400" />
-                  Your Referral Link
-                </CardTitle>
-                <CardDescription className="text-slate-400">
-                  Share this link with friends to start earning commissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 bg-slate-800/60 border border-slate-700/60 rounded-xl px-4 py-3">
-                    <p className="text-sm text-slate-300 font-mono break-all">
-                      {stats.inviteLink}
+              {/* Total Earnings */}
+              <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Earnings</span>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-400">
+                  ${totalEarnings.toFixed(2)}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Eligible only</p>
+              </div>
+
+              {/* Eligible Count */}
+              <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <UserCheck className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Eligible</span>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold text-purple-400">
+                  {eligibleInviteesCount}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">KYC + TX</p>
+              </div>
+            </div>
+
+            {/* Referral Link - Compact */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Share2 className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-medium text-white">Referral Link</span>
+                </div>
+                <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-300 px-2 py-0">
+                  {stats.code}
+                </Badge>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 overflow-hidden">
+                  <p className="text-xs text-slate-300 font-mono truncate">
+                    {stats.inviteLink}
+                  </p>
+                </div>
+                <Button
+                  onClick={copyLink}
+                  size="sm"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline text-xs">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 sm:mr-1" />
+                      <span className="hidden sm:inline text-xs">Copy</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Eligibility Checkers (Hidden components that track KYC status) */}
+            {stats?.invitees?.filter(inv => inv.wallet).map(invitee => (
+              <InviteeEligibilityChecker
+                key={invitee.wallet}
+                wallet={invitee.wallet!}
+                onEligibilityChange={handleEligibilityChange}
+              />
+            ))}
+
+            {/* How it Works - Compact Horizontal */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-medium text-white">How It Works</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Step 1 */}
+                <div className="flex items-start gap-3 p-3 bg-slate-800/40 border border-slate-700/40 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-blue-400">1</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-white mb-1">Share Link</h4>
+                    <p className="text-xs text-slate-400 leading-snug">
+                      Send your link to friends via social media
                     </p>
                   </div>
-                  <Button
-                    onClick={copyLink}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy Link
-                      </>
-                    )}
-                  </Button>
                 </div>
-                
-                <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40">
-                    Code: {stats.code}
-                  </Badge>
+
+                {/* Step 2 */}
+                <div className="flex items-start gap-3 p-3 bg-slate-800/40 border border-slate-700/40 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-purple-400">2</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-white mb-1">KYC Complete</h4>
+                    <p className="text-xs text-slate-400 leading-snug">
+                      Friends register and complete KYC verification
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* How it Works */}
-            <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-xl border border-slate-700/60 shadow-xl overflow-hidden">
-              <CardHeader className="border-b border-slate-700/50 bg-slate-800/30">
-                <CardTitle className="text-white text-lg sm:text-xl flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                  How It Works
-                </CardTitle>
-                <CardDescription className="text-slate-400">
-                  Three simple steps to start earning
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 sm:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {/* Step 1 */}
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative text-center p-6">
-                      <div className="inline-flex p-4 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-2xl mb-4 border border-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                        <Share2 className="w-7 h-7 text-blue-400" />
-                      </div>
-                      <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 font-bold text-sm mb-3">
-                        1
-                      </div>
-                      <h4 className="font-bold text-white mb-3 text-base sm:text-lg">Share Your Link</h4>
-                      <p className="text-sm text-slate-400 leading-relaxed">
-                        Send your unique referral link to friends and family via social media or messaging
-                      </p>
-                    </div>
+                {/* Step 3 */}
+                <div className="flex items-start gap-3 p-3 bg-slate-800/40 border border-slate-700/40 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-emerald-400">3</span>
                   </div>
-
-                  {/* Step 2 */}
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative text-center p-6">
-                      <div className="inline-flex p-4 bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-2xl mb-4 border border-purple-500/20 group-hover:scale-110 transition-transform duration-300">
-                        <Users className="w-7 h-7 text-purple-400" />
-                      </div>
-                      <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 font-bold text-sm mb-3">
-                        2
-                      </div>
-                      <h4 className="font-bold text-white mb-3 text-base sm:text-lg">They Sign Up</h4>
-                      <p className="text-sm text-slate-400 leading-relaxed">
-                        Your friends register using your link and complete their first off-ramp transaction
-                      </p>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-white mb-1">Earn 10%</h4>
+                    <p className="text-xs text-slate-400 leading-snug">
+                      Get commission from their first transaction
+                    </p>
                   </div>
+                </div>
+              </div>
+            </div>
 
-                  {/* Step 3 */}
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative text-center p-6">
-                      <div className="inline-flex p-4 bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 rounded-2xl mb-4 border border-emerald-500/20 group-hover:scale-110 transition-transform duration-300">
-                        <DollarSign className="w-7 h-7 text-emerald-400" />
-                      </div>
-                      <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold text-sm mb-3">
-                        3
-                      </div>
-                      <h4 className="font-bold text-white mb-3 text-base sm:text-lg">Earn Commission</h4>
-                      <p className="text-sm text-slate-400 leading-relaxed">
-                        Receive 10% commission instantly from their first successful off-ramp transaction
-                      </p>
+            {/* Requirements - Compact Info Banner */}
+            <div className="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3 sm:p-4">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <AlertCircle className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-white mb-2">Eligibility Requirements</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <p className="text-slate-300 font-medium mb-1.5">You (Referrer):</p>
+                      <ul className="space-y-1 text-slate-400">
+                        <li className="flex items-center gap-1.5">
+                          <span className="text-green-400">✓</span>
+                          <span>KYC verified</span>
+                        </li>
+                        <li className="flex items-center gap-1.5">
+                          <span className="text-green-400">✓</span>
+                          <span>Valid referral code</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-slate-300 font-medium mb-1.5">Friends (Referrals):</p>
+                      <ul className="space-y-1 text-slate-400">
+                        <li className="flex items-center gap-1.5">
+                          <span className="text-green-400">✓</span>
+                          <span>KYC verified</span>
+                        </li>
+                        <li className="flex items-center gap-1.5">
+                          <span className="text-green-400">✓</span>
+                          <span>First off-ramp completed</span>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
       </div>

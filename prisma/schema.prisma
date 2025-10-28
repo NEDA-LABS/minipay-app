@@ -81,6 +81,76 @@ model InfluencerProfile {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   
+  // Disbursement tracking (relations)
+  earnings             InfluencerEarning[]
+  disbursements        InfluencerDisbursement[]
+  
+  @@map("influencer_profiles")
+}
+
+model InfluencerEarning {
+  id                   String                @id @default(uuid())
+  influencerProfileId  String
+  influencerProfile    InfluencerProfile     @relation(fields: [influencerProfileId], references: [id], onDelete: Cascade)
+  
+  // Earning details
+  referralId           String                // Reference to the Referral that generated this earning
+  amount               String                // Decimal as string (e.g., "10.5")
+  currency             String                // USD, USDC, USDT, etc.
+  transactionId        String?               // Off-ramp transaction that triggered the earning
+  
+  // Status tracking
+  status               InfluencerEarningStatus @default(PENDING)
+  disbursementId       String?               // Links to disbursement when paid
+  disbursement         InfluencerDisbursement? @relation(fields: [disbursementId], references: [id])
+  
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  
+  @@index([influencerProfileId, status])
+  @@index([disbursementId])
+  @@map("influencer_earnings")
+}
+
+model InfluencerDisbursement {
+  id                   String                @id @default(uuid())
+  influencerProfileId  String
+  influencerProfile    InfluencerProfile     @relation(fields: [influencerProfileId], references: [id], onDelete: Cascade)
+  
+  // Payment details
+  amount               String                // Total amount paid in this disbursement
+  currency             String                // Currency of payment
+  transactionHash      String?               // Blockchain transaction hash
+  recipientAddress     String                // Wallet address paid to
+  
+  // Metadata
+  adminUserId          String?               // Admin who initiated the disbursement
+  notes                String?               // Optional notes
+  status               DisbursementStatus    @default(PENDING)
+  
+  // Relations
+  earnings             InfluencerEarning[]   // Earnings included in this disbursement
+  
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  
+  @@index([influencerProfileId, status])
+  @@index([status])
+  @@map("influencer_disbursements")
+}
+
+enum InfluencerEarningStatus {
+  PENDING       // Earned but not yet disbursed
+  DISBURSED     // Paid out to influencer
+  CANCELLED     // Cancelled (e.g., refund)
+}
+
+enum DisbursementStatus {
+  PENDING       // Initiated but not yet confirmed
+  PROCESSING    // Transaction in progress
+  COMPLETED     // Successfully paid
+  FAILED        // Payment failed
+  CANCELLED     // Cancelled by admin
 }
 
 model MerchantSettings {

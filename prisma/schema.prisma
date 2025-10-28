@@ -627,6 +627,8 @@ enum EmailNotificationType {
   PASSWORD_RESET
   PAYMENT_RECEIVED
   WITHDRAWAL_PROCESSED
+  PAYMENT_SETTLED
+  PAYMENT_REFUNDED
 }
 
 enum EmailNotificationStatus {

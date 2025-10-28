@@ -3,7 +3,7 @@
  * Main service class for Smile ID integration
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User, EmailNotificationType, EmailNotificationStatus } from '@prisma/client';
 import {
   SmileIDConfig,
   SmileIDVerificationRequest,
@@ -19,6 +19,8 @@ import {
 import { getSmileIDConfig, SMILE_ID_CONSTANTS, getWebhookUrl } from './config';
 import { generateSmileIDSignature, generateTimestamp } from './signature';
 import idTypesData from './id_types.json';
+import { createEmailService } from '@/utils/email/services';
+import { EmailTemplateType, KYCStatusEmailData, KYCStatus } from '@/utils/email/types';
 
 export class SmileIDService {
   private config: SmileIDConfig;
@@ -299,6 +301,16 @@ export class SmileIDService {
           processedAt: new Date(),
         },
       });
+
+      // Send email notification if verification is complete and user has email
+      if (status !== 'PENDING' && verification.user.email) {
+        try {
+          await this.sendKYCStatusEmail(verification.user, status, payload.ResultText);
+        } catch (emailError) {
+          console.error('[SmileIDService] Failed to send KYC status email:', emailError);
+          // Don't fail webhook processing if email fails
+        }
+      }
     } catch (error) {
       // Store failed webhook event if verification exists
       try {
@@ -385,5 +397,80 @@ export class SmileIDService {
     }
 
     return flattened;
+  }
+
+  /**
+   * Send KYC status email notification
+   * @private
+   */
+  private async sendKYCStatusEmail(
+    user: User,
+    status: 'SUCCESS' | 'FAILED' | 'PENDING',
+    resultText?: string
+  ): Promise<void> {
+    // Check if user has email
+    if (!user.email) {
+      console.log('[SmileIDService] User has no email, skipping notification');
+      return;
+    }
+
+    try {
+      const emailService = createEmailService();
+      
+      // Map SmileID status to KYC status
+      let kycStatus: KYCStatus;
+      let emailType: EmailNotificationType;
+      
+      if (status === 'SUCCESS') {
+        kycStatus = KYCStatus.APPROVED;
+        emailType = EmailNotificationType.KYC_STATUS_APPROVED;
+      } else if (status === 'FAILED') {
+        kycStatus = KYCStatus.REJECTED;
+        emailType = EmailNotificationType.KYC_STATUS_REJECTED;
+      } else {
+        kycStatus = KYCStatus.PENDING_REVIEW;
+        emailType = EmailNotificationType.KYC_STATUS_PENDING;
+      }
+
+      // Prepare email data
+      const emailData: KYCStatusEmailData = {
+        recipientEmail: user.email,
+        firstName: user.name || 'Valued Customer',
+        status: kycStatus,
+        rejectionReason: status === 'FAILED' ? resultText : undefined,
+        dashboardUrl: 'https://nedapay.xyz/dashboard',
+      };
+
+      // Send email
+      const result = await emailService.sendEmail({
+        templateType: EmailTemplateType.KYC_STATUS,
+        data: emailData,
+      });
+
+      // Track email notification
+      if (result.success) {
+        await this.prisma.emailNotification.create({
+          data: {
+            userId: user.id,
+            type: emailType,
+            recipientEmail: user.email,
+            subject: `KYC Verification ${status === 'SUCCESS' ? 'Approved' : status === 'FAILED' ? 'Rejected' : 'Pending'}`,
+            status: EmailNotificationStatus.SENT,
+            providerMessageId: result.messageId,
+            metadata: {
+              verificationStatus: status,
+              resultText,
+            },
+            sentAt: new Date(),
+          },
+        });
+        console.log(`[SmileIDService] KYC status email sent to ${user.email}`);
+      } else {
+        console.error('[SmileIDService] Failed to send KYC status email:', result.error);
+      }
+    } catch (error) {
+      console.error('[SmileIDService] Error sending KYC status email:', error);
+      throw error;
+    }
   }
 }

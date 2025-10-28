@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/prisma';
 import { createNotification } from '@/utils/createNotification';
+import { createPaymentNotificationService } from '@/utils/email/services';
+
 const CLIENT_SECRET = process.env.PAYCREST_CLIENT_SECRET!;
 
 interface WebhookStructure
@@ -76,10 +78,9 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'payment_order.settled':
-
-      // create notification
-      await createNotification(data.id, data.fromAddress, ((parseFloat(data.amount)/0.95)).toString(), data.recipient?.currency, data.recipient?.accountName);
-        // console.log('Payment order settled:', data);
+        // create notification
+        await createNotification(data.id, data.fromAddress, ((parseFloat(data.amount)/0.95)).toString(), data.recipient?.currency, data.recipient?.accountName);
+        
         // Update transaction status to settled
         await prisma.offRampTransaction.upsert({
           where: { id: data.id },
@@ -105,6 +106,24 @@ export async function POST(request: NextRequest) {
             institution: data.recipient?.institution
           }
         });
+
+        // Send email notification
+        try {
+          const paymentNotificationService = createPaymentNotificationService(prisma);
+          await paymentNotificationService.sendPaymentSettledEmail({
+            transactionId: data.id,
+            walletAddress: data.fromAddress,
+            amount: data.amount,
+            currency: data.recipient?.currency || 'USD',
+            accountName: data.recipient?.accountName || 'N/A',
+            accountNumber: data.recipient?.accountIdentifier || 'N/A',
+            institution: data.recipient?.institution || 'N/A',
+            rate: data.rate,
+          });
+        } catch (emailError) {
+          console.error('Failed to send payment settled email:', emailError);
+          // Don't fail the webhook if email fails
+        }
         break;
 
       case 'payment_order.expired':
@@ -137,7 +156,6 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'payment_order.refunded':
-        // console.log('Payment order refunded:', data);
         // Update transaction status to refunded
         await prisma.offRampTransaction.upsert({
           where: { id: data.id },
@@ -163,6 +181,23 @@ export async function POST(request: NextRequest) {
             institution: data.recipient?.institution
           }
         });
+
+        // Send email notification
+        try {
+          const paymentNotificationService = createPaymentNotificationService(prisma);
+          await paymentNotificationService.sendPaymentRefundedEmail({
+            transactionId: data.id,
+            walletAddress: data.fromAddress,
+            amount: data.amount,
+            currency: data.recipient?.currency || 'USD',
+            accountName: data.recipient?.accountName || 'N/A',
+            accountNumber: data.recipient?.accountIdentifier || 'N/A',
+            refundReason: 'Payment order was refunded by the system',
+          });
+        } catch (emailError) {
+          console.error('Failed to send payment refunded email:', emailError);
+          // Don't fail the webhook if email fails
+        }
         break;
 
       default:

@@ -176,4 +176,19 @@ export abstract class BaseEmailTemplate<T extends EmailTemplateData>
       day: 'numeric',
     });
   }
+
+  /**
+   * Escape HTML special characters to prevent XSS
+   * @protected
+   */
+  protected escapeHtml(text: string): string {
+    const map: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    };
+    return text.replace(/[&<>"']/g, (char) => map[char]);
+  }
 }

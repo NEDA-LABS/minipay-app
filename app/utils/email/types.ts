@@ -38,6 +38,8 @@ export enum EmailTemplateType {
   WELCOME = 'welcome',
   KYC_REMINDER = 'kyc_reminder',
   KYC_STATUS = 'kyc_status',
+  PAYMENT_SETTLED = 'payment_settled',
+  PAYMENT_REFUNDED = 'payment_refunded',
 }
 
 // Invoice Email Data
@@ -93,12 +95,43 @@ export interface KYCStatusEmailData {
   dashboardUrl?: string;
 }
 
+// Payment Settlement Email Data
+export interface PaymentSettledEmailData {
+  recipientEmail: string;
+  firstName: string;
+  transactionId: string;
+  amount: string;
+  currency: string;
+  accountName: string;
+  accountNumber: string;
+  institution: string;
+  rate: string;
+  settledAt: Date;
+  dashboardUrl?: string;
+}
+
+// Payment Refund Email Data
+export interface PaymentRefundedEmailData {
+  recipientEmail: string;
+  firstName: string;
+  transactionId: string;
+  amount: string;
+  currency: string;
+  accountName: string;
+  accountNumber: string;
+  refundReason?: string;
+  refundedAt: Date;
+  dashboardUrl?: string;
+}
+
 // Union type for all email data
 export type EmailTemplateData =
   | InvoiceEmailData
   | WelcomeEmailData
   | KYCReminderEmailData
-  | KYCStatusEmailData;
+  | KYCStatusEmailData
+  | PaymentSettledEmailData
+  | PaymentRefundedEmailData;
 
 // ============================================================================
 // Provider Interfaces

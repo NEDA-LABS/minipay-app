@@ -12,12 +12,16 @@ import {
   WelcomeEmailData,
   KYCReminderEmailData,
   KYCStatusEmailData,
+  PaymentSettledEmailData,
+  PaymentRefundedEmailData,
   EmailTemplateError,
 } from '../types';
 import { InvoiceEmailTemplate } from './invoice';
 import { WelcomeEmailTemplate } from './welcome';
 import { KYCReminderEmailTemplate } from './kyc-reminder';
 import { KYCStatusEmailTemplate } from './kyc-status';
+import { PaymentSettledEmailTemplate } from './payment-settled';
+import { PaymentRefundedEmailTemplate } from './payment-refunded';
 
 /**
  * Template Factory Class
@@ -45,6 +49,12 @@ export class EmailTemplateFactory {
 
       case EmailTemplateType.KYC_STATUS:
         return new KYCStatusEmailTemplate() as IEmailTemplate<T>;
+
+      case EmailTemplateType.PAYMENT_SETTLED:
+        return new PaymentSettledEmailTemplate() as IEmailTemplate<T>;
+
+      case EmailTemplateType.PAYMENT_REFUNDED:
+        return new PaymentRefundedEmailTemplate() as IEmailTemplate<T>;
 
       default:
         throw new EmailTemplateError(

@@ -23,11 +23,13 @@ import Image from "next/image";
 
 // Import your actual components
 import WalletSelector from "./WalletSelector";
+import { MinipayWalletSelector } from "./minipay/MinipayWalletSelector";
 import NotificationTab from "./NotificationTab";
 import { HeaderChainBalance } from "./HeaderChainBalance";
 import { FaGear } from "react-icons/fa6";
 import { usePrivy } from "@privy-io/react-auth";
 import { Badge } from "@/components/ui/badge";
+import { isMiniPay } from "@/utils/minipay-detection";
 
 export default function Header() {
   const [mounted, setMounted] = useState(false);
@@ -127,7 +129,7 @@ export default function Header() {
               {/* Chain Switcher and Balance - Left of Wallet Selector */}
               <HeaderChainBalance />
 
-              <WalletSelector />
+              {isMiniPay() ? <MinipayWalletSelector /> : <WalletSelector />}
             </div>
           </div>
         </div>

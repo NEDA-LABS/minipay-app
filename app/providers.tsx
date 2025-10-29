@@ -1,132 +1,107 @@
 "use client";
 
-import { base, polygon, arbitrum, celo, scroll, bsc, optimism, mainnet, lisk } from "wagmi/chains";
+import { celo, celoAlfajores } from "wagmi/chains";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { http, fallback } from "wagmi";
-import { createConfig as createPrivyConfig } from "@privy-io/wagmi";
-import { WagmiProvider } from "@privy-io/wagmi";
+import { createConfig } from "wagmi";
+import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { injected } from 'wagmi/connectors';
 import { PrivyProvider } from "@privy-io/react-auth";
 import { SidebarProvider } from "@/compliance/user/components/ui/sidebar";
 import { ChainProvider } from "@/contexts/ChainContext";
+import { isMiniPay } from "@/utils/minipay-detection";
 
 // Create a query client for React Query
 const queryClient = new QueryClient();
 
 // Detect environment
 const isDevelopment = process.env.NODE_ENV === 'development';
+const isMinipay = typeof window !== 'undefined' && isMiniPay();
 
 /**
- * MEMORY OPTIMIZATION:
- * In development, we use all chains but with single RPC endpoints (no fallbacks)
- * to reduce memory usage from ~2-3GB to ~1-1.5GB.
+ * MINIPAY CONFIGURATION:
+ * Minipay only supports Celo network - removed all other chains.
+ * Using injected connector for auto-connect with Minipay's window.ethereum provider.
  * 
- * In production, we use all chains with multiple fallback RPCs for reliability.
+ * In production, we use fallback RPCs for reliability.
+ * In development, single RPC to reduce memory usage.
  */
-const wagmiConfig = createPrivyConfig({
-  chains: [base, polygon, bsc, arbitrum, celo, scroll, lisk, optimism],
+const wagmiConfig = createConfig({
+  chains: [celo, celoAlfajores],
+  connectors: [
+    injected(), // Must be first for Minipay auto-connect
+  ],
   ssr: true,
   transports: isDevelopment
-    ? // DEVELOPMENT: All chains with single RPC (8 chains, 8 RPCs total)
-      {
-        [base.id]: http(process.env.NEXT_PUBLIC_COINBASE_BASE_RPC || 'https://mainnet.base.org'),
-        [polygon.id]: http(process.env.NEXT_PUBLIC_POLYGON_RPC || polygon.rpcUrls.default.http[0]),
-        [bsc.id]: http(process.env.NEXT_PUBLIC_BSC_RPC || bsc.rpcUrls.default.http[0]),
-        [arbitrum.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_RPC || arbitrum.rpcUrls.default.http[0]),
-        [celo.id]: http(process.env.NEXT_PUBLIC_CELO_RPC || celo.rpcUrls.default.http[0]),
-        [scroll.id]: http(process.env.NEXT_PUBLIC_SCROLL_RPC || scroll.rpcUrls.default.http[0]),
-        [optimism.id]: http(process.env.NEXT_PUBLIC_OPTIMISM_RPC || optimism.rpcUrls.default.http[0]),
-        [lisk.id]: http(process.env.NEXT_PUBLIC_LISK_RPC || lisk.rpcUrls.default.http[0])
+    ? {
+        [celo.id]: http(process.env.NEXT_PUBLIC_CELO_RPC || 'https://forno.celo.org'),
+        [celoAlfajores.id]: http('https://alfajores-forno.celo-testnet.org'),
       }
-    : // PRODUCTION: All chains with fallback RPCs for reliability (8 chains, 32+ RPCs total)
-      {
-        [base.id]: fallback([
-          http(process.env.NEXT_PUBLIC_COINBASE_BASE_RPC),
-          http('https://mainnet.base.org'),
-          http('https://base-mainnet.g.alchemy.com/v2/demo'),
-          http('https://base.llamarpc.com'),
-          http('https://1rpc.io/base')
-        ]),
-        [polygon.id]: fallback([
-          http(process.env.NEXT_PUBLIC_POLYGON_RPC || polygon.rpcUrls.default.http[0]),
-          http('https://polygon-rpc.com'),
-          http('https://rpc-mainnet.matic.network'),
-          http('https://polygon.llamarpc.com'),
-          http('https://1rpc.io/matic')
-        ]),
-        [bsc.id]: fallback([
-          http(process.env.NEXT_PUBLIC_BSC_RPC || bsc.rpcUrls.default.http[0]),
-          http('https://bscrpc.com'),
-          http('https://bsc-mainnet.public.blastapi.io'),
-          http('https://1rpc.io/bnb'),
-          http('https://binance.llamarpc.com')
-        ]),
-        [arbitrum.id]: fallback([
-          http(process.env.NEXT_PUBLIC_ARBITRUM_RPC || arbitrum.rpcUrls.default.http[0]),
-          http('https://arbitrum-mainnet.infura.io/v3/demo'),
-          http('https://arbitrum.public-rpc.com'),
-          http('https://1rpc.io/arb'),
-          http('https://arbitrum.llamarpc.com')
-        ]),
+    : {
         [celo.id]: fallback([
-          http(process.env.NEXT_PUBLIC_CELO_RPC || celo.rpcUrls.default.http[0]),
-          http('https://celo-mainnet.infura.io/v3/demo'),
+          http(process.env.NEXT_PUBLIC_CELO_RPC || 'https://forno.celo.org'),
           http('https://rpc.ankr.com/celo'),
           http('https://1rpc.io/celo'),
-          http('https://celo.llamarpc.com')
         ]),
-        [scroll.id]: fallback([
-          http(process.env.NEXT_PUBLIC_SCROLL_RPC || scroll.rpcUrls.default.http[0]),
-          http('https://scroll-mainnet.public.blastapi.io'),
-          http('https://1rpc.io/scroll'),
-          http('https://scroll.llamarpc.com')
+        [celoAlfajores.id]: fallback([
+          http('https://alfajores-forno.celo-testnet.org'),
+          http('https://celo-alfajores.infura.io/v3/demo'),
         ]),
-        [optimism.id]: fallback([
-          http(process.env.NEXT_PUBLIC_OPTIMISM_RPC || optimism.rpcUrls.default.http[0]),
-          http('https://optimistic.etherscan.io'),
-          http('https://1rpc.io/optimism'),
-          http('https://optimism.llamarpc.com')
-        ]),
-        [lisk.id]: fallback([
-          http(process.env.NEXT_PUBLIC_LISK_RPC || lisk.rpcUrls.default.http[0]),
-          http('https://lisk-mainnet.infura.io/v3/demo'),
-          http('https://rpc.ankr.com/lisk'),
-          http('https://1rpc.io/lisk'),
-          http('https://lisk.llamarpc.com')
-        ])
-      }
+      },
 });
 
 
 export function Providers(props: { children: ReactNode }) {
+  const inMinipay = typeof window !== 'undefined' && isMiniPay();
+  
+  // Minipay: No Privy, just Wagmi
+  if (inMinipay) {
+    return (
+      <SidebarProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <QueryClientProvider client={queryClient}>
+            <WagmiProvider config={wagmiConfig}>
+              <ChainProvider>
+                {props.children}
+              </ChainProvider>
+            </WagmiProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </SidebarProvider>
+    );
+  }
+  
+  // Regular browser: Include Privy for backward compatibility
   return (
     <SidebarProvider>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <PrivyProvider
-        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
-        config={{
-          appearance: {
-            landingHeader: 'Sign in to NEDAPay',
-            walletList: ['metamask', 'coinbase_wallet', 'base_account', 'binance', 'wallet_connect', 'bybit_wallet', 'okx_wallet'],
-            walletChainType: 'ethereum-only'},
-          embeddedWallets: {
-            ethereum: {
-              createOnLogin: "users-without-wallets",
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <PrivyProvider
+          appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
+          config={{
+            appearance: {
+              landingHeader: 'Sign in to NEDAPay',
+              walletList: ['metamask', 'coinbase_wallet', 'wallet_connect'],
+              walletChainType: 'ethereum-only'
             },
-          },
-          supportedChains: [base, bsc, arbitrum, polygon, celo, scroll, optimism, mainnet, lisk]
-        }}
-      >
-        <QueryClientProvider client={queryClient}>
-          <WagmiProvider config={wagmiConfig}>
-            <ChainProvider>
-              {props.children}
-            </ChainProvider>
-          </WagmiProvider>
-        </QueryClientProvider>
-      </PrivyProvider>
-    </ThemeProvider>
+            embeddedWallets: {
+              ethereum: {
+                createOnLogin: "users-without-wallets",
+              },
+            },
+            supportedChains: [celo, celoAlfajores]
+          }}
+        >
+          <QueryClientProvider client={queryClient}>
+            <WagmiProvider config={wagmiConfig}>
+              <ChainProvider>
+                {props.children}
+              </ChainProvider>
+            </WagmiProvider>
+          </QueryClientProvider>
+        </PrivyProvider>
+      </ThemeProvider>
     </SidebarProvider>
   );
 }

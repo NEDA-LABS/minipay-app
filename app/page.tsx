@@ -3,13 +3,16 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { usePrivy } from "@privy-io/react-auth";
+import { useAccount } from "wagmi";
 import * as LucideReact from "lucide-react";
+import { useAutoConnect } from "@/hooks/useAutoConnect";
+import { isMiniPay } from "@/utils/minipay-detection";
 import DashboardLoadingScreen from "./components/DashboardLoadingScreen";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { stablecoins } from "./data/stablecoins";
 import WalletSelector from "./components/WalletSelector";
+import { MinipayWalletSelector } from "./components/minipay/MinipayWalletSelector";
 import { useRef } from "react";
 import {
   Globe2,
@@ -36,7 +39,11 @@ function HomeContent() {
     {}
   );
   const router = useRouter();
-  const { authenticated, user, login, logout, ready } = usePrivy();
+  
+  // Minipay auto-connect
+  const { isInMiniPay, isConnected: miniPayConnected } = useAutoConnect();
+  const { address, isConnected } = useAccount();
+  
   const [loading, setLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const { Loader2 } = LucideReact;
@@ -62,17 +69,35 @@ function HomeContent() {
     }
   }, [router]);
 
+  // Minipay: Skip landing page, go straight to dashboard
   useEffect(() => {
-    if (ready && authenticated && (user?.wallet?.address || user?.email?.address)) {
+    if (isInMiniPay) {
+      console.log('[Minipay] Detected Minipay environment - redirecting to dashboard');
+      setIsRedirecting(true);
+      // Immediate redirect in Minipay
+      if (typeof window !== "undefined") {
+        window.location.replace("/dashboard");
+      }
+    }
+  }, [isInMiniPay]);
+  
+  // Auto-redirect to dashboard when connected (regular web)
+  useEffect(() => {
+    if (!isInMiniPay && isConnected && address) {
       setIsRedirecting(true);
       // Use hard navigation immediately to avoid route chunk stalls on Safari
       if (typeof window !== "undefined") {
         window.location.replace("/dashboard");
       }
     }
-  }, [ready, authenticated, user?.wallet?.address, user?.email?.address, router]);
+  }, [isConnected, address, router, isInMiniPay]);
 
-  // Do not show a blocking loading screen while redirecting.
+  // Show loading screen in Minipay while redirecting
+  if (isInMiniPay && isRedirecting) {
+    return <DashboardLoadingScreen />;
+  }
+
+  // Do not show a blocking loading screen while redirecting in regular browser.
   // Keeping the homepage visible avoids the stuck loader in Safari.
 
   return (

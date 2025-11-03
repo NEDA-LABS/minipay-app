@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { withDashboardLayout } from '@/utils/withDashboardLayout';
@@ -58,7 +58,7 @@ function InviteeEligibilityChecker({ wallet, onEligibilityChange }: {
 }
 
 function ReferralsPage() {
-  const { user, getAccessToken, authenticated } = usePrivy();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [copied, setCopied] = useState(false);
@@ -91,22 +91,18 @@ function ReferralsPage() {
   ).length || 0;
 
   useEffect(() => {
-    if (!authenticated) {
+    if (!isConnected) {
       router.replace('/dashboard');
       return;
     }
-  }, [authenticated, router]);
+  }, [isConnected, router]);
 
   useEffect(() => {
-    if (!user) return;
-    
+    if (!address) return;
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const tk = await getAccessToken();
-        const res = await fetch('/api/referral/code', {
-          headers: { Authorization: `Bearer ${tk}` },
-        });
+        const res = await fetch('/api/referral/code');
         if (res.ok) {
           setStats(await res.json());
         }
@@ -116,17 +112,12 @@ function ReferralsPage() {
         setLoading(false);
       }
     };
-
     fetchStats();
-  }, [user, getAccessToken]);
+  }, [address]);
 
   const generateCode = async () => {
     try {
-      const tk = await getAccessToken();
-      const res = await fetch('/api/referral/code', { 
-        method: 'POST', 
-        headers: { Authorization: `Bearer ${tk}` } 
-      });
+      const res = await fetch('/api/referral/code', { method: 'POST' });
       if (res.ok) {
         setStats(await res.json());
       }

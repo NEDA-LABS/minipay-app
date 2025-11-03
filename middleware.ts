@@ -10,6 +10,8 @@ const PROTECTED_ROUTES = [
 ];
 
 export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const search = request.nextUrl.searchParams;
   // Check if the requested path is a protected route
   const isProtectedRoute = PROTECTED_ROUTES.some(route => 
     request.nextUrl.pathname.startsWith(route)
@@ -31,10 +33,32 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // If root path and Minipay detected, redirect straight to dashboard
+  if (pathname === '/') {
+    const userAgent = request.headers.get('user-agent') || '';
+    const isMinipayUA = userAgent.includes('MiniPay') || userAgent.includes('Opera Mini');
+    const hasMinipayQuery = search.get('minipay') === '1';
+    if (isMinipayUA || hasMinipayQuery || request.headers.get('x-minipay') === 'true') {
+      const url = new URL('/dashboard', request.url);
+      url.searchParams.set('minipay', '1');
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (isProtectedRoute) {
-    // Since we can't access localStorage directly in middleware,
-    // we'll create a special cookie when the wallet connects
-    // and check for that cookie here
+    // Check for Minipay user agent - allow direct access
+    const userAgent = request.headers.get('user-agent') || '';
+    const isMinipay = userAgent.includes('MiniPay') || 
+                      userAgent.includes('Opera Mini') ||
+                      request.headers.get('x-minipay') === 'true' ||
+                      search.get('minipay') === '1';
+    
+    if (isMinipay) {
+      console.log('Middleware: Minipay detected, allowing direct access');
+      return NextResponse.next();
+    }
+
+    // For regular browsers, check wallet connection cookie
     const walletConnected = request.cookies.get('wallet_connected');
     
     // If wallet is not connected, redirect to home page
@@ -55,6 +79,7 @@ export function middleware(request: NextRequest) {
 // Configure the middleware to run on specific paths
 export const config = {
   matcher: [
+    '/',
     '/dashboard/:path*',
     '/payments/:path*',
     '/payment-link/:path*',

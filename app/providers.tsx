@@ -8,7 +8,6 @@ import { createConfig } from "wagmi";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { injected } from 'wagmi/connectors';
-import { PrivyProvider } from "@privy-io/react-auth";
 import { SidebarProvider } from "@/compliance/user/components/ui/sidebar";
 import { ChainProvider } from "@/contexts/ChainContext";
 import { isMiniPay } from "@/utils/minipay-detection";
@@ -54,53 +53,16 @@ const wagmiConfig = createConfig({
 
 
 export function Providers(props: { children: ReactNode }) {
-  const inMinipay = typeof window !== 'undefined' && isMiniPay();
-  
-  // Minipay: No Privy, just Wagmi
-  if (inMinipay) {
-    return (
-      <SidebarProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <QueryClientProvider client={queryClient}>
-            <WagmiProvider config={wagmiConfig}>
-              <ChainProvider>
-                {props.children}
-              </ChainProvider>
-            </WagmiProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </SidebarProvider>
-    );
-  }
-  
-  // Regular browser: Include Privy for backward compatibility
   return (
     <SidebarProvider>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <PrivyProvider
-          appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
-          config={{
-            appearance: {
-              landingHeader: 'Sign in to NEDAPay',
-              walletList: ['metamask', 'coinbase_wallet', 'wallet_connect'],
-              walletChainType: 'ethereum-only'
-            },
-            embeddedWallets: {
-              ethereum: {
-                createOnLogin: "users-without-wallets",
-              },
-            },
-            supportedChains: [celo, celoAlfajores]
-          }}
-        >
-          <QueryClientProvider client={queryClient}>
-            <WagmiProvider config={wagmiConfig}>
-              <ChainProvider>
-                {props.children}
-              </ChainProvider>
-            </WagmiProvider>
-          </QueryClientProvider>
-        </PrivyProvider>
+        <QueryClientProvider client={queryClient}>
+          <WagmiProvider config={wagmiConfig}>
+            <ChainProvider>
+              {props.children}
+            </ChainProvider>
+          </WagmiProvider>
+        </QueryClientProvider>
       </ThemeProvider>
     </SidebarProvider>
   );

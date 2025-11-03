@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useAccount } from 'wagmi';
 import { stablecoins } from "@/data/stablecoins";
 import { Card, CardContent } from "@/components/Card";
 import Header from "@/components/Header";
 import { Shield } from "lucide-react";
 import dynamic from "next/dynamic";
+import { isMiniPay } from "@/utils/minipay-detection";
+import MinipayDashboard from "./minipay-page";
 
 // import {
 //   SidebarProvider,
@@ -68,9 +70,12 @@ type Transaction = {
 };
 
 export default function DashboardContent() {
-  const { user, authenticated, ready } = usePrivy();
-  const walletAddress = user?.wallet?.address;
-  const walletType = user?.wallet?.walletClientType;
+  // Use optimized Minipay dashboard if in Minipay
+  if (typeof window !== 'undefined' && isMiniPay()) {
+    return <MinipayDashboard />;
+  }
+
+  const { address: walletAddress, isConnected } = useAccount();
 
   // States
   const [stablecoinBalances, setStablecoinBalances] = useState<
@@ -99,8 +104,6 @@ export default function DashboardContent() {
   // This eliminates the 2-3 second blocking wait on first load
   useEffect(() => {
     if (!walletAddress) return;
-    // Only check authenticated if ready, otherwise proceed optimistically
-    if (ready && !authenticated) return;
 
     const fetchAllData = async () => {
       setIsBalanceLoading(true);
@@ -257,7 +260,7 @@ export default function DashboardContent() {
     };
 
     fetchAllData();
-  }, [walletAddress, ready, authenticated]); // walletAddress is primary trigger
+  }, [walletAddress]); // walletAddress is primary trigger
 
   // Calculate metrics based on selected stablecoin
   useEffect(() => {
@@ -332,10 +335,8 @@ export default function DashboardContent() {
     }
   };
 
-  // Remove blocking wait for Privy - show dashboard immediately
-  // This eliminates the 2-3 second blank loading screen on first load
+  // Mark page as loaded; data fetch happens in background
   useEffect(() => {
-    // Set page as loaded immediately - don't wait for Privy
     setIsPageLoading(false);
   }, []);
 
@@ -350,18 +351,8 @@ export default function DashboardContent() {
       {/* Dashboard Tabs - Main Content Area */}
       <div className="relative z-10">
         <div className="w-full">
-          {authenticated ? (
-            <DashboardTabs walletAddress={walletAddress} />
-          ) : !ready ? (
-            // Show skeleton while Privy initializes
-            <div className="p-6 space-y-4">
-              <div className="h-12 w-full bg-white/5 rounded-2xl animate-pulse" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
-                <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />
-              </div>
-              <div className="h-64 bg-white/5 rounded-2xl animate-pulse" />
-            </div>
+          {isConnected ? (
+            <DashboardTabs walletAddress={walletAddress || ''} />
           ) : (
             <Card className="relative border-0 bg-slate-900/90 text-white shadow-2xl rounded-3xl">
               <CardContent className="relative p-6">

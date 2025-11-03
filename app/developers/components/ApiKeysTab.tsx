@@ -15,10 +15,9 @@ import { ApiKey } from '../page';
 interface ApiKeysTabProps {
   apiKeys: ApiKey[];
   setApiKeys: (keys: ApiKey[]) => void;
-  getAccessToken: () => Promise<string>;
 }
 
-export default function ApiKeysTab({ apiKeys, setApiKeys, getAccessToken }: ApiKeysTabProps) {
+export default function ApiKeysTab({ apiKeys, setApiKeys }: ApiKeysTabProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
@@ -34,13 +33,9 @@ export default function ApiKeysTab({ apiKeys, setApiKeys, getAccessToken }: ApiK
 
     setIsGenerating(true);
     try {
-      const tk = await getAccessToken();
       const res = await fetch('/api/settings/api-keys', {
         method: 'POST',
-        headers: { 
-          Authorization: `Bearer ${tk}`, 
-          'Content-Type': 'application/json' 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           environment: newKeyEnvironment, 
           name: newKeyName.trim() 
@@ -80,13 +75,9 @@ export default function ApiKeysTab({ apiKeys, setApiKeys, getAccessToken }: ApiK
     }
 
     try {
-      const tk = await getAccessToken();
       const res = await fetch('/api/settings/api-keys', {
         method: 'DELETE',
-        headers: { 
-          Authorization: `Bearer ${tk}`, 
-          'Content-Type': 'application/json' 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyId }),
       });
       

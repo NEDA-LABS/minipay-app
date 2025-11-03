@@ -70,16 +70,32 @@ function HomeContent() {
   }, [router]);
 
   // Minipay: Skip landing page, go straight to dashboard
+  // Check immediately on mount, don't wait for hooks
   useEffect(() => {
-    if (isInMiniPay) {
-      console.log('[Minipay] Detected Minipay environment - redirecting to dashboard');
+    // More aggressive Minipay detection
+    const isMinipayBrowser = typeof window !== 'undefined' && (
+      window.ethereum?.isMiniPay === true ||
+      navigator.userAgent.includes('MiniPay') ||
+      navigator.userAgent.includes('Opera Mini')
+    );
+    
+    if (isMinipayBrowser || isInMiniPay) {
+      console.log('[Minipay] Detected - redirecting to dashboard immediately');
       setIsRedirecting(true);
-      // Immediate redirect in Minipay
-      if (typeof window !== "undefined") {
-        window.location.replace("/dashboard");
-      }
+      // Persist a hint for SSR/middleware
+      try { localStorage.setItem('minipay', '1'); } catch {}
+      // Include flag to help middleware and dashboard detect Minipay
+      router.replace('/dashboard?minipay=1');
+      // Hard navigation fallback if client routing stalls
+      setTimeout(() => {
+        try {
+          if (window.location.pathname !== '/dashboard') {
+            window.location.href = '/dashboard?minipay=1';
+          }
+        } catch {}
+      }, 700);
     }
-  }, [isInMiniPay]);
+  }, [isInMiniPay, router]);
   
   // Auto-redirect to dashboard when connected (regular web)
   useEffect(() => {
@@ -92,9 +108,22 @@ function HomeContent() {
     }
   }, [isConnected, address, router, isInMiniPay]);
 
-  // Show loading screen in Minipay while redirecting
-  if (isInMiniPay && isRedirecting) {
-    return <DashboardLoadingScreen />;
+  // Show minimal loading only while redirecting
+  const isMinipayBrowser = typeof window !== 'undefined' && (
+    window.ethereum?.isMiniPay === true ||
+    navigator.userAgent.includes('MiniPay') ||
+    navigator.userAgent.includes('Opera Mini')
+  );
+  
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-white text-sm">Loading NedaPay...</p>
+        </div>
+      </div>
+    );
   }
 
   // Do not show a blocking loading screen while redirecting in regular browser.

@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import crypto from 'crypto';
-import { usePrivy } from "@privy-io/react-auth";
-import { PaymentLinkFormData, PaymentLink, Institution } from "../types";
+import { useAccount } from 'wagmi';
+import { PaymentLinkFormData, PaymentLink, Institution } from "../types/index";
 import { fetchSupportedCurrencies, fetchSupportedInstitutions } from "@/utils/paycrest";
 import { stablecoins } from "@/data/stablecoins";
 import { SUPPORTED_CHAINS } from "../utils/chains";
 
 export const usePaymentLink = () => {
-  const { authenticated, user } = usePrivy();
-  const walletAddress = user?.wallet?.address;
-  const isConnected = authenticated && !!walletAddress;
+  const { address: walletAddress, isConnected } = useAccount();
 
   const [formData, setFormData] = useState<PaymentLinkFormData>({
     amount: "",
@@ -20,7 +18,7 @@ export const usePaymentLink = () => {
     offRampValue: "",
     accountName: "",
     offRampProvider: "",
-    chainId: 8453,
+    chainId: 42220,
     expiresAt: "",
     expirationEnabled: false,
     specifyChain: true,
@@ -48,11 +46,11 @@ export const usePaymentLink = () => {
           const currencies = await fetchSupportedCurrencies();
           setSupportedCurrencies(currencies);
           if (currencies.length > 0) {
-            setFormData(prev => ({ ...prev, currency: currencies[0].code }));
+            setFormData((prev: PaymentLinkFormData) => ({ ...prev, currency: currencies[0].code }));
           }
         } else {
           setSupportedCurrencies(stablecoins);
-          setFormData(prev => ({ ...prev, currency: "USDC" }));
+          setFormData((prev: PaymentLinkFormData) => ({ ...prev, currency: "USDC" }));
         }
       } catch (error) {
         console.error("Error fetching supported currencies:", error);
@@ -68,7 +66,7 @@ export const usePaymentLink = () => {
         if (formData.linkType === "OFF_RAMP") {
           const institutions = await fetchSupportedInstitutions(formData.currency);
           setSupportedInstitutions(institutions);
-          setFormData(prev => ({ ...prev, offRampProvider: "" }));
+          setFormData((prev: PaymentLinkFormData) => ({ ...prev, offRampProvider: "" }));
         }
       } catch (error) {
         console.error("Error fetching supported institutions:", error);
@@ -78,7 +76,7 @@ export const usePaymentLink = () => {
   }, [formData.currency, formData.linkType]);
 
   const updateFormData = useCallback((updates: Partial<PaymentLinkFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+    setFormData((prev: PaymentLinkFormData) => ({ ...prev, ...updates }));
   }, []);
 
   const sanitizeInput = (input: string): string => {

@@ -4,20 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   DollarSign, 
-  Wallet, 
   FileText, 
-  Link as LinkIcon, 
-  ArrowLeftRight 
+  Link as LinkIcon
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dynamic from "next/dynamic";
 
 // Lazy-load each tab's content to minimize initial bundle size
+// Minipay: Removed Wallet tab (handled by Minipay) and Bridge tab (Celo-only, no bridging)
 const WithdrawTab = dynamic(() => import("@/ramps/components/WithdrawTab"), {
-  ssr: false,
-  loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
-});
-const WalletTab = dynamic(() => import("@/components/(wallet)/WalletTab"), {
   ssr: false,
   loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
 });
@@ -29,10 +24,6 @@ const PaymentLinkTab = dynamic(
   () => import("@/(paymentLinks)/payment-link/components/PaymentLinkTab"),
   { ssr: false, loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" /> }
 );
-const BridgeTab = dynamic(() => import("@/accross-bridge/components/BridgeTab"), {
-  ssr: false,
-  loading: () => <div className="h-40 bg-white/5 rounded-2xl animate-pulse" />,
-});
 
 interface DashboardTabsProps {
   walletAddress?: string;
@@ -40,7 +31,7 @@ interface DashboardTabsProps {
 
 export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("withdraw");
+  const [activeTab, setActiveTab] = useState("invoice");
 
   const handleTabChange = (value: string) => {
     // All tabs now render inline
@@ -64,14 +55,6 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
           </TabsTrigger>
           
           <TabsTrigger 
-            value="wallet" 
-            className="flex !font-bold items-center gap-0.5 sm:gap-1 md:gap-1.5 px-1 sm:px-3 md:px-3 py-1 sm:py-2 md:py-2 rounded-full transition-all duration-200 text-[10px] sm:text-sm md:text-xs font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
-          >
-            <Wallet className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Wallet</span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
             value="invoice" 
             className="flex !font-bold items-center gap-0.5 sm:gap-1 md:gap-1.5 px-1 sm:px-3 md:px-3 py-1 sm:py-2 md:py-2 rounded-full transition-all duration-200 text-[10px] sm:text-sm md:text-xs font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
           >
@@ -86,25 +69,13 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
             <LinkIcon className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Request</span>
           </TabsTrigger>
-          
-          <TabsTrigger 
-            value="bridge" 
-            className="flex !font-bold items-center gap-0.5 sm:gap-1 md:gap-1.5 px-1 sm:px-3 md:px-3 py-1 sm:py-2 md:py-2 rounded-full transition-all duration-200 text-[10px] sm:text-sm md:text-xs font-medium text-slate-300 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-red-600 data-[state=active]:!text-white data-[state=active]:shadow-lg whitespace-nowrap"
-          >
-            <ArrowLeftRight className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>Bridge</span>
-          </TabsTrigger>
         </TabsList>
             </div>
           </div>
 
-          {/* Tab Content */}
+          {/* Tab Content - Minipay: Only Withdraw, Invoice, and Request */}
           <TabsContent value="withdraw" className="mt-0 md:max-w-2xl md:mx-auto">
             <WithdrawTab walletAddress={walletAddress} />
-          </TabsContent>
-          
-          <TabsContent value="wallet" className="mt-0 md:max-w-2xl md:mx-auto">
-            <WalletTab />
           </TabsContent>
           
           <TabsContent value="invoice" className="mt-0 md:max-w-2xl md:mx-auto">
@@ -113,10 +84,6 @@ export default function DashboardTabs({ walletAddress }: DashboardTabsProps) {
           
           <TabsContent value="request" className="mt-0 md:max-w-2xl md:mx-auto">
             <PaymentLinkTab walletAddress={walletAddress} />
-          </TabsContent>
-          
-          <TabsContent value="bridge" className="mt-0 md:max-w-2xl md:mx-auto">
-            <BridgeTab walletAddress={walletAddress} />
           </TabsContent>
         </Tabs>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { Loader, Code, Key, Webhook, Book, Settings } from 'lucide-react';
@@ -25,7 +25,7 @@ export interface ApiKey {
 }
 
 function DevelopersPage() {
-  const { user, authenticated, getAccessToken } = usePrivy();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('api-keys');
   const [loading, setLoading] = useState(true);
@@ -33,21 +33,18 @@ function DevelopersPage() {
   const [webhookUrl, setWebhookUrl] = useState('');
 
   useEffect(() => {
-    if (!authenticated && !loading) {
+    if (!isConnected && !loading) {
       router.replace('/dashboard');
     }
-  }, [authenticated, loading, router]);
+  }, [isConnected, loading, router]);
 
   // Fetch API keys and webhook settings
   useEffect(() => {
-    if (!authenticated) return;
+    if (!isConnected) return;
     (async () => {
       try {
         setLoading(true);
-        const tk = await getAccessToken();
-        const res = await fetch('/api/settings', { 
-          headers: { Authorization: `Bearer ${tk}` } 
-        });
+        const res = await fetch('/api/settings');
         if (!res.ok) throw new Error('fetch failed');
         const json = await res.json();
         setApiKeys(json.apiKeys || []);
@@ -58,17 +55,13 @@ function DevelopersPage() {
         setLoading(false);
       }
     })();
-  }, [authenticated, getAccessToken]);
+  }, [isConnected]);
 
   const saveWebhookUrl = async (newUrl: string) => {
     try {
-      const tk = await getAccessToken();
       const res = await fetch('/api/settings', {
         method: 'PUT',
-        headers: { 
-          Authorization: `Bearer ${tk}`, 
-          'Content-Type': 'application/json' 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ webhookUrl: newUrl }),
       });
       if (!res.ok) throw new Error('save failed');
@@ -220,7 +213,6 @@ function DevelopersPage() {
                   <ApiKeysTab 
                     apiKeys={apiKeys} 
                     setApiKeys={setApiKeys}
-                    getAccessToken={getAccessToken}
                   />
                 )}
 
@@ -248,7 +240,7 @@ function DevelopersPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-300 mb-1">Connected Wallet</h3>
                   <p className="font-mono text-sm text-gray-100 break-all">
-                    {user?.wallet?.address}
+                    {address}
                   </p>
                 </div>
                 <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">

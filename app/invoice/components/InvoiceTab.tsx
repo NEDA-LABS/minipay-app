@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaFileInvoiceDollar, FaPlus, FaEye, FaDownload, FaShare } from "react-icons/fa6";
 import { Loader2, FileText, BarChart3 } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useAccount } from "wagmi";
 import { motion } from "framer-motion";
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,9 +30,8 @@ interface InvoiceTabProps {
 }
 
 export default function InvoiceTab({ walletAddress }: InvoiceTabProps) {
-  const { authenticated, user } = usePrivy();
-  const merchantId = walletAddress || user?.wallet?.address;
-  const isConnected = authenticated && !!merchantId;
+  const { address, isConnected } = useAccount();
+  const merchantId = walletAddress || address;
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeTab, setActiveTab] = useState("All");

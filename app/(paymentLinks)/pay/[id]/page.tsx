@@ -39,7 +39,6 @@ import {
   bsc,
 } from "viem/chains";
 import Header from "@/components/Header";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
 import Image from "next/image";
 import { resolveName } from "@/utils/ensUtils";
 import { isAddress } from "viem";
@@ -89,7 +88,6 @@ const NORMAL_PAYMENT_CHAINS = [
 
 export default function PayPage({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();
-  const { authenticated, login, ready } = usePrivy();
   const [copied, setCopied] = useState(false);
   const [isValidLink, setIsValidLink] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");

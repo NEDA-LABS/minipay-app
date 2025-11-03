@@ -12,7 +12,7 @@ interface MiniPayProvider {
 
 declare global {
   interface Window {
-    ethereum?: MiniPayProvider;
+    ethereum?: any;
   }
 }
 
@@ -21,7 +21,16 @@ declare global {
  */
 export function isMiniPay(): boolean {
   if (typeof window === 'undefined') return false;
-  return !!(window.ethereum && window.ethereum.isMiniPay);
+  try {
+    const ua = window.navigator.userAgent || '';
+    const queryFlag = new URLSearchParams(window.location.search).get('minipay') === '1';
+    const storedFlag = typeof window.localStorage !== 'undefined' && window.localStorage.getItem('minipay') === '1';
+    const providerFlag = !!(window.ethereum && (window.ethereum as any).isMiniPay);
+    const uaFlag = ua.includes('MiniPay') || ua.includes('Opera Mini') || ua.includes('OPR') || ua.includes('Opera');
+    return providerFlag || uaFlag || queryFlag || storedFlag;
+  } catch {
+    return !!(window.ethereum && (window.ethereum as any).isMiniPay);
+  }
 }
 
 /**
@@ -71,5 +80,6 @@ export function getMiniPayInfo() {
     isMiniPay: isMiniPay(),
     hasProvider: !!getProvider(),
     userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
+    queryFlag: typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('minipay') === '1') : false,
   };
 }

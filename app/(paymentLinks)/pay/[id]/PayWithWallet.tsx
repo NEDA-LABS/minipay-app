@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { utils } from "ethers";
 import { Toaster, toast } from 'react-hot-toast';
 import { SUPPORTED_CHAINS_NORMAL as SUPPORTED_CHAINS } from "../../../ramps/payramp/offrampHooks/constants";
-import { usePrivy, useWallets, useSendTransaction } from "@privy-io/react-auth";
+import { useAccount } from 'wagmi';
 import { stablecoins } from "../../../data/stablecoins";
 import { processPaymentWithFee } from "@/utils/nedapayProtocol";
 
@@ -31,12 +31,20 @@ export default function PayWithWallet({
     "idle" | "preparing" | "submitting" | "pending" | "confirming" | "confirmed" | "failed"
   >("idle");
   
-  const { ready, authenticated, user } = usePrivy();
-  const { wallets } = useWallets();
-  const { sendTransaction } = useSendTransaction();
-  
-  const connectedWallet = wallets[0];
-  const currentChainId = connectedWallet?.chainId.split(":")[1] ? parseInt(connectedWallet.chainId.split(":")[1]) : null;
+  const { address, isConnected } = useAccount();
+  const [currentChainId, setCurrentChainId] = useState<number | null>(null);
+
+  // Initialize current chain id and listen for changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).ethereum?.request) {
+      (window as any).ethereum.request({ method: 'eth_chainId' })
+        .then((hex: string) => setCurrentChainId(parseInt(hex, 16)))
+        .catch(() => {});
+      const handler = (hex: string) => setCurrentChainId(parseInt(hex, 16));
+      (window as any).ethereum.on?.('chainChanged', handler);
+      return () => (window as any).ethereum?.removeListener?.('chainChanged', handler);
+    }
+  }, []);
 
   // Function to save a new transaction (Pending)
   const saveTransactionToDB = async (
@@ -276,18 +284,14 @@ export default function PayWithWallet({
 
   const switchChain = async (targetChainId: number) => {
     try {
-      if (!connectedWallet) {
-        throw new Error("No wallet connected");
-      }
-
       const targetChain = SUPPORTED_CHAINS.find(c => c.id === targetChainId);
-      if (!targetChain) {
-        throw new Error("Unsupported chain");
-      }
-
-      console.log("Switching to chain:", targetChain.id);
-
-      await connectedWallet.switchChain(targetChain.id);
+      if (!targetChain) throw new Error("Unsupported chain");
+      const hex = '0x' + targetChain.id.toString(16);
+      await (window as any).ethereum?.request?.({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hex }],
+      });
+      setCurrentChainId(targetChain.id);
       return true;
     } catch (switchError: any) {
       console.error('Error switching chain:', switchError);
@@ -345,16 +349,12 @@ export default function PayWithWallet({
   // Helper function to check token balance
   const checkTokenBalance = async (tokenAddress: string, walletAddress: string, requiredAmount: ethers.BigNumber, decimals: number): Promise<boolean> => {
     try {
-      const provider = new ethers.providers.Web3Provider(
-        await connectedWallet.getEthereumProvider()
-      );
-      
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const erc20 = new ethers.Contract(
         tokenAddress,
         ["function balanceOf(address) view returns (uint256)"],
         provider
       );
-      
       const balance = await erc20.balanceOf(walletAddress);
       return balance.gte(requiredAmount);
     } catch (error) {
@@ -389,7 +389,7 @@ export default function PayWithWallet({
         setTxStatus("failed");
         return;
       }
-      if (!connectedWallet) {
+      if (!isConnected || !address) {
         setError("No wallet connected. Please connect a wallet first.");
         setLoading(false);
         setTxStatus("failed");
@@ -411,7 +411,7 @@ export default function PayWithWallet({
         }
       }
   
-      const walletAddress = await connectedWallet.address;
+      const walletAddress = address as string;
   
       // Find token info from stablecoins
       const token = stablecoins.find(
@@ -459,10 +459,7 @@ export default function PayWithWallet({
         // ===== Special route for chainId 534352 (fee-collecting flow) =====
         if (chainId === 534352) {
           try {
-            // Get signer (Privy-compatible pattern)
-            const provider = new ethers.providers.Web3Provider(
-              await connectedWallet.getEthereumProvider()
-            );
+            const provider = new ethers.providers.Web3Provider((window as any).ethereum);
             const signer = provider.getSigner();
             console.log("signer debugg", signer);
   
@@ -544,10 +541,7 @@ export default function PayWithWallet({
           }
         } else {
           // ===== Default ERC-20 transfer path (all other chains) =====
-          const provider = new ethers.providers.Web3Provider(
-            await connectedWallet.getEthereumProvider(),
-            "any" // helps across chain switches
-          );
+          const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any");
           const signer = provider.getSigner();
           
           // --- ERC-20 transfer (default path) ---
@@ -643,11 +637,10 @@ export default function PayWithWallet({
   
         let hash: string;
         try {
-          const result = await sendTransaction({
-            to,
-            value: value.toString(),
-          });
-          hash = result.hash;
+          const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any");
+          const signer = provider.getSigner();
+          const tx = await signer.sendTransaction({ to, value });
+          hash = tx.hash as string;
     
           setTxHash(hash);
           setTxStatus("pending");
@@ -781,7 +774,7 @@ export default function PayWithWallet({
 
       <button
         onClick={handlePay}
-        disabled={loading || !connectedWallet || (!!chainId && currentChainId !== chainId)}
+        disabled={loading || !isConnected || (!!chainId && currentChainId !== chainId)}
         className="px-4 py-2 !bg-blue-600 hover:!bg-blue-600 text-white rounded-lg font-semibold transition disabled:opacity-60"
       >
         {loading ? (
@@ -853,7 +846,7 @@ export default function PayWithWallet({
       )}
 
       {/* Show connect wallet button if not connected */}
-      {!connectedWallet && (
+      {!isConnected && (
         <div className="mt-4 text-center">
           <div className="mb-2 text-sm text-red-600 dark:text-red-400" style={{color: "red"}}>
             Please connect your wallet first

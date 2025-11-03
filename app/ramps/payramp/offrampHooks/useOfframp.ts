@@ -2,11 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 import axios from 'axios';
-import {
-  usePrivy,
-  useWallets,
-  useSign7702Authorization,
-} from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 import {
   initializeBiconomyEmbedded,
   executeGasAbstractedTransferEmbedded,
@@ -49,13 +45,28 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
   if (!TOKEN_ADDRESSES[token]) {
     throw new Error(`Invalid token: ${token}`);
   }
-  // Authentication and wallet state
-  const { authenticated } = usePrivy();
-  const { wallets } = useWallets();
-  const { signAuthorization } = useSign7702Authorization();
-  const activeWallet = wallets[0] as WalletType | undefined;
-  const isEmbeddedWallet = activeWallet?.walletClientType === 'privy';
-  const isCoinbaseWallet = activeWallet?.walletClientType === 'coinbase_wallet';
+  // Minipay-only: Authentication and wallet state via wagmi
+  const { address: wagmiAddress, isConnected: authenticated } = useAccount();
+  const activeWallet = wagmiAddress
+    ? ({
+        address: wagmiAddress as `0x${string}`,
+        getEthereumProvider: async () => (typeof window !== 'undefined' ? (window as any).ethereum : undefined),
+        switchChain: async (chainId: number) => {
+          try {
+            const hex = '0x' + chainId.toString(16);
+            await (window as any).ethereum?.request?.({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: hex }],
+            });
+          } catch (_) {
+            // ignore
+          }
+        },
+        walletClientType: 'minipay',
+      } as WalletType)
+    : undefined;
+  const isEmbeddedWallet = false;
+  const isCoinbaseWallet = false;
 
   // Form state
   const [amount, setAmount] = useState('');
@@ -113,55 +124,15 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
     ? ((parseFloat(amount) - parseFloat(amount) * 0.005) * parseFloat(rate)).toFixed(2)
     : "0.00";
 
-  // Initialize Biconomy
+  // Minipay: Disable Biconomy initialization
   useEffect(() => {
-    const initBiconomy = async () => {
-      if (!activeWallet?.address || isCoinbaseWallet || !isEmbeddedWallet) return;
-  
-      setGasAbstractionInitializing(true);
-      setGasAbstractionFailed(false);
-  
-      try {
-        // For embedded wallets, ensure the wallet is fully ready
-        if (isEmbeddedWallet) {
-          // Check if the wallet is ready by trying to get the provider
-          const provider = await activeWallet.getEthereumProvider();
-          if (!provider || !provider.request) {
-            console.warn("Wallet provider not ready, skipping Biconomy initialization");
-            setGasAbstractionFailed(true);
-            return;
-          }
-        }
-        
-        // Switch to selected chain first
-        await activeWallet.switchChain(chain.id);
-        if (isEmbeddedWallet && signAuthorization) {
-          // Pass the signAuthorization function, not a pre-signed authorization
-          const client = await initializeBiconomyEmbedded(
-            activeWallet,
-            signAuthorization, // This is the function from useSign7702Authorization
-            chain.id,
-          );
-          setBiconomyEmbeddedClient(client);
-        } else if (!isEmbeddedWallet) {
-          const client = await initializeBiconomyExternal(activeWallet, chain.id);
-          setBiconomyExternalClient(client);
-        }
-      } catch (err) {
-        console.warn("Biconomy initialization failed:", err);
-        setGasAbstractionFailed(true);
-      } finally {
-        setGasAbstractionInitializing(false);
-      }
-    };
-  
-    // Add a delay to ensure wallet is fully ready
-    const timer = setTimeout(() => {
-      initBiconomy();
-    }, 2000); // 2 second delay to ensure wallet is ready
-  
-    return () => clearTimeout(timer);
-  }, [activeWallet?.address, signAuthorization, isEmbeddedWallet, isCoinbaseWallet, chain.id]);
+    setGasAbstractionFailed(true);
+    setGasAbstractionInitializing(false);
+    // Ensure chain is set on wallet (best-effort)
+    if (activeWallet?.switchChain) {
+      activeWallet.switchChain(chain.id).catch(() => {});
+    }
+  }, [activeWallet?.address, chain.id]);
 
   // Fetch supported currencies
   useEffect(() => {
@@ -186,9 +157,8 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
 
       try {
         setBalanceLoading(true);
-        const provider = new ethers.providers.Web3Provider(
-          await activeWallet.getEthereumProvider()
-        );
+        const ethProvider = (await activeWallet.getEthereumProvider()) as any;
+        const provider = new ethers.providers.Web3Provider(ethProvider);
         
         // Get supported chain IDs for this token
         const supportedChainIds = Object.keys(TOKEN_ADDRESSES[token] || {}).map(Number) as (keyof typeof TOKEN_ADDRESSES[SupportedToken])[];
@@ -216,7 +186,7 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
     };
 
     fetchBalance();
-  }, [activeWallet, token, chain]);
+  }, [activeWallet?.address, token, chain]);
 
   // Fetch token to fiat rate
   useEffect(() => {
@@ -379,9 +349,8 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
       }
 
       // Prepare provider and contract
-      const provider = new ethers.providers.Web3Provider(
-        await activeWallet.getEthereumProvider()
-      );
+      const ethProvider = (await activeWallet.getEthereumProvider()) as any;
+      const provider = new ethers.providers.Web3Provider(ethProvider);
       const signer = provider.getSigner();
       const tokenContract = new ethers.Contract(tokenAddress, TOKEN_ABI, signer);
 

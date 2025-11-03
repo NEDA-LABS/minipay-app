@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useAccount } from 'wagmi';
 import { useChain } from "@/contexts/ChainContext";
 import { 
   ArrowRight, 
@@ -27,7 +27,6 @@ import {
 import ChainSelector from "@/ramps/payramp/ChainSelector";
 import OffRampForm from "@/ramps/payramp/OffRampForm";
 import { RedeemForm } from "@/ramps/idrxco/components/RedeemForm";
-import { WalletType } from "@/utils/biconomyExternal";
 import { SUPPORTED_CHAINS, DEFAULT_CHAIN, ChainConfig } from "@/ramps/payramp/offrampHooks/constants";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -90,9 +89,7 @@ interface WithdrawTabProps {
 }
 
 export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
-  const { authenticated, login, connectWallet } = usePrivy();
-  const { wallets } = useWallets();
-  const activeWallet = wallets[0] as WalletType | undefined;
+  const { address, isConnected } = useAccount();
 
   const { selectedChain, setSelectedChain, selectedToken, setSelectedToken } = useChain();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1); // 1: Country & Chain, 2: Form
@@ -128,30 +125,40 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
     }
   }, [isChainSwitching]);
 
-  // Sync wallet chain changes to global context (when user switches via header)
+  // Sync wallet chain changes to global context (when user switches via wallet)
   useEffect(() => {
-    // Use wallets[0] directly to access chainId (Privy wallet type has chainId property)
-    const currentWalletChainId = wallets[0]?.chainId;
-    
-    if (currentWalletChainId && selectedChain) {
-      const walletChainIdNum = typeof currentWalletChainId === 'string' 
-        ? parseInt(currentWalletChainId.replace('eip155:', ''))
-        : currentWalletChainId;
-      
-      // If wallet chain differs from global context, update context (unless we're in the middle of switching)
-      if (!isChainSwitching && walletChainIdNum !== selectedChain.id) {
+    const syncChain = async () => {
+      try {
+        const hex = await (window as any).ethereum?.request?.({ method: 'eth_chainId' });
+        if (!hex || !selectedChain) return;
+        const walletChainIdNum = parseInt(hex, 16);
+        if (!isChainSwitching && walletChainIdNum !== selectedChain.id) {
+          const matchingChain = SUPPORTED_CHAINS.find(c => c.id === walletChainIdNum);
+          if (matchingChain) {
+            setSelectedChain(matchingChain);
+            if (!matchingChain.tokens.includes(selectedToken)) {
+              setSelectedToken(matchingChain.tokens[0] as "USDC" | "USDT" | "CNGN");
+            }
+          }
+        }
+      } catch {}
+    };
+    syncChain();
+    const handler = (hex: string) => {
+      const walletChainIdNum = parseInt(hex, 16);
+      if (selectedChain && !isChainSwitching && walletChainIdNum !== selectedChain.id) {
         const matchingChain = SUPPORTED_CHAINS.find(c => c.id === walletChainIdNum);
         if (matchingChain) {
-          console.log(`Wallet chain changed externally to ${matchingChain.name} - syncing global context`);
           setSelectedChain(matchingChain);
-          // Keep the same token if supported, otherwise use first token
           if (!matchingChain.tokens.includes(selectedToken)) {
             setSelectedToken(matchingChain.tokens[0] as "USDC" | "USDT" | "CNGN");
           }
         }
       }
-    }
-  }, [wallets, selectedChain, isChainSwitching, selectedToken, setSelectedChain, setSelectedToken]);
+    };
+    (window as any).ethereum?.on?.('chainChanged', handler);
+    return () => (window as any).ethereum?.removeListener?.('chainChanged', handler);
+  }, [selectedChain, isChainSwitching, selectedToken, setSelectedChain, setSelectedToken]);
 
   // Detect user's country on mount
   useEffect(() => {
@@ -235,11 +242,11 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
     
     // Also switch the wallet's chain to keep them in sync with the global context
     try {
-      if (activeWallet && typeof activeWallet.switchChain === 'function') {
-        console.log(`Switching wallet to chain: ${chain.name} (${chain.id})`);
-        await activeWallet.switchChain(chain.id);
-        console.log(`Wallet chain switched successfully to ${chain.name}`);
-      }
+      const hex = '0x' + chain.id.toString(16);
+      await (window as any).ethereum?.request?.({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hex }],
+      });
     } catch (error) {
       console.warn('Failed to switch wallet chain:', error);
       // Continue anyway - the loading state will clear when context syncs
@@ -255,38 +262,7 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
     }
   };
 
-  // Authentication checks
-  if (!authenticated) {
-    return (
-      <div className="max-w-4xl mx-auto">
-      <Card className="bg-slate-800/90 backdrop-blur-sm border-slate-700/50">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
-              <AlertCircle className="w-6 h-6 text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-amber-900 text-base">
-                Authentication Required
-              </h3>
-              <p className="text-amber-700 text-sm mt-1">
-                Please login to access the withdrawal service
-              </p>
-            </div>
-            <Button
-              onClick={login}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-lg"
-            >
-              Login
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      </div>
-    );
-  }
-
-  if (!activeWallet) {
+  if (!isConnected || !address) {
     return (
       <div className="max-w-4xl mx-auto">
         <Card className="bg-slate-800/90 backdrop-blur-sm border-slate-700/50">
@@ -303,12 +279,6 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
                   Please connect a wallet to proceed with withdrawal
                 </p>
               </div>
-              <Button
-                onClick={connectWallet}
-                className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium shadow-lg"
-              >
-                Connect Wallet
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -401,7 +371,7 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
                   <ChainSelector
                     chains={SUPPORTED_CHAINS}
                     onSelectChain={handleChainSelect}
-                    userAddress={activeWallet?.address || ''}
+                    userAddress={address || ''}
                     initialChain={selectedChain}
                   />
                 </div>

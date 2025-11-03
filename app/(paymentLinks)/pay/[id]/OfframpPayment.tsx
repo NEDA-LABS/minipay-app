@@ -5,7 +5,7 @@ import { ethers, utils } from "ethers";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { fetchTokenRate, verifyAccount } from "@/utils/paycrest";
-import { usePrivy, useWallets, useSendTransaction } from "@privy-io/react-auth";
+import { useAccount } from 'wagmi';
 import { stablecoins } from "@/data/stablecoins";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -145,28 +145,27 @@ export default function OffRampPayment({
   const [currentChainId, setCurrentChainId] = useState<number | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
 
-  // --- Privy ---
-  const { wallets } = useWallets();
-  const connectedWallet = wallets?.[0];
-  const { sendTransaction } = useSendTransaction();
-  const { ready, authenticated } = usePrivy();
+  // Minipay / wagmi
+  const { address, isConnected } = useAccount();
 
   // Auto-populate refund address with connected wallet
   useEffect(() => {
-    if (connectedWallet?.address && !refundAddress) {
-      setRefundAddress(connectedWallet.address);
+    if (address && !refundAddress) {
+      setRefundAddress(address);
     }
-  }, [connectedWallet?.address, refundAddress]);
+  }, [address, refundAddress]);
 
-  // Short-circuit render until Privy is ready (prevents undefined states)
-  if (!ready) {
-    return <div>Loading...</div>;
-  }
+  // Initialize current chain id on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).ethereum?.request) {
+      (window as any).ethereum
+        .request({ method: 'eth_chainId' })
+        .then((hex: string) => setCurrentChainId(parseInt(hex, 16)))
+        .catch(() => {});
+    }
+  }, []);
 
-  const derivedCurrentChainId =
-    connectedWallet?.chainId?.split(":")[1]
-      ? parseInt(connectedWallet.chainId.split(":")[1])
-      : currentChainId;
+  const derivedCurrentChainId = currentChainId;
 
   // Watch provider network changes (fallback, e.g. injected wallets)
   useEffect(() => {
@@ -180,6 +179,11 @@ export default function OffRampPayment({
     }
   }, []);
 
+  // Keep walletAddress in sync with connected address (for receipts)
+  useEffect(() => {
+    if (address && walletAddress !== address) setWalletAddress(address);
+  }, [address, walletAddress]);
+
   // If merchant set a specific chainId, try to auto-switch once
   useEffect(() => {
     (async () => {
@@ -188,7 +192,7 @@ export default function OffRampPayment({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chainId, connectedWallet]);
+  }, [chainId, derivedCurrentChainId]);
 
   // -----------------------
   // helpers
@@ -223,13 +227,11 @@ export default function OffRampPayment({
     
     // Find the chain ID for the selected chain and switch automatically
     const selectedChainConfig = SUPPORTED_CHAINS.find(c => c.name.toLowerCase() === chainName.toLowerCase());
-    if (selectedChainConfig && connectedWallet) {
+    if (selectedChainConfig) {
       try {
         await switchChain(selectedChainConfig.id);
       } catch (error) {
         console.error("Failed to switch chain:", error);
-        // Don't show error to user as chain switching might fail for various reasons
-        // but they can still proceed with the selected chain
       }
     }
     
@@ -519,19 +521,16 @@ export default function OffRampPayment({
   // -----------------------
   const switchChain = async (targetChainId: number) => {
     try {
-      if (!connectedWallet) throw new Error("No wallet connected");
-      const targetChain = SUPPORTED_CHAINS.find((c) => c.id === targetChainId);
-      if (!targetChain) throw new Error("Unsupported chain");
-      await connectedWallet.switchChain(targetChain.id);
-      setCurrentChainId(targetChain.id);
+      const hex = '0x' + targetChainId.toString(16);
+      await (window as any).ethereum?.request?.({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hex }],
+      });
+      setCurrentChainId(targetChainId);
       return true;
     } catch (switchError: any) {
-      console.error("Error switching chain:", switchError);
-      setError(
-        `Failed to switch to ${
-          SUPPORTED_CHAINS.find((c) => c.id === targetChainId)?.name || "target"
-        } network`
-      );
+      console.error('Error switching chain:', switchError);
+      setError(`Failed to switch network`);
       return false;
     }
   };
@@ -592,18 +591,18 @@ export default function OffRampPayment({
   };
 
   // Helper function to check token balance
-  const checkTokenBalance = async (tokenAddress: string, walletAddress: string, requiredAmount: ethers.BigNumber): Promise<boolean> => {
+  const checkTokenBalance = async (
+    tokenAddress: string,
+    walletAddress: string,
+    requiredAmount: ethers.BigNumber
+  ): Promise<boolean> => {
     try {
-      const provider = new ethers.providers.Web3Provider(
-        await connectedWallet.getEthereumProvider()
-      );
-      
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
       const erc20 = new ethers.Contract(
         tokenAddress,
         ["function balanceOf(address) view returns (uint256)"],
         provider
       );
-      
       const balance = await erc20.balanceOf(walletAddress);
       return balance.gte(requiredAmount);
     } catch (error) {
@@ -658,9 +657,9 @@ export default function OffRampPayment({
     setTxStatus("preparing");
 
     try {
-      // Privy readiness/auth
-      if (!ready || !authenticated) {
-        setError("Please sign in and connect a wallet first.");
+      // Connection check
+      if (!isConnected || !address) {
+        setError("Please connect a wallet first.");
         setLoading(false);
         setTxStatus("failed");
         return;
@@ -678,12 +677,7 @@ export default function OffRampPayment({
         setTxStatus("failed");
         return;
       }
-      if (!connectedWallet || !connectedWallet.address) {
-        setError("No wallet connected. Please connect a wallet first.");
-        setLoading(false);
-        setTxStatus("failed");
-        return;
-      }
+      const walletAddr = address;
 
       const current = derivedCurrentChainId || null;
       const target = chainId || 8453; // default to Base if unspecified
@@ -698,7 +692,6 @@ export default function OffRampPayment({
         }
       }
 
-      const walletAddr = connectedWallet.address; // string
       setTxStatus("submitting");
 
       // resolve token
@@ -758,10 +751,7 @@ export default function OffRampPayment({
         }
 
         // Use external provider from Privy wallet
-        const provider = new ethers.providers.Web3Provider(
-          await connectedWallet.getEthereumProvider(),
-          "any"
-        );
+        const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any");
         const signer = provider.getSigner();
 
         const erc20 = new ethers.Contract(
@@ -853,11 +843,10 @@ export default function OffRampPayment({
 
         let hash: string;
         try {
-          const result = await sendTransaction(
-            { to: toSendAddress, value: value.toString() },
-            { address: connectedWallet.address }
-          );
-          hash = result.hash;
+          const provider = new ethers.providers.Web3Provider((window as any).ethereum, "any");
+          const signer = provider.getSigner();
+          const tx = await signer.sendTransaction({ to: toSendAddress, value });
+          hash = tx.hash as string;
           setTxHash(hash);
           setTxStatus("pending");
         } catch (nativeError: any) {
@@ -1133,9 +1122,8 @@ IMPORTANT: If off-ramp processing fails, tokens will be refunded to the originat
           onClick={handlePay}
           disabled={
             loading ||
-            !connectedWallet ||
-            (!!chainId && derivedCurrentChainId !== chainId) ||
-            !authenticated
+            !isConnected ||
+            (!!chainId && derivedCurrentChainId !== chainId)
           }
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors duration-200 text-sm disabled:opacity-60"
         >
@@ -1160,7 +1148,7 @@ IMPORTANT: If off-ramp processing fails, tokens will be refunded to the originat
           </div>
         )}
 
-        {!connectedWallet && (
+        {!isConnected && (
           <Alert className="mt-4 border-red-500/20 bg-red-900/10">
             <AlertCircle className="w-4 h-4 text-red-400" />
             <AlertDescription className="text-red-200 text-sm">

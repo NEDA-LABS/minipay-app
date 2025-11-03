@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAccount, useDisconnect } from "wagmi";
 import { Name } from "@coinbase/onchainkit/identity";
 import { getBasename } from "@/utils/getBaseName";
-import { useUserSync } from "@/hooks/useUserSync";
 import { isMiniPay } from "@/utils/minipay-detection";
 import { Wallet, LogOut, User, HelpCircle, History, BarChart3, Gift, Users, Shield, Smartphone } from "lucide-react";
 import {
@@ -30,8 +29,7 @@ export function MinipayWalletSelector({ className }: MinipayWalletSelectorProps)
   const [username, setUsername] = useState<string | null>(null);
   const [isMinipay, setIsMinipay] = useState(false);
 
-  // Sync user data when connected
-  useUserSync();
+  // Minipay-only: no external user sync
 
   // Detect Minipay environment
   useEffect(() => {

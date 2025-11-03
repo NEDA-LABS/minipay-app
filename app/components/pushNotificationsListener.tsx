@@ -1,23 +1,40 @@
 // components/BroadcastNotificationListener.tsx
 'use client';
 import { useState, useEffect, JSX } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { Notification, NotificationState } from '@/admin/push-notifications-panel/types';
+import { useAccount } from 'wagmi';
+
+type Notification = {
+  id: string;
+  message: string;
+  createdAt?: string;
+  updatedAt?: string;
+  broadcastId?: string;
+};
+
+type NotificationState = {
+  id: string;
+  title: string;
+  message: string;
+  createdAt?: string;
+  updatedAt?: string;
+  isVisible: boolean;
+  isClosable: boolean;
+};
 
 // Cache to prevent processing the same notification multiple times
 const processedNotifications = new Set<string>();
 
 export default function BroadcastNotificationListener(): JSX.Element {
-  const { user } = usePrivy();
+  const { address } = useAccount();
   const [visibleNotifications, setVisibleNotifications] = useState<Record<string, NotificationState>>({});
 
   // Function to check if broadcastId already exists for this user
   const checkBroadcastIdExists = async (broadcastId: string): Promise<boolean> => {
-    if (!user?.wallet?.address) return false;
+    if (!address) return false;
 
     try {
       const response = await fetch(
-        `/api/notifications?recipient=${user.wallet.address}&broadcastId=${broadcastId}`
+        `/api/notifications?recipient=${address}&broadcastId=${broadcastId}`
       );
       
       if (response.ok) {
@@ -33,7 +50,7 @@ export default function BroadcastNotificationListener(): JSX.Element {
 
   // Function to save broadcast notification to individual user notifications
   const saveNotificationToUserDB = async (broadcastNotification: Notification): Promise<void> => {
-    if (!user?.wallet?.address) return;
+    if (!address) return;
 
     // Check if we've already processed this notification
     if (processedNotifications.has(broadcastNotification.id)) {
@@ -55,7 +72,7 @@ export default function BroadcastNotificationListener(): JSX.Element {
         },
         body: JSON.stringify({
           message: broadcastNotification.message,
-          recipient: user.wallet.address,
+          recipient: address,
           type: 'broadcast',
           status: 'unseen',
           relatedTransactionId: null,
@@ -76,11 +93,11 @@ export default function BroadcastNotificationListener(): JSX.Element {
 
   // Function to fetch user's unseen broadcast notifications
   const fetchUnseenBroadcastNotifications = async (): Promise<any[]> => {
-    if (!user?.wallet?.address) return [];
+    if (!address) return [];
 
     try {
       const response = await fetch(
-        `/api/notifications?recipient=${user.wallet.address}&type=broadcast&status=unseen`
+        `/api/notifications?recipient=${address}&type=broadcast&status=unseen`
       );
       
       if (response.ok) {
@@ -96,11 +113,11 @@ export default function BroadcastNotificationListener(): JSX.Element {
 
   // Function to mark notification as seen
   const markNotificationAsSeen = async (broadcastId: string): Promise<void> => {
-    if (!user?.wallet?.address) return;
+    if (!address) return;
 
     try {
       const updateResponse = await fetch(
-        `/api/notifications?broadcastId=${broadcastId}&recipient=${user.wallet.address}`,
+        `/api/notifications?broadcastId=${broadcastId}&recipient=${address}`,
         {
           method: 'PUT',
           headers: {
@@ -122,7 +139,7 @@ export default function BroadcastNotificationListener(): JSX.Element {
 
   useEffect(() => {
     const processNotifications = async (): Promise<void> => {
-      if (!user?.wallet?.address) return;
+      if (!address) return;
 
       try {
         // First, fetch broadcast notifications from the broadcast API
@@ -181,12 +198,12 @@ export default function BroadcastNotificationListener(): JSX.Element {
     };
 
     // Only run if user is authenticated
-    if (user?.wallet?.address) {
+    if (address) {
       processNotifications();
       const interval = setInterval(processNotifications, 30000); // Reduced from 10s to 30s for efficiency
       return () => clearInterval(interval);
     }
-  }, [user?.wallet?.address, visibleNotifications]);
+  }, [address, visibleNotifications]);
 
   const handleClose = async (broadcastId: string): Promise<void> => {
     // Mark notification as seen in the database
@@ -201,7 +218,7 @@ export default function BroadcastNotificationListener(): JSX.Element {
   };
 
   // Don't render if user is not authenticated
-  if (!user?.wallet?.address) {
+  if (!address) {
     return <></>;
   }
 

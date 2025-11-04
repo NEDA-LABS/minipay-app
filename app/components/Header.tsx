@@ -83,15 +83,18 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo Section */}
           <div className="flex items-center">
-            <Link href="/" className="group flex items-center gap-2">
-              {/* Logo */}
-              <div className="relative flex items-center">
-                <Image src="/logo.svg" alt="NEDAPay" width={40} height={40} className="rounded-lg" />
-              </div>
-              {/* NEDAPay Text - Always visible */}
-              <div className="flex items-center gap-2">
-                <span className="text-white font-bold text-base sm:text-lg">NEDAPay</span>
-                <Badge variant="default" className="text-[0.6rem] font-bold px-1.5 py-0 bg-blue-600 text-white">
+            <Link href="/" className="group flex items-center space-x-3">
+              {/* Simplified Logo */}
+              <div className="relative flex">
+                <div className="flex rounded-xl items-center justify-center group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 -p-[8px]">
+                  <Image src="/logo.svg" alt="Logo" width={60} height={60} />
+                </div>
+                <div className="flex justify-center group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
+                  <span className="text-sm relative z-10 text-slate-100 font-extrabold drop-shadow-lg p-1 hidden md:!flex items-center -ml-4">
+                    NEDAPay
+                  </span>
+                </div>
+                <Badge variant="default" className="absolute right-0 sm:-right-3 text-[0.6rem] z-10 font-bold px-1 py-0 bg-blue-800 text-white">
                   BETA
                 </Badge>
               </div>

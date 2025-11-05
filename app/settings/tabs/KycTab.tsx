@@ -1,17 +1,14 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
-import useSumsub from '@/hooks/useSumsub'; 
+import { useAccount } from 'wagmi';
 import { useKycStatus } from '@/hooks/useKycStatus'; 
 import { useState, useEffect } from 'react';
 
 export default function KycTab() {
-  const { user } = usePrivy();
-  const address = user?.wallet?.address;
+  const { address } = useAccount();
 
-  // keep the same console log you had
-  const { kycStatus } = useSumsub();
-  console.log('kycStatus', kycStatus);
+  // Use Smile ID KYC status instead of Sumsub
+  const [kycStatus, setKycStatus] = useState<'idle' | 'pending' | 'approved' | 'rejected'>('idle');
 
   // local state mirrored from original component
   const [isKycSubmitted, setIsKycSubmitted] = useState(false);
@@ -75,7 +72,7 @@ export default function KycTab() {
                   </a>
                 ) : (
                   <a
-                    href="/verification"
+                    href="/kyc"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300"
                   >
                     Verify Your Identity

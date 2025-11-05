@@ -2,11 +2,11 @@
 
 /**
  * Smile ID Verification Flow Component
- * Main component for Smile ID KYC verification
+ * Main component for Smile ID KYC verification - MiniPay Version
  */
 
 import React, { useState, useEffect } from 'react';
-import { usePrivy, useLinkAccount } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -14,7 +14,6 @@ import { Loader2, CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react
 import { CountrySelector } from './CountrySelector';
 import { IDTypeSelector } from './IDTypeSelector';
 import { VerificationStatus } from './VerificationStatus';
-import { useUserSync } from '@/hooks/useUserSync';
 import toast from 'react-hot-toast';
 
 interface SmileIDVerificationFlowProps {
@@ -34,29 +33,17 @@ export function SmileIDVerificationFlow({
   onVerificationComplete, 
   className 
 }: SmileIDVerificationFlowProps) {
-  const { user, getAccessToken } = usePrivy();
-  const { hasEmail, isLoading: userSyncLoading } = useUserSync();
-  const { linkEmail } = useLinkAccount({
-    onSuccess: () => {
-      toast.success('Email linked successfully!');
-      window.location.reload();
-    },
-    onError: (error) => {
-      console.error('Email linking failed:', error);
-      toast.error('Failed to link email. Please try again.');
-    },
-  });
+  const { address, isConnected } = useAccount();
   
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedIdType, setSelectedIdType] = useState<string>('');
   const [verificationState, setVerificationState] = useState<VerificationState>({ status: 'idle' });
   const [isInitializing, setIsInitializing] = useState(true);
-  const [linkingEmail, setLinkingEmail] = useState<boolean>(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
 
   // Initial loading effect with minimum wait time
   useEffect(() => {
-    if (!user || userSyncLoading) return;
+    if (!isConnected) return;
 
     const timer = setTimeout(() => {
       setInitialLoadComplete(true);
@@ -64,13 +51,13 @@ export function SmileIDVerificationFlow({
     }, 1000); // Minimum 1 second wait to prevent flash
 
     return () => clearTimeout(timer);
-  }, [user, userSyncLoading]);
+  }, [isConnected]);
 
   // Check existing verification status on mount
   useEffect(() => {
-    if (!initialLoadComplete || !hasEmail) return;
+    if (!initialLoadComplete || !address) return;
     checkVerificationStatus();
-  }, [initialLoadComplete, hasEmail]);
+  }, [initialLoadComplete, address]);
 
   // Poll verification status when pending
   useEffect(() => {
@@ -89,15 +76,15 @@ export function SmileIDVerificationFlow({
 
   const checkVerificationStatus = async () => {
     try {
-      const token = await getAccessToken();
-      if (!token) {
-        console.log('No access token available');
+      if (!address) {
+        console.log('No wallet address available');
         return;
       }
       
       const response = await fetch('/api/kyc/smile-id/status', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Wallet-Address': address,
         },
       });
       const data = await response.json();
@@ -130,17 +117,6 @@ export function SmileIDVerificationFlow({
     }
   };
 
-  const handleEmailLink = async () => {
-    try {
-      setLinkingEmail(true);
-      linkEmail();
-    } catch (error) {
-      setLinkingEmail(false);
-      console.error('Error linking email:', error);
-      toast.error('Failed to initiate email linking. Please try again.');
-    }
-  };
-
   const startVerification = async () => {
     if (!selectedCountry || !selectedIdType) {
       console.error('Missing required data:', { selectedCountry, selectedIdType });
@@ -150,17 +126,15 @@ export function SmileIDVerificationFlow({
     setVerificationState({ status: 'loading' });
 
     try {
-      // Request verification (no signature needed)
-      const token = await getAccessToken();
-      if (!token) {
-        throw new Error('Authentication required. Please sign in again.');
+      if (!address) {
+        throw new Error('Wallet not connected. Please connect your wallet.');
       }
       
       const response = await fetch('/api/kyc/smile-id/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'X-Wallet-Address': address,
         },
         body: JSON.stringify({
           country: selectedCountry,
@@ -208,16 +182,16 @@ export function SmileIDVerificationFlow({
     );
   }
 
-  // No email state - show email requirement
-  if (!hasEmail) {
+  // Check wallet connection
+  if (!isConnected) {
     return (
       <Card className={`${className} bg-slate-900/90 border-slate-700 !rounded-3xl`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
-            <span className="text-base">Email Verification Required</span>
+            <span className="text-base">Wallet Connection Required</span>
           </CardTitle>
           <CardDescription className="text-slate-300">
-            Please add and verify your email address to continue with identity verification
+            Please connect your MiniPay wallet to continue with identity verification
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -234,40 +208,24 @@ export function SmileIDVerificationFlow({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
               </div>
               <div className="flex-1">
                 <h3 className="text-base font-semibold text-blue-200 mb-2">
-                  Why do we need your email?
+                  Why do we need your wallet?
                 </h3>
                 <p className="text-sm text-blue-100/80 leading-relaxed">
-                  Your email address is required to send you important updates about your KYC verification status, 
-                  including approval or rejection notifications. This helps ensure the security of your account.
+                  Your wallet address is used to securely identify you and link your KYC verification 
+                  to your account. This ensures the security of your verification process.
                 </p>
               </div>
             </div>
           </div>
 
-          <Button
-            onClick={handleEmailLink}
-            disabled={linkingEmail}
-            className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {linkingEmail ? (
-              <span className="flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                Verifying Email...
-              </span>
-            ) : (
-              'Add Email Address'
-            )}
-          </Button>
-
           <p className="text-slate-400 text-sm text-center leading-relaxed">
-            You'll receive a verification code to confirm your email address. 
-            The process typically takes less than a minute.
+            Please connect your MiniPay wallet to continue with the verification process.
           </p>
         </CardContent>
       </Card>

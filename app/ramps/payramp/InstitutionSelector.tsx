@@ -98,19 +98,24 @@ export function InstitutionSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0 bg-slate-800 border-slate-700" align="start">
+        <PopoverContent 
+          className="w-[calc(100vw-2rem)] sm:w-[400px] p-0 bg-slate-800 border-slate-700"
+          align="start"
+          side="bottom"
+          sideOffset={4}
+        >
           {/* Search Input */}
-          <div className="p-3 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+          <div className="p-2 sm:p-3 border-b border-slate-700 bg-slate-800">
             <Input
               placeholder="Search institutions..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-400"
+              className="h-9 bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-400 text-sm"
             />
           </div>
 
           {/* Institutions List */}
-          <div className="max-h-72 overflow-y-auto">
+          <div className="max-h-60 sm:max-h-72 overflow-y-auto">
             {/* Mobile Money Section */}
             {filteredMobileMoneyInstitutions.length > 0 && (
               <div>
@@ -128,15 +133,15 @@ export function InstitutionSelector({
                     key={inst.code}
                     onClick={() => handleSelect(inst.code)}
                     className={cn(
-                      'w-full px-3 py-3 text-left text-sm hover:bg-slate-700 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
+                      'w-full px-3 py-3 sm:py-3 text-left text-sm hover:bg-slate-700 active:bg-slate-600 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
                       value === inst.code && 'bg-slate-700'
                     )}
                   >
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                       <Smartphone className="h-4 w-4 text-green-400 flex-shrink-0" />
-                      <span className="text-slate-200">{inst.name}</span>
+                      <span className="text-slate-200 truncate">{inst.name}</span>
                     </div>
-                    {value === inst.code && <Check className="h-4 w-4 text-blue-400 ml-2" />}
+                    {value === inst.code && <Check className="h-4 w-4 text-blue-400 ml-2 flex-shrink-0" />}
                   </button>
                 ))}
               </div>
@@ -159,15 +164,15 @@ export function InstitutionSelector({
                     key={inst.code}
                     onClick={() => handleSelect(inst.code)}
                     className={cn(
-                      'w-full px-3 py-3 text-left text-sm hover:bg-slate-700 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
+                      'w-full px-3 py-3 sm:py-3 text-left text-sm hover:bg-slate-700 active:bg-slate-600 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
                       value === inst.code && 'bg-slate-700'
                     )}
                   >
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                       <Building2 className="h-4 w-4 text-amber-400 flex-shrink-0" />
-                      <span className="text-slate-200">{inst.name}</span>
+                      <span className="text-slate-200 truncate">{inst.name}</span>
                     </div>
-                    {value === inst.code && <Check className="h-4 w-4 text-blue-400 ml-2" />}
+                    {value === inst.code && <Check className="h-4 w-4 text-blue-400 ml-2 flex-shrink-0" />}
                   </button>
                 ))}
               </div>

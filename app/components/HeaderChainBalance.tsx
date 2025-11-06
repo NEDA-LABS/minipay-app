@@ -6,7 +6,6 @@ import { stablecoins } from "../data/stablecoins";
 import { SUPPORTED_CHAINS } from "@/data/platformSupportedChains";
 import { Loader2, ChevronDown, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ChainSwitcher from "@/components/ChainSwitcher";
 import { StablecoinBalanceTracker } from "@/components/StablecoinBalanceTracker";
 import { useChain } from "@/contexts/ChainContext";
 
@@ -249,9 +248,6 @@ export const HeaderChainBalance = () => {
   return (
     <>
       <div className="flex items-center gap-1 sm:gap-2">
-        {/* Chain Switcher */}
-        <ChainSwitcher />
-        
         {/* Balance Display Button */}
         <Button
           variant="secondary"

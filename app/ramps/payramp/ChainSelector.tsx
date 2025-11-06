@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import TokenBalanceCard from './TokenBalanceCard';
 import { ChainConfig } from './offrampHooks/constants';
 import { useBalances } from './offrampHooks/useBalance';
-import { useWallets } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
@@ -17,7 +17,7 @@ interface ChainSelectorProps {
 
 const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, userAddress, initialChain }) => {
   const { balances, loading } = useBalances(chains, userAddress);
-  const { wallets } = useWallets();
+  const { address } = useAccount();
 
   const [selectedTokens, setSelectedTokens] = useState<Record<string, string>>({});
   const [activeChainId, setActiveChainId] = useState<string>(() => {
@@ -54,13 +54,7 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ chains, onSelectChain, us
 
     const chain = chains.find(c => c.id === Number(chainId)) || chains[0];
     if (chain) {
-      try {
-        if (wallets && wallets[0] && typeof wallets[0].switchChain === 'function') {
-          await wallets[0].switchChain(chain.id);
-        }
-      } catch (e) {
-        // handle chain switch errors gracefully
-      }
+      // MiniPay is always on Celo - no chain switching needed
       console.log(`Token selected: ${token} on ${chain.name}`);
       onSelectChain(chain, token);
     }

@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
-import ChainSwitcher from "@/components/ChainSwitcher";
 import WalletKit from "@/dashboard/WalletKit";
 
 type ChainId = 8453 | 42161 | 137 | 42220 | 56 | 534352 | 10 | 1135;
@@ -472,7 +471,6 @@ export const StablecoinBalanceButton = () => {
                 <h3 className="text-white text-sm font-semibold">Stablecoins Portfolio</h3>
               </div>
             </div>
-            <ChainSwitcher />
           </div>
 
           {/* Balance Display */}

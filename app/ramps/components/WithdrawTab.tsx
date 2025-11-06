@@ -24,7 +24,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import ChainSelector from "@/ramps/payramp/ChainSelector";
+import TokenSelector from "@/ramps/payramp/TokenSelector";
 import OffRampForm from "@/ramps/payramp/OffRampForm";
 import { RedeemForm } from "@/ramps/idrxco/components/RedeemForm";
 import { SUPPORTED_CHAINS, DEFAULT_CHAIN, ChainConfig } from "@/ramps/payramp/offrampHooks/constants";
@@ -97,6 +97,15 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
   const [isAccountVerified, setIsAccountVerified] = useState(false);
   const [isChainSwitching, setIsChainSwitching] = useState(false);
   const [targetChainId, setTargetChainId] = useState<number | null>(null);
+
+  // Auto-select Celo chain on mount for MiniPay
+  useEffect(() => {
+    if (!selectedChain || selectedChain.id !== DEFAULT_CHAIN.id) {
+      console.log('Auto-selecting Celo chain for MiniPay');
+      setSelectedChain(DEFAULT_CHAIN);
+      setSelectedToken(DEFAULT_CHAIN.tokens[0] as "USDC" | "USDT" | "CNGN");
+    }
+  }, []); // Run once on mount
 
   // Debug: Log context changes and clear loading when chain matches
   useEffect(() => {
@@ -362,17 +371,14 @@ export default function WithdrawTab({ walletAddress }: WithdrawTabProps) {
                 </Select>
               </div>
 
-              {/* Chain & Token Selection (only for non-Indonesia) */}
+              {/* Token Selection (Celo network is auto-selected for MiniPay) */}
               {selectedCountry && selectedCountry.id !== 'indonesia' && (
                 <div className="space-y-3">
-                  {/* <label className="text-sm font-semibold text-slate-200">
-                    Blockchain Network & Token
-                  </label> */}
-                  <ChainSelector
-                    chains={SUPPORTED_CHAINS}
-                    onSelectChain={handleChainSelect}
+                  <TokenSelector
+                    chain={DEFAULT_CHAIN}
+                    onSelectToken={handleChainSelect}
                     userAddress={address || ''}
-                    initialChain={selectedChain}
+                    initialToken={selectedToken}
                   />
                 </div>
               )}

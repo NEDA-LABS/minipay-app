@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Check, ChevronsUpDown, Smartphone, Building2 } from 'lucide-react';
 import { cn } from '@/compliance/user/lib/utils';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface Institution {
   name: string;
@@ -32,6 +32,15 @@ export function InstitutionSelector({
 }: InstitutionSelectorProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  React.useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 640);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const selectedInstitution = institutions.find((i) => i.code === value);
 
@@ -75,6 +84,7 @@ export function InstitutionSelector({
     onChange(code);
     setOpen(false);
     setSearch('');
+    setMobileOpen(false);
   };
 
   return (
@@ -82,66 +92,59 @@ export function InstitutionSelector({
       <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100">
         Choose Bank or Mobile Network
       </label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            disabled={disabled}
-            onClick={onFocus}
-            className="w-full justify-between bg-gray-100 border-gray-300 hover:bg-gray-100 hover:border-gray-400 text-gray-900 h-10 sm:h-12 rounded-xl"
-          >
-            <span className="truncate">
-              {selectedInstitution ? selectedInstitution.name : 'Select Institution'}
-            </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-[calc(100vw-2rem)] sm:w-[400px] p-0 bg-slate-800 border-slate-700"
-          align="start"
-          side="bottom"
-          sideOffset={4}
-        >
+      <Button
+        variant="outline"
+        role="combobox"
+        aria-expanded={mobileOpen}
+        disabled={disabled}
+        onClick={() => { if (onFocus) onFocus(); setMobileOpen(true); }}
+        className="w-full justify-between bg-gray-100 border-gray-300 hover:bg-gray-100 hover:border-gray-400 text-gray-900 h-10 sm:h-12 rounded-xl"
+      >
+        <span className="truncate">
+          {selectedInstitution ? selectedInstitution.name : 'Select Institution'}
+        </span>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+
+      {/* Mobile fallback with Dialog */}
+      <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+        <DialogContent className="p-0 bg-slate-800 border-slate-700 overflow-hidden fixed top-0 left-0 translate-x-0 translate-y-0 w-screen h-[100dvh] sm:rounded-2xl sm:w-[95vw] sm:h-auto sm:top-[50%] sm:left-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           {/* Search Input */}
-          <div className="p-2 sm:p-3 border-b border-slate-700 bg-slate-800">
+          <div className="p-3 pt-[env(safe-area-inset-top)] border-b border-slate-700 bg-slate-800">
             <Input
+              autoFocus
               placeholder="Search institutions..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-400 text-sm"
+              className="h-10 bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-400"
             />
           </div>
 
           {/* Institutions List */}
-          <div className="max-h-60 sm:max-h-72 overflow-y-auto">
+          <div className="max-h-[70vh] overflow-y-auto">
             {/* Mobile Money Section */}
             {filteredMobileMoneyInstitutions.length > 0 && (
               <div>
-                {/* Mobile Money Header */}
                 <div className="px-3 py-2 bg-slate-800 border-b border-slate-700">
                   <div className="flex items-center gap-2">
                     <Smartphone className="h-4 w-4 text-blue-400" />
                     <span className="text-xs font-semibold text-slate-300">Mobile Money</span>
                   </div>
                 </div>
-
-                {/* Mobile Money Items */}
                 {filteredMobileMoneyInstitutions.map((inst) => (
                   <button
                     key={inst.code}
                     onClick={() => handleSelect(inst.code)}
                     className={cn(
-                      'w-full px-3 py-3 sm:py-3 text-left text-sm hover:bg-slate-700 active:bg-slate-600 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
+                      'w-full px-3 py-4 text-left text-base hover:bg-slate-700 active:bg-slate-600 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
                       value === inst.code && 'bg-slate-700'
                     )}
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                      <Smartphone className="h-4 w-4 text-green-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Smartphone className="h-5 w-5 text-green-400 flex-shrink-0" />
                       <span className="text-slate-200 truncate">{inst.name}</span>
                     </div>
-                    {value === inst.code && <Check className="h-4 w-4 text-blue-400 ml-2 flex-shrink-0" />}
+                    {value === inst.code && <Check className="h-5 w-5 text-blue-400 ml-2 flex-shrink-0" />}
                   </button>
                 ))}
               </div>
@@ -150,43 +153,37 @@ export function InstitutionSelector({
             {/* Banks Section */}
             {filteredBankInstitutions.length > 0 && (
               <div>
-                {/* Banks Header */}
                 <div className="px-3 py-2 bg-slate-800 border-b border-slate-700">
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-amber-400" />
                     <span className="text-xs font-semibold text-slate-300">Banks</span>
                   </div>
                 </div>
-
-                {/* Banks Items */}
                 {filteredBankInstitutions.map((inst) => (
                   <button
                     key={inst.code}
                     onClick={() => handleSelect(inst.code)}
                     className={cn(
-                      'w-full px-3 py-3 sm:py-3 text-left text-sm hover:bg-slate-700 active:bg-slate-600 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
+                      'w-full px-3 py-4 text-left text-base hover:bg-slate-700 active:bg-slate-600 flex items-center justify-between transition-colors border-b border-slate-700 last:border-b-0',
                       value === inst.code && 'bg-slate-700'
                     )}
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                      <Building2 className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Building2 className="h-5 w-5 text-amber-400 flex-shrink-0" />
                       <span className="text-slate-200 truncate">{inst.name}</span>
                     </div>
-                    {value === inst.code && <Check className="h-4 w-4 text-blue-400 ml-2 flex-shrink-0" />}
+                    {value === inst.code && <Check className="h-5 w-5 text-blue-400 ml-2 flex-shrink-0" />}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* No Results */}
             {filteredMobileMoneyInstitutions.length === 0 && filteredBankInstitutions.length === 0 && (
-              <div className="p-4 text-center text-sm text-slate-400">
-                No institutions found
-              </div>
+              <div className="p-4 text-center text-sm text-slate-400">No institutions found</div>
             )}
           </div>
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

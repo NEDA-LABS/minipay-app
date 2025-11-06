@@ -1,4 +1,4 @@
-import { SUPPORTED_CHAINS, ChainConfig } from "../utils/chains";
+import { DEFAULT_CHAIN } from "../utils/chains";
 import { stablecoins } from "@/data/stablecoins";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -32,14 +32,19 @@ export const NormalLinkFields: React.FC<NormalLinkFieldsProps> = ({
   formData,
   onUpdate,
 }) => {
-  const filteredStablecoins = useMemo(() => {
-    if (formData.specifyChain && formData.chainId) {
-      return stablecoins.filter(coin => 
-        Array.isArray(coin.chainIds) && coin.chainIds.includes(formData.chainId)
-      );
+  // MiniPay only uses Celo - auto-set chain in background
+  useEffect(() => {
+    if (formData.chainId !== DEFAULT_CHAIN.id) {
+      onUpdate({ chainId: DEFAULT_CHAIN.id, specifyChain: true });
     }
-    return stablecoins;
-  }, [formData.chainId, formData.specifyChain]);
+  }, []);
+
+  // Filter stablecoins to only show those available on Celo
+  const filteredStablecoins = useMemo(() => {
+    return stablecoins.filter(coin => 
+      Array.isArray(coin.chainIds) && coin.chainIds.includes(DEFAULT_CHAIN.id)
+    );
+  }, []);
 
   useEffect(() => {
     if (formData.currency && !filteredStablecoins.some(c => c.baseToken === formData.currency)) {
@@ -49,43 +54,15 @@ export const NormalLinkFields: React.FC<NormalLinkFieldsProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="specifyChain"
-            checked={formData.specifyChain}
-            onCheckedChange={(checked: boolean) => onUpdate({ specifyChain: checked })}
-            className="h-5 w-5 rounded border-slate-600 bg-slate-800/50 text-blue-500 focus:ring-blue-500 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
-          />
-          <Label htmlFor="specifyChain" className="text-sm font-semibold text-white">
-            Specify Blockchain Network?
-          </Label>
-        </div>
-        {formData.specifyChain && (
-          <div className="pl-6">
-            <Label htmlFor="chain" className="block text-xs sm:text-sm font-semibold text-white mb-2">
-              Blockchain Network
-            </Label>
-            <Select
-              value={String(formData.chainId)}
-              onValueChange={(value: string) => onUpdate({ chainId: Number(value) })}
-            >
-              <SelectTrigger id="chain" className="w-full h-11 sm:h-12 text-sm sm:text-base bg-slate-800/50 border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white">
-                <SelectValue placeholder="Select a chain" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900/80 backdrop-blur-md border-slate-700 text-white rounded-xl">
-                {SUPPORTED_CHAINS.map((chain) => (
-                  <SelectItem key={chain.id} value={String(chain.id)} className="focus:bg-slate-800 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Image src={chain.icon} alt={chain.name} width={24} height={24} className="rounded-full"/>
-                      <span>{chain.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Network info - Display only, not selectable */}
+      <div className="rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <Image src={DEFAULT_CHAIN.icon} alt={DEFAULT_CHAIN.name} width={24} height={24} className="rounded-full"/>
+          <div>
+            <Label className="text-xs text-slate-400">Payment Network</Label>
+            <p className="text-sm font-semibold text-white">{DEFAULT_CHAIN.name}</p>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="space-y-3 rounded-lg border border-slate-700/30 bg-slate-900/30 p-3 backdrop-blur-sm">

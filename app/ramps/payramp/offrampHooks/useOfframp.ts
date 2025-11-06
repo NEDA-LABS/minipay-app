@@ -204,6 +204,8 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
 
   // Fetch institutions for selected fiat
   const fetchInstitutions = useCallback(async () => {
+    if (!fiat) return;
+    
     try {
       let data = await fetchSupportedInstitutions(fiat);
       
@@ -226,13 +228,18 @@ const useOffRamp = (chain: ChainConfig, token: SupportedToken) => {
         }
       }
       
-      // console.log("fiat", fiat);
-      // console.log(data);
+      console.log(`Fetched ${data.length} institutions for ${fiat}:`, data);
       setInstitutions(data);
     } catch (err) {
+      console.error('Failed to fetch institutions:', err);
       setError("Failed to fetch institutions");
     }
   }, [fiat]);
+
+  // Auto-fetch institutions when fiat changes
+  useEffect(() => {
+    fetchInstitutions();
+  }, [fiat, fetchInstitutions]);
 
   // Verify account details
   const handleVerifyAccount = async () => {

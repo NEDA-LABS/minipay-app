@@ -5,7 +5,5 @@
 
 export { InvoiceEmailTemplate } from './invoice';
 export { WelcomeEmailTemplate } from './welcome';
-export { KYCReminderEmailTemplate } from './kyc-reminder';
-export { KYCStatusEmailTemplate } from './kyc-status';
 export { EmailTemplateFactory } from './factory';
 export { BaseEmailTemplate } from './base';

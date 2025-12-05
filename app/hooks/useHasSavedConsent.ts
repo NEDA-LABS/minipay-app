@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import {usePrivy} from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 
 export function useHasSavedConsent() {
-  const {user, getAccessToken, authenticated} = usePrivy();
+  const { address, getAccessToken, authenticated } = useWallet();
   const [loading, setLoading] = useState(true);
   const [hasConsent, setHasConsent] = useState(false);
 
@@ -36,7 +36,7 @@ export function useHasSavedConsent() {
       } catch {}
 
       // If no cookie and user is authenticated, check the database
-      if (!user) {
+      if (!address) {
         if (active) setLoading(false);
         return;
       }
@@ -64,7 +64,7 @@ export function useHasSavedConsent() {
     return () => {
       active = false;
     };
-  }, [user, getAccessToken, authenticated]);
+  }, [address, getAccessToken, authenticated]);
 
   return { loading, hasConsent };
 }

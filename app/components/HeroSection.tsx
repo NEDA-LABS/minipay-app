@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import HeroFeaturesHomePage from "./HeroFeaturesHomePage";
 import YouTubeEmbedButton from "./YouTubeEmbedButton";
 import HeroFlags from "./HeroFlags";
@@ -18,7 +18,7 @@ const HeroSection = () => {
     {}
   );
   const router = useRouter();
-  const { authenticated, user, login, logout } = usePrivy();
+  const { authenticated, address, connect, disconnect } = useWallet();
   const walletSelectorRef = useRef<{ triggerLogin: () => void } | null>(null);
   const [isShortScreen, setIsShortScreen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);

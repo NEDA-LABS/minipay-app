@@ -14,14 +14,14 @@ import {
 } from "lucide-react";
 import { useRef } from "react";
 import WalletSelector from "./WalletSelector";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import { useRouter } from "next/navigation";
 import RippleGrid from "./RippleGrid";
 import Image from "next/image";
 
 export default function HowItWorksSection() {
   const walletSelectorRef = useRef<{ triggerLogin: () => void } | null>(null);
-  const { authenticated } = usePrivy();
+  const { authenticated } = useWallet();
   const router = useRouter();
 
   const handleCTAClick = () => {
@@ -55,22 +55,6 @@ export default function HowItWorksSection() {
     },
     {
       number: "02",
-      icon: Banknote,
-      title: "Complete KYC/KYB",
-      description:
-        "Verify your identity to access all features and ensure secure transactions",
-      details: "Compliance with regulations and standards",
-      color: "orange",
-      gradient: "from-blue-400 to-blue-400",
-      bgColor: "bg-blue-25",
-      iconBg: "bg-blue-500",
-      tags: ["KYC", "KYB"],
-      button: "Verify",
-      buttonGradient: "from-blue-600 to-blue-600",
-      visual: "/kyc.jpg"
-    },
-    {
-      number: "03",
       icon: Link,
       title: "Create Payment Links",
       description:
@@ -86,7 +70,7 @@ export default function HowItWorksSection() {
       visual: "/link.jpg"
     },
     {
-      number: "04",
+      number: "03",
       icon: DollarSign,
       title: "Receive Payments",
       description:
@@ -102,7 +86,7 @@ export default function HowItWorksSection() {
       visual: "/receive_payment.jpg"
     },
     {
-      number: "05",
+      number: "04",
       icon: Repeat2,
       title: "Swap Stablecoins",
       description:
@@ -118,7 +102,7 @@ export default function HowItWorksSection() {
       visual: "/swap.jpg"
     },
     {
-      number: "06",
+      number: "05",
       icon: Banknote,
       title: "Transfer Tokens",
       description:

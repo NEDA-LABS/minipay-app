@@ -31,6 +31,3 @@ export interface SettingsDto {
       createdAt: string;
     }[];
   }
-
-  // KYC status returned by Sumsub
-export type KycStatus = 'pending' | 'approved' | 'rejected' | null;

@@ -8,7 +8,7 @@ import { createConfig } from "wagmi";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { injected } from 'wagmi/connectors';
-import { SidebarProvider } from "@/compliance/user/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChainProvider } from "@/contexts/ChainContext";
 import { isMiniPay } from "@/utils/minipay-detection";
 

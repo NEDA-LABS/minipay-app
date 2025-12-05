@@ -4,7 +4,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { X, Clock, CheckCircle, XCircle, AlertCircle, DollarSign, Building2, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import Header from '@/components/Header';
-import { SidebarProvider } from '@/compliance/user/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import Footer from '@/components/Footer';
 import { withDashboardLayout } from '@/utils/withDashboardLayout';
 import { fetchTokenRate } from '@/utils/paycrest';

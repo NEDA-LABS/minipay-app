@@ -36,8 +36,6 @@ export interface BaseEmailData {
 export enum EmailTemplateType {
   INVOICE = 'invoice',
   WELCOME = 'welcome',
-  KYC_REMINDER = 'kyc_reminder',
-  KYC_STATUS = 'kyc_status',
   PAYMENT_SETTLED = 'payment_settled',
   PAYMENT_REFUNDED = 'payment_refunded',
 }
@@ -67,31 +65,6 @@ export interface WelcomeEmailData {
   recipientEmail: string;
   firstName: string;
   walletAddress: string;
-  dashboardUrl?: string;
-}
-
-// KYC Reminder Email Data
-export interface KYCReminderEmailData {
-  recipientEmail: string;
-  firstName: string;
-  kycUrl: string;
-  daysRemaining?: number;
-}
-
-// KYC Status Email Data
-export enum KYCStatus {
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  PENDING_REVIEW = 'pending_review',
-  REQUIRES_ADDITIONAL_INFO = 'requires_additional_info',
-}
-
-export interface KYCStatusEmailData {
-  recipientEmail: string;
-  firstName: string;
-  status: KYCStatus;
-  rejectionReason?: string;
-  additionalInfoRequired?: string;
   dashboardUrl?: string;
 }
 
@@ -128,8 +101,6 @@ export interface PaymentRefundedEmailData {
 export type EmailTemplateData =
   | InvoiceEmailData
   | WelcomeEmailData
-  | KYCReminderEmailData
-  | KYCStatusEmailData
   | PaymentSettledEmailData
   | PaymentRefundedEmailData;
 

@@ -1,4 +1,4 @@
-import { cn } from '@/compliance/user/lib/utils';
+import { cn } from '@/lib/utils';
 import { ReactNode } from 'react';
 
 interface BadgeProps {

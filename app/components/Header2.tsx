@@ -26,7 +26,7 @@ import {LayoutDashboard} from "lucide-react";
 import WalletSelector from "./WalletSelector";
 import NotificationTab from "./NotificationTab";
 import { FaGear } from "react-icons/fa6";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function Header() {
   const [mounted, setMounted] = useState(false);
@@ -38,7 +38,7 @@ export default function Header() {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
 
-  const { authenticated } = usePrivy();
+  const { authenticated } = useWallet();
 
   // Handle scroll effect for header
   useEffect(() => {

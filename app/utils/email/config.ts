@@ -10,7 +10,6 @@ export interface EmailConfig {
   defaultFromEmail: string;
   defaultFromName: string;
   invoiceFromEmail?: string;
-  kycFromEmail?: string;
   isDevelopment: boolean;
 }
 
@@ -36,7 +35,6 @@ export function getEmailConfig(): EmailConfig {
     defaultFromEmail,
     defaultFromName,
     invoiceFromEmail: process.env.RESEND_INVOICE_EMAIL || defaultFromEmail,
-    kycFromEmail: process.env.RESEND_KYC_EMAIL || defaultFromEmail,
     isDevelopment,
   };
 }

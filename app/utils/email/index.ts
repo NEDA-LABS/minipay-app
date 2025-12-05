@@ -11,8 +11,6 @@ import {
   EmailTemplateType,
   InvoiceEmailData,
   WelcomeEmailData,
-  KYCReminderEmailData,
-  KYCStatusEmailData,
   EmailProviderResponse,
 } from './types';
 
@@ -83,32 +81,6 @@ export async function sendWelcomeEmail(
   const service = getEmailService();
   return service.sendEmail({
     templateType: EmailTemplateType.WELCOME,
-    data,
-  });
-}
-
-/**
- * Send a KYC reminder email
- */
-export async function sendKYCReminderEmail(
-  data: KYCReminderEmailData
-): Promise<EmailProviderResponse> {
-  const service = getEmailService();
-  return service.sendEmail({
-    templateType: EmailTemplateType.KYC_REMINDER,
-    data,
-  });
-}
-
-/**
- * Send a KYC status update email
- */
-export async function sendKYCStatusEmail(
-  data: KYCStatusEmailData
-): Promise<EmailProviderResponse> {
-  const service = getEmailService();
-  return service.sendEmail({
-    templateType: EmailTemplateType.KYC_STATUS,
     data,
   });
 }

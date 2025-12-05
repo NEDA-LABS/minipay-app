@@ -4,25 +4,25 @@ A Celo-native miniapp for seamless stablecoin payments built specifically for th
 
 ---
 
-## 🎯 What is NedaPay Minipay?
+## What is NedaPay Minipay?
 
 NedaPay Minipay is a lightweight payment application designed exclusively for the Minipay ecosystem. Built on Celo, it provides merchants and businesses with essential tools to accept stablecoin payments, create invoices, and cash out to local fiat currencies - all without leaving the Minipay app.
 
 ### Why Minipay?
 
-**🌍 Built for Africa**
+**Built for Africa**
 - Optimized for mobile-first users
 - Low transaction fees with gas paid in stablecoins
 - Works seamlessly within Minipay wallet
 - No need to switch between apps
 
-**💰 Celo-Native**
+**Celo-Native**
 - Single network (Celo) - no chain switching
 - Fast, affordable transactions
 - Pay gas fees in cUSD, USDC, or USDT
 - Instant settlement
 
-**📱 Miniapp Experience**
+**Miniapp Experience**
 - Auto-connects to your Minipay wallet
 - Native mobile UI/UX
 - Lightweight and fast
@@ -30,21 +30,21 @@ NedaPay Minipay is a lightweight payment application designed exclusively for th
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 💸 Accept Payments
+### Accept Payments
 - **Payment Links**: Generate instant payment links with QR codes
 - **Invoices**: Create professional invoices with automatic tracking
 - **Multiple Stablecoins**: Accept cUSD, USDC, and USDT
 - **Real-time Notifications**: Get notified when payments arrive
 
-### 💳 Cash Out
+### Cash Out
 - **Fiat Off-ramp**: Convert stablecoins to local currency
 - **Bank Integration**: Direct deposits to your bank account
 - **Mobile Money**: Support for M-Pesa and other mobile wallets
 - **Competitive Rates**: Transparent pricing with no hidden fees
 
-### 📊 Business Tools
+### Business Tools
 - **Transaction History**: Track all your payments
 - **Analytics**: Monitor revenue and growth
 - **Export Data**: Download reports for accounting
@@ -52,7 +52,7 @@ NedaPay Minipay is a lightweight payment application designed exclusively for th
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### For Users (Minipay)
 
@@ -121,7 +121,7 @@ All tokens support **feeCurrency** - pay gas fees in stablecoins instead of CELO
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend
 - **Next.js 15** - React framework with App Router

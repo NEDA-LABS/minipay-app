@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ChevronUp, Cookie, Settings } from "lucide-react";
-import Link from "next/link";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import { useHasSavedConsent } from "@/hooks/useHasSavedConsent";
 
 const CONSENT_COOKIE = "nedapay.cookieConsent.v1";
@@ -33,7 +32,7 @@ function readConsent(): Prefs | null {
 }
 
 export function CookieConsentModal() {
-  const { user, getAccessToken, authenticated } = usePrivy();
+  const { address, getAccessToken, authenticated } = useWallet();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -156,10 +155,7 @@ export function CookieConsentModal() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex-1">
                       <p className="text-sm text-gray-700 leading-relaxed">
-                        We use necessary cookies to make NedaPay work. With your consent, we'll also use analytics to improve your experience.{' '}
-                        <Link href="/privacy-policy" className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2">
-                          Privacy Policy
-                        </Link>
+                        We use necessary cookies to make NedaPay work. With your consent, we'll also use analytics to improve your experience.
                       </p>
                     </div>
                     

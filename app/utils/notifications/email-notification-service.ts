@@ -8,9 +8,6 @@ import { PrismaClient, EmailNotificationType, EmailNotificationStatus } from '@p
 import {
   sendInvoiceEmail,
   sendWelcomeEmail,
-  sendKYCReminderEmail,
-  sendKYCStatusEmail,
-  KYCStatus,
   EmailProviderResponse,
 } from '@/utils/email';
 
@@ -118,128 +115,6 @@ export class EmailNotificationService {
   }
 
   /**
-   * Send KYC status email notification
-   */
-  async sendKYCStatusNotification(
-    userId: string,
-    recipientEmail: string,
-    firstName: string,
-    status: 'approved' | 'rejected' | 'pending' | 'additional_info',
-    options?: {
-      rejectionReason?: string;
-      additionalInfoRequired?: string;
-      dashboardUrl?: string;
-    }
-  ): Promise<EmailNotificationResult> {
-    // Map status to KYCStatus enum
-    let kycStatus: KYCStatus;
-    let notificationType: EmailNotificationType;
-    let subject: string;
-
-    switch (status) {
-      case 'approved':
-        kycStatus = KYCStatus.APPROVED;
-        notificationType = EmailNotificationType.KYC_STATUS_APPROVED;
-        subject = 'KYC Verification Approved - NedaPay';
-        break;
-      case 'rejected':
-        kycStatus = KYCStatus.REJECTED;
-        notificationType = EmailNotificationType.KYC_STATUS_REJECTED;
-        subject = 'KYC Verification Update - NedaPay';
-        break;
-      case 'pending':
-        kycStatus = KYCStatus.PENDING_REVIEW;
-        notificationType = EmailNotificationType.KYC_STATUS_PENDING;
-        subject = 'KYC Verification Under Review - NedaPay';
-        break;
-      case 'additional_info':
-        kycStatus = KYCStatus.REQUIRES_ADDITIONAL_INFO;
-        notificationType = EmailNotificationType.KYC_STATUS_ADDITIONAL_INFO;
-        subject = 'Additional Information Required - NedaPay';
-        break;
-      default:
-        throw new Error(`Unknown KYC status: ${status}`);
-    }
-
-    // Create notification record
-    const notification = await this.prisma.emailNotification.create({
-      data: {
-        userId,
-        recipientEmail,
-        recipientName: firstName,
-        type: notificationType,
-        subject,
-        status: EmailNotificationStatus.PENDING,
-        metadata: {
-          kycStatus: status,
-          rejectionReason: options?.rejectionReason,
-          additionalInfoRequired: options?.additionalInfoRequired,
-        },
-      },
-    });
-
-    try {
-      // Send KYC status email
-      const emailResult = await sendKYCStatusEmail({
-        recipientEmail,
-        firstName,
-        status: kycStatus,
-        rejectionReason: options?.rejectionReason,
-        additionalInfoRequired: options?.additionalInfoRequired,
-        dashboardUrl: options?.dashboardUrl,
-      });
-
-      if (emailResult.success) {
-        await this.prisma.emailNotification.update({
-          where: { id: notification.id },
-          data: {
-            status: EmailNotificationStatus.SENT,
-            providerMessageId: emailResult.messageId,
-            providerResponse: emailResult.data || {},
-            sentAt: new Date(),
-          },
-        });
-
-        return {
-          success: true,
-          notificationId: notification.id,
-          messageId: emailResult.messageId,
-        };
-      } else {
-        await this.prisma.emailNotification.update({
-          where: { id: notification.id },
-          data: {
-            status: EmailNotificationStatus.FAILED,
-            errorMessage: emailResult.error?.message || 'Unknown error',
-            failedAt: new Date(),
-          },
-        });
-
-        return {
-          success: false,
-          notificationId: notification.id,
-          error: emailResult.error?.message || 'Failed to send email',
-        };
-      }
-    } catch (error) {
-      await this.prisma.emailNotification.update({
-        where: { id: notification.id },
-        data: {
-          status: EmailNotificationStatus.FAILED,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error',
-          failedAt: new Date(),
-        },
-      });
-
-      return {
-        success: false,
-        notificationId: notification.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
-
-  /**
    * Send email based on notification type
    * @private
    */
@@ -255,14 +130,6 @@ export class EmailNotificationService {
           firstName: options.recipientName || 'User',
           walletAddress: metadata.walletAddress || '',
           dashboardUrl: metadata.dashboardUrl,
-        });
-
-      case EmailNotificationType.KYC_REMINDER:
-        return await sendKYCReminderEmail({
-          recipientEmail: options.recipientEmail,
-          firstName: options.recipientName || 'User',
-          kycUrl: metadata.kycUrl || '',
-          daysRemaining: metadata.daysRemaining,
         });
 
       case EmailNotificationType.INVOICE_SENT:

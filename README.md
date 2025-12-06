@@ -1,4 +1,4 @@
-# NedaPay Minipay 📱
+# NedaPay Minipay 
 
 A Celo-native miniapp for seamless stablecoin payments built specifically for the Minipay wallet. Accept payments, create invoices, and manage your business finances - all within Minipay.
 
@@ -52,31 +52,6 @@ NedaPay Minipay is a lightweight payment application designed exclusively for th
 
 ---
 
-## Getting Started
-
-### For Users (Minipay)
-
-1. **Open Minipay App**
-   - Make sure you have Minipay installed on your phone
-   - [Download Minipay](https://www.opera.com/products/minipay)
-
-2. **Access NedaPay**
-   - Open the Compass (🧭) in Minipay
-   - Find NedaPay in the miniapps section
-   - Or visit our direct link
-
-3. **Start Accepting Payments**
-   - App auto-connects to your Minipay wallet
-   - Create your first invoice or payment link
-   - Share with customers and get paid!
-
-### For Developers
-
-#### Prerequisites
-- Node.js 18+ and npm
-- Minipay app for testing
-- ngrok for local testing
-
 #### Installation
 
 ```bash
@@ -119,108 +94,6 @@ ngrok http 3000
 
 All tokens support **feeCurrency** - pay gas fees in stablecoins instead of CELO!
 
----
-
-## Technology Stack
-
-### Frontend
-- **Next.js 15** - React framework with App Router
-- **React 19** - Latest React with TypeScript
-- **Tailwind CSS** - Utility-first styling
-- **Wagmi 2.x** - Ethereum/Celo interactions
-
-### Blockchain
-- **Celo Network** - Fast, affordable, mobile-first
-- **Viem** - Modern TypeScript Ethereum library
-- **Wagmi** - React hooks for Celo
-- **feeCurrency** - Pay gas in stablecoins
-
-### Backend & Database
-- **Prisma ORM** - Type-safe database access
-- **PostgreSQL** - Production database
-- **Next.js API Routes** - Serverless functions
-
-### Authentication
-- **Minipay Auto-connect** - Seamless wallet connection
-- **Wagmi Injected Connector** - Direct Minipay integration
-- **Optional Privy** - Fallback for web browsers
-
-### Payments & Off-ramp
-- **Payramp** - Fiat off-ramp integration
-- **IDRX** - Alternative off-ramp provider
-- **Sumsub** - KYC/KYB verification
-
----
-
-## 📱 Minipay Integration
-
-### Auto-Connect
-```typescript
-import { useAutoConnect } from '@/hooks/useAutoConnect';
-
-const { isInMiniPay, isConnected } = useAutoConnect();
-// Automatically connects wallet in Minipay
-```
-
-### Minipay Detection
-```typescript
-import { isMiniPay } from '@/utils/minipay-detection';
-
-if (isMiniPay()) {
-  // Minipay-specific logic
-  // Skip landing page, auto-connect, etc.
-}
-```
-
-### Celo Transactions
-```typescript
-import { buildCUSDTransfer } from '@/utils/celo-transactions';
-
-const tx = buildCUSDTransfer(toAddress, amount);
-// Includes feeCurrency for gas payment in cUSD
-```
-
----
-
-## 🏗️ Architecture
-
-### Simplified for Minipay
-
-**Before (Multi-Chain Platform):**
-- 8 chains (Base, Polygon, BSC, Arbitrum, Celo, Scroll, Optimism, Lisk)
-- Complex chain switching
-- Multiple wallet connections
-- Large bundle size
-
-**After (Minipay Miniapp):**
-- 1 chain (Celo only)
-- Auto-connect wallet
-- Native Minipay integration
-- Lightweight and fast
-
-### Dashboard Tabs
-
-1. **Withdraw** - Cash out to fiat
-2. **Invoice** - Create business invoices
-3. **Request** - Payment links and requests
-
-*Note: Wallet operations (send/receive/swap) are handled by Minipay natively*
-
----
-
-## 🔐 Security & Compliance
-
-### KYC/KYB Verification
-- Integrated Sumsub for identity verification
-- Required for fiat off-ramp
-- Document verification and biometric checks
-- Supports 50+ African countries
-
-### Security Features
-- End-to-end encryption for sensitive data
-- Secure API key management
-- Transaction signing with Minipay
-- No private keys stored
 
 ---
 
@@ -239,45 +112,7 @@ const tx = buildCUSDTransfer(toAddress, amount);
 - Celo network - Fast and affordable
 - Multiple stablecoins supported
 
----
-
-## 📚 Documentation
-
-### For Users
-- [Quick Start Guide](./MINIPAY_QUICKSTART.md)
-- [Environment Setup](./docs/MINIPAY_ENV_SETUP.md)
-- [Dashboard Guide](./docs/MINIPAY_DASHBOARD_SIMPLIFICATION.md)
-
-### For Developers
-- [Migration Plan](./docs/MINIPAY_MIGRATION_PLAN.md)
-- [Implementation Guide](./docs/MINIPAY_IMPLEMENTATION_GUIDE.md)
-- [Code Changes](./docs/MINIPAY_CODE_CHANGES.md)
-- [Phase 1 Complete](./docs/MINIPAY_PHASE1_COMPLETE.md)
-
----
-
-## 🚦 Development Status
-
-### ✅ Phase 1 Complete
-- [x] Minipay detection and auto-connect
-- [x] Celo-only network configuration
-- [x] Direct dashboard routing (skip landing page)
-- [x] Simplified dashboard (3 tabs)
-- [x] Wallet operations delegated to Minipay
-- [x] Documentation complete
-
-### 🔄 Phase 2 (In Progress)
-- [ ] Update components for Celo-only
-- [ ] Phone number payments (ODIS)
-- [ ] Enhanced mobile UI
-- [ ] End-to-end testing
-
-### ⏳ Phase 3 (Planned)
-- [ ] Production deployment
-- [ ] Minipay app store submission
-- [ ] Performance optimization
-- [ ] Analytics and monitoring
-
+-
 ---
 
 ## 🤝 Contributing

@@ -70,11 +70,22 @@ type Transaction = {
 };
 
 export default function DashboardContent() {
-  // Use optimized Minipay dashboard if in Minipay
-  if (typeof window !== 'undefined' && isMiniPay()) {
+  const [isMinipayUser, setIsMinipayUser] = useState(false);
+
+  useEffect(() => {
+    if (isMiniPay()) {
+      setIsMinipayUser(true);
+    }
+  }, []);
+
+  if (isMinipayUser) {
     return <MinipayDashboard />;
   }
 
+  return <StandardDashboard />;
+}
+
+function StandardDashboard() {
   const { address: walletAddress, isConnected } = useAccount();
 
   // States

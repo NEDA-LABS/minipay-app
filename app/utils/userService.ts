@@ -14,24 +14,27 @@ export interface UserData {
   privyUserId: string;
   name: string | null;
   isActive: boolean;
+  environment: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // Create or update user when they connect wallet (MiniPay)
-export async function syncWalletUser(walletAddress: string): Promise<UserData> {
+export async function syncWalletUser(walletAddress: string, environment: string = 'webapp'): Promise<UserData> {
   try {
     const userData = {
       privyUserId: walletAddress, // Use wallet address as unique ID
       wallet: walletAddress,
       name: null,
       isActive: true,
+      environment: environment,
     };
 
     const user = await prisma.user.upsert({
       where: { wallet: walletAddress },
       update: {
         updatedAt: new Date(),
+        environment: environment,
       },
       create: userData,
     });

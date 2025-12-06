@@ -25,7 +25,10 @@ export function useUserSync() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ wallet: address }),
+          body: JSON.stringify({ 
+            wallet: address,
+            environment: 'minipay' 
+          }),
         });
 
         const result = await response.json();

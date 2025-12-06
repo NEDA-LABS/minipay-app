@@ -366,7 +366,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
           <div className="flex items-center justify-between mb-2 sm:mb-3">
             <label
               htmlFor="accountNumber"
-              className="block text-xs sm:text-sm font-semibold text-gray-100"
+              className="block text-xs sm:text-sm font-semibold text-slate-100"
             >
               {isMobileNetwork ? "Mobile Number" : "Bank Account Number"}
             </label>
@@ -386,27 +386,27 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 sm:py-3 bg-gray-200 border border-gray-300 border-r-0 rounded-l-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all min-w-[80px] sm:min-w-[100px]"
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 sm:py-3 bg-slate-700/60 border border-slate-600/60 border-r-0 rounded-l-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all min-w-[80px] sm:min-w-[100px]"
                     disabled={isAccountVerified}
                   >
                     <span className="text-base sm:text-lg">{selectedCountry?.flag}</span>
-                    <span className="text-gray-900 font-medium text-xs sm:text-sm">{selectedCountryCode}</span>
-                    <ChevronDown size={14} className="text-gray-600" />
+                    <span className="text-white font-medium text-xs sm:text-sm">{selectedCountryCode}</span>
+                    <ChevronDown size={14} className="text-slate-400" />
                   </button>
 
                   {/* Dropdown Menu */}
                   {isDropdownOpen && !isAccountVerified && (
-                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                    <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-lg z-10">
                       {COUNTRY_CODES.map((country) => (
                         <button
                           key={country.code}
                           type="button"
                           onClick={() => handleCountryCodeChange(country.code)}
-                          className="flex items-center space-x-3 px-3 py-2 hover:bg-gray-100 text-left transition-colors"
+                          className="flex items-center space-x-3 px-3 py-2 hover:bg-slate-700 text-left transition-colors"
                         >
                           <span className="text-base sm:text-lg">{country.flag}</span>
-                          <span className="font-medium text-gray-900 text-xs sm:text-sm">{country.code}</span>
-                          <span className="text-xs text-gray-600">{country.country}</span>
+                          <span className="font-medium text-white text-xs sm:text-sm">{country.code}</span>
+                          <span className="text-xs text-slate-400">{country.country}</span>
                         </button>
                       ))}
                     </div>
@@ -419,7 +419,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                   id="accountNumber"
                   value={phoneNumber}
                   onChange={handlePhoneNumberChange}
-                  className={`flex-1 w-50 md:w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-r-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500 ${
+                  className={`flex-1 w-50 md:w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-white rounded-r-xl border border-slate-600 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-slate-800/60 placeholder:text-slate-500 ${
                     inputError ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
                   placeholder="123 456 789"
@@ -457,12 +457,12 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
                 id="accountNumber"
                 value={accountIdentifier}
                 onChange={handleRegularAccountChange}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-white rounded-xl border border-slate-600 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-slate-800/60 placeholder:text-slate-500"
                 placeholder="1234567890"
                 required
                 disabled={isAccountVerified}
               />
-              <p className="text-xs text-gray-300 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 Enter full account number without spaces
               </p>
             </div>
@@ -472,7 +472,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
         <div>
           <label
             htmlFor="accountName"
-            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
+            className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-slate-100"
           >
             Account Holder Name
           </label>
@@ -481,7 +481,7 @@ const VerificationStep: React.FC<VerificationStepProps> = ({
             id="accountName"
             value={accountName}
             onChange={handleAccountNameChange}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-white rounded-xl border border-slate-600 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-slate-800/60 placeholder:text-slate-500"
             placeholder="As it appears on your account"
             required
             disabled={isAccountVerified}

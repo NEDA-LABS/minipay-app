@@ -307,57 +307,57 @@ const OffRampForm: React.FC<{
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex  items-end justify-center p-4">
-          <div className="bg-gray-800 rounded-2xl border border-gray-700 max-w-md w-full p-6 relative">
+          <div className="bg-slate-800/90 rounded-2xl border border-slate-700 max-w-md w-full p-6 relative">
             <button
               onClick={() => setShowConfirmation(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
             
             <h3 className="text-sm sm:text-base md:text-lg font-bold text-white mb-4 sm:mb-6 text-center">
-              Confirm Payment Details, Ensure Account number is Correct!
+              Confirm Payment Details
             </h3>
             
             <div className="space-y-5 mb-8">
               <div className="flex justify-between">
-                <span className="text-gray-400">Sending:</span>
+                <span className="text-slate-400">Sending:</span>
                 <span className="text-white font-medium">
                   {amount} {token.toUpperCase()}
                 </span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-400">To Institution:</span>
+                <span className="text-slate-400">To Institution:</span>
                 <span className="text-white font-medium">{institution}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-400">Account Number:</span>
+                <span className="text-slate-400">Account Number:</span>
                 <span className="text-white font-medium">{accountIdentifier}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-400">Account Name:</span>
+                <span className="text-slate-400">Account Name:</span>
                 <span className="text-white font-medium">{accountName}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-400">You Will Receive:</span>
+                <span className="text-slate-400">You Will Receive:</span>
                 <span className="text-green-400 font-bold">
                   {receivedFiat} {fiat}
                 </span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-400">Exchange Rate:</span>
+                <span className="text-slate-400">Exchange Rate:</span>
                 <span className="text-white font-medium">
                   1 {token.toUpperCase()} = {rate} {fiat}
                 </span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-400">Memo:</span>
+                <span className="text-slate-400">Memo:</span>
                 <span className="text-white font-medium">{memo || 'N/A'}</span>
               </div>
             </div>
@@ -365,7 +365,7 @@ const OffRampForm: React.FC<{
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmation(false)}
-                className="flex-1 py-3 px-4 rounded-xl bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                className="flex-1 py-3 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-colors"
               >
                 Cancel
               </button>
@@ -459,7 +459,7 @@ const OffRampForm: React.FC<{
           {/* Fiat Currency Display (pre-selected) */}
           {preselectedCurrency && fiat ? (
             <div>
-              {/* <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100">
+              {/* <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-slate-100">
                 Fiat Currency
               </label> */}
               <div className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base rounded-xl border border-slate-600 bg-slate-800/60 text-white flex items-center justify-between">
@@ -473,7 +473,7 @@ const OffRampForm: React.FC<{
             <div>
               <label
                 htmlFor="fiat"
-                className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
+                className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-slate-100"
               >
                 Select Fiat Currency *
               </label>
@@ -491,15 +491,15 @@ const OffRampForm: React.FC<{
                   setAmount('');
                   setFiatInput('');
                 }}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-white rounded-xl border border-slate-600 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-slate-800/60"
                 required
               >
-                <option value="" className="bg-gray-100 text-gray-500">Select Currency</option>
+                <option value="" className="bg-slate-800 text-slate-400">Select Currency</option>
                 {currencies.map((currency) => (
                   <option 
                     key={currency.code} 
                     value={currency.code}
-                    className="bg-gray-100 text-gray-900"
+                    className="bg-slate-800 text-white"
                   >
                     {currency.name} ({currency.code})
                   </option>
@@ -511,18 +511,18 @@ const OffRampForm: React.FC<{
           {fiat && (
             <>
               {/* Mode Toggle */}
-              <div className="flex bg-gray-800 rounded-xl p-1 mb-4 max-w-sm mx-auto">
+              <div className="flex bg-slate-800 rounded-xl p-1 mb-4 max-w-sm mx-auto">
                 <button
                   type="button"
                   onClick={() => handleModeChange('crypto')}
-                  className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${inputMode === 'crypto' ? 'bg-purple-700 text-white' : 'text-gray-400'}`}
+                  className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${inputMode === 'crypto' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}
                 >
                   {token.toUpperCase()}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleModeChange('fiat')}
-                  className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${inputMode === 'fiat' ? 'bg-purple-700 text-white' : 'text-gray-400'}`}
+                  className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${inputMode === 'fiat' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}
                 >
                   {fiat}
                 </button>
@@ -532,7 +532,7 @@ const OffRampForm: React.FC<{
               <div>
                 <label
                   htmlFor="amount"
-                  className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-gray-100"
+                  className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-slate-100"
                 >
                   {inputMode === 'crypto' ? `Amount to Send (${token.toUpperCase()})` : `Amount to Send (${fiat})`} *
                 </label>
@@ -554,14 +554,14 @@ const OffRampForm: React.FC<{
                         }
                       }
                     }}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-gray-900 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-gray-100 placeholder:text-gray-500"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base text-white rounded-xl border border-slate-600 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none transition-all bg-slate-800/60 placeholder:text-slate-500"
                     placeholder={`Minimum ${inputMode === 'crypto' ? '1' : (minimumAmount || '...')} ${inputMode === 'crypto' ? token.toUpperCase() : fiat}`}
                     min="0.01"
                     step="0.01"
                     required
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Available: {balanceLoading ? (
                     <span className="inline-flex items-center">
                       <Loader2 className="w-3 h-3 animate-spin mr-1" />

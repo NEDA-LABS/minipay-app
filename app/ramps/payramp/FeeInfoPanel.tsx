@@ -33,14 +33,14 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
 }) => {
   if (gasAbstractionInitializing && !isCoinbaseWallet) {
     return (
-      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+      <div className="p-3 bg-blue-900/30 rounded-lg border border-blue-700/50 mb-4">
         <div className="flex items-start gap-2">
-          <Loader2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0 animate-spin" />
+          <Loader2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0 animate-spin" />
           <div>
-            <p className="text-blue-800 font-medium text-xs">
+            <p className="text-blue-200 font-medium text-xs">
               Initializing Gas Abstraction
             </p>
-            <p className="text-blue-700 text-xs mt-1">
+            <p className="text-blue-300 text-xs mt-1">
               Setting up fee sponsorship. This may take a moment...
             </p>
           </div>
@@ -52,14 +52,14 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
   if (isCoinbaseWallet) {
     return (
       <div className="space-y-3 mb-4">
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="p-3 bg-blue-900/30 rounded-lg border border-blue-700/50">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-blue-800 font-medium text-xs">
+              <p className="text-blue-200 font-medium text-xs">
                 Coinbase Wallet Detected
               </p>
-              <p className="text-blue-700 text-xs mt-1">
+              <p className="text-blue-300 text-xs mt-1">
                 {token} transfers in Coinbase Wallet have no gas fees on {chain.name}.
               </p>
             </div>
@@ -67,15 +67,15 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 text-xs">
+              <span className="text-slate-300 text-xs">
                 Available Balance:
               </span>
               {balanceLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+                <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
               ) : (
-                <span className="font-medium text-xs text-slate-800">
+                <span className="font-medium text-xs text-white">
                   {parseFloat(balance).toLocaleString(undefined, {
                     maximumFractionDigits: 6,
                   })}{" "}
@@ -84,7 +84,7 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
               )}
             </div>
             {usdcToFiatRate && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-slate-400 mt-1">
                 ≈{" "}
                 {(parseFloat(balance) * usdcToFiatRate).toLocaleString(
                   undefined,
@@ -95,12 +95,12 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
             )}
           </div>
 
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 text-xs">Network Fee:</span>
-              <span className="font-medium text-xs text-green-600 text-slate-800">Free</span>
+              <span className="text-slate-300 text-xs">Network Fee:</span>
+              <span className="font-medium text-xs text-green-400">Free</span>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-slate-400 mt-1">
               No gas fees for {token} transfers
             </div>
           </div>
@@ -112,14 +112,14 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
   if (gasAbstractionActive) {
     return (
       <div className="space-y-3 mb-4">
-        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="p-3 bg-green-900/30 rounded-lg border border-green-700/50">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+            <Info className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-green-800 font-medium text-xs">
+              <p className="text-green-200 font-medium text-xs">
                 Gas Abstraction Active
               </p>
-              <p className="text-green-700 text-xs mt-1">
+              <p className="text-green-300 text-xs mt-1">
                 Transaction fees will be paid in {token} instead of {chain.nativeCurrency.symbol}.
               </p>
             </div>
@@ -127,15 +127,15 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 text-xs">
+              <span className="text-slate-300 text-xs">
                 Available Balance:
               </span>
               {balanceLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+                <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
               ) : (
-                <span className="font-medium text-xs text-slate-800">
+                <span className="font-medium text-xs text-white">
                   {parseFloat(balance).toLocaleString(undefined, {
                     maximumFractionDigits: 6,
                   })}{" "}
@@ -144,7 +144,7 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
               )}
             </div>
             {usdcToFiatRate && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-slate-400 mt-1">
                 ≈{" "}
                 {(parseFloat(balance) * usdcToFiatRate).toLocaleString(
                   undefined,
@@ -155,15 +155,15 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
             )}
           </div>
 
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 text-xs">Estimated Fee:</span>
-              <span className="font-medium text-xs text-slate-800">
+              <span className="text-slate-300 text-xs">Estimated Fee:</span>
+              <span className="font-medium text-xs text-white">
                 {estimatedFee} {feeCurrency}
               </span>
             </div>
             {usdcToFiatRate && feeCurrency === token && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-slate-400 mt-1">
                 ≈{" "}
                 {(estimatedFee * usdcToFiatRate).toLocaleString(undefined, {
                   maximumFractionDigits: 2,
@@ -179,14 +179,14 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
 
   return (
     <div className="space-y-3 mb-4">
-      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+      <div className="p-3 bg-amber-900/30 rounded-lg border border-amber-700/50">
         <div className="flex items-start gap-2">
           {/* <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" /> */}
           <div>
             {/* <p className="text-amber-800 font-medium text-xs">
               Gas Fees Required
             </p> */}
-            <p className="text-amber-700 text-xs mt-1">
+            <p className="text-amber-300 text-xs mt-1">
               You will pay fees in {chain.nativeCurrency.symbol} for {chain.name} network fees.
               {gasAbstractionFailed && " (Gas abstraction unavailable)"}
             </p>
@@ -195,15 +195,15 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
           <div className="flex justify-between items-center">
-            <span className="text-gray-700 text-xs">
+            <span className="text-slate-300 text-xs">
               Available Balance:
             </span>
             {balanceLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+              <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
             ) : (
-              <span className="font-medium text-xs text-slate-800">
+              <span className="font-medium text-xs text-white">
                 {parseFloat(balance).toLocaleString(undefined, {
                   maximumFractionDigits: 6,
                 })}{" "}
@@ -212,7 +212,7 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
             )}
           </div>
           {usdcToFiatRate && (
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-slate-400 mt-1">
               ≈{" "}
               {(parseFloat(balance) * usdcToFiatRate).toLocaleString(
                 undefined,
@@ -223,15 +223,15 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
           )}
         </div>
 
-        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-700/60">
           <div className="flex justify-between items-center">
-            <span className="text-gray-700 text-xs">Estimated Fee:</span>
-            <span className="font-medium text-xs text-slate-800">
+            <span className="text-slate-300 text-xs">Estimated Fee:</span>
+            <span className="font-medium text-xs text-white">
               {estimatedFee} {feeCurrency}
             </span>
           </div>
           {usdcToFiatRate && feeCurrency === chain.nativeCurrency.symbol && (
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-slate-400 mt-1">
               ≈{" "}
               {(estimatedFee * (usdcToFiatRate * 2000)).toLocaleString(
                 undefined,
@@ -244,7 +244,7 @@ const FeeInfoPanel: React.FC<FeeInfoPanelProps> = ({
       </div>
 
       {feeCurrency === chain.nativeCurrency.symbol && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-slate-500">
           *{chain.nativeCurrency.symbol} fee estimate based on current market rates. Actual fee may vary.
         </p>
       )}

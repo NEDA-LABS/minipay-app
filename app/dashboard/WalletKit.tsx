@@ -2,7 +2,7 @@
 import { Button } from "@/components/Button";
 import { StablecoinBalanceButton } from "@/components/StablecoinBalanceTracker";
 import { Send, Wallet } from "lucide-react";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets } from "@/hooks/useWallet";
 import SwapModal from "@/components/SwapModal";
 import { useState } from "react";
 import WalletModal from "@/components/(wallet)/WalletEmbedded";
@@ -26,15 +26,8 @@ export default function WalletKit({ buttonName }: WalletKitProps) {
     setIsWalletModalOpen(false);
   };
 
-  // Check if the wallet is Privy embedded
-  const isPrivyEmbedded =
-    wallets?.[0]?.walletClientType?.toLowerCase() === "privy" &&
-    wallets?.[0]?.walletClientType?.toLowerCase() !== "metamask" &&
-    wallets?.[0]?.walletClientType?.toLowerCase() !== "coinbase_wallet";
-  // console.log(
-  //   "wallet typeeeeeeeeeee",
-  //   wallets?.[0]?.walletClientType.toLowerCase()
-  // );
+  // MiniPay uses injected wallet - not embedded
+  const isEmbeddedWallet = false;
   return (
     <div className="flex items-center">
       <div className="flex flex-row items-center my-auto">

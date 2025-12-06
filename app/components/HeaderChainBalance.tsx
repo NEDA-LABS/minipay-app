@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWallet, useWallets } from "@/hooks/useWallet";
 import { ethers } from "ethers";
 import { stablecoins } from "../data/stablecoins";
 import { SUPPORTED_CHAINS } from "@/data/platformSupportedChains";
@@ -26,7 +26,7 @@ interface ExchangeRates {
 }
 
 export const HeaderChainBalance = () => {
-  const { user, authenticated } = usePrivy();
+  const { address: walletAddress, authenticated } = useWallet();
   const { wallets } = useWallets();
   const { selectedChain: globalSelectedChain, setSelectedChain: setGlobalSelectedChain } = useChain();
   const [currentChain, setCurrentChain] = useState<Chain | null>(null);
@@ -39,7 +39,7 @@ export const HeaderChainBalance = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [totalBalance, setTotalBalance] = useState(0);
 
-  const address = wallets[0]?.address || null;
+  const address = walletAddress || wallets[0]?.address || null;
 
   const currencies = [
     { code: "USD", symbol: "$", name: "US Dollar" },

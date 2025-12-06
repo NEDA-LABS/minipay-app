@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAccount, usePublicClient } from 'wagmi';
-import { useWallets } from '@privy-io/react-auth';
+import { useWallets } from '@/hooks/useWallet';
 import { ethers } from 'ethers';
 import { stablecoins } from '@/data/stablecoins';
 import { SwapService } from './service';

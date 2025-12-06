@@ -219,37 +219,19 @@ export async function getUserIdFromRequest(request: NextRequest): Promise<string
       return null;
     }
 
-    // For Privy integration, we need to decode the JWT token directly
-    // Privy access tokens are JWTs that contain user information
+    // For MiniPay, the token is the wallet address
+    // No JWT verification needed - wallet signature provides auth
     try {
-      // Decode the JWT without verification first to see the structure
-      const decoded = jwt.decode(token) as any;
-      // console.log('Decoded token payload:', decoded); //debugging
-      
-      if (decoded && decoded.sub) {
-        // The 'sub' (subject) field typically contains the user ID
-        return decoded.sub;
+      // Check if token is a wallet address (starts with 0x)
+      if (token.startsWith('0x') && token.length === 42) {
+        return token;
       }
       
-      // If you need to verify with Privy's API (use correct endpoint)
-      // if (process.env.PRIVY_APP_SECRET) {
-      //   const response = await fetch('https://auth.privy.io/api/v1/users/me', {
-      //     method: 'GET',
-      //     headers: {
-      //       'Authorization': `Bearer ${token}`,
-      //       'privy-app-id': process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-      //       'Content-Type': 'application/json',
-      //     },
-      //   });
-
-      //   if (response.ok) {
-      //     const userData = await response.json();
-      //     console.log('Privy user data:', userData);
-      //     return userData.id || userData.sub;
-      //   } else {
-      //     console.log('Privy API response not ok:', response.status, await response.text());
-      //   }
-      // }
+      // Fallback: decode JWT if provided
+      const decoded = jwt.decode(token) as any;
+      if (decoded && decoded.sub) {
+        return decoded.sub;
+      }
       
     } catch (jwtError) {
       console.log('JWT decode error:', jwtError);

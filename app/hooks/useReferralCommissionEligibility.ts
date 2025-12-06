@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 
 type Options = {
   // The referred user's wallet to check for commission eligibility
@@ -17,7 +17,7 @@ type Options = {
  * Data source matches referral analytics used across the app.
  */
 export function useReferralCommissionEligibility(options: Options = {}) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken } = useWallet();
   const referredWallet = options.referredWallet || options.walletAddress || null;
 
   const [hasFirstSettled, setHasFirstSettled] = useState<boolean>(false);

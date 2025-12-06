@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ export default function ContactFormModal({
   editContact = null,
   prefillData,
 }: ContactFormProps) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken } = useWallet();
   const isEditing = !!editContact;
 
   // Form state - simplified

@@ -6,10 +6,10 @@ import useSWR from "swr";
 import Shell from "@/dashboard/referrals/components/Shell";
 import { StatGrid, StatCard } from "@/dashboard/referrals/components/DataCards";
 import { BarByCurrency, PieByStatus } from "@/dashboard/referrals/components/Charts";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function Page() {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken } = useWallet();
 
   const fetcher = async (url: string) => {
     const token = await getAccessToken();

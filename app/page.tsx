@@ -27,7 +27,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Features from "./components/FeaturesSection";
-import HowItWorksSection from "./components/HowItWorksSection";
 import FaqSection from "./components/FaqSection";
 import Supporters from "./components/SupportersSection";
 import Image from "next/image";

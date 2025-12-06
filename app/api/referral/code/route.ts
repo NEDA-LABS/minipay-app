@@ -13,8 +13,8 @@ async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
       return null;
     }
 
-    // For Privy integration, we need to decode the JWT token directly
-    // Privy access tokens are JWTs that contain user information
+    // For wallet-based auth, we need to decode the JWT token directly
+    // Token can be wallet address or JWT that contain user information
     try {
       // Decode the JWT without verification first to see the structure
       const decoded = jwt.decode(token) as any;

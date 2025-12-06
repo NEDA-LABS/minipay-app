@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaFileInvoiceDollar, FaCirclePlus } from "react-icons/fa6";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ interface CreateInvoiceModalProps {
 }
 
 function CreateInvoiceModal({ open, onOpenChange, onInvoiceCreated }: CreateInvoiceModalProps) {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user } = useWallet();
   const walletAddress = user?.wallet?.address;
   const isConnected = authenticated && !!walletAddress;
   const merchantAddress = walletAddress;

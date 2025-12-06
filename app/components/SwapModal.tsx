@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { useAccount, usePublicClient } from 'wagmi';
-import {useWallets} from '@privy-io/react-auth';
+import { useAccount, usePublicClient, useSwitchChain } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
 import { base, bsc, scroll, polygon, arbitrum, optimism, celo } from 'viem/chains';
 import { stablecoins } from '@/data/stablecoins';
@@ -43,16 +42,16 @@ const SwapModal: React.FC<SwapModalProps> = memo(
   ({ open, fromSymbol, onClose, onSwap, maxAmount, onReverse }) => {
     /* ---------- chain & wallet ---------- */
     const { address } = useAccount();
-    const {wallets} = useWallets();
+    const { switchChainAsync } = useSwitchChain();
     const publicClient = usePublicClient();
     const [activeChain, setActiveChain] = useState(base);
     const [loadingChain, setLoadingChain] = useState(false);
 
     const switchChain = async (c: any) => {
-      if (!wallets[0]) return;
+      if (!address) return;
       setLoadingChain(true);
       try {
-        await wallets[0].switchChain(c.id);
+        await switchChainAsync({ chainId: c.id });
         setActiveChain(c);
       } catch (e: any) {
         toast.error(e.message);
@@ -126,12 +125,10 @@ const SwapModal: React.FC<SwapModalProps> = memo(
       if (parsed === 0n) return;
 
       try {
-        const provider = wallets[0]
-          ? new (await import('ethers')).providers.Web3Provider(
-              await wallets[0].getEthereumProvider()
-            )
-          : undefined;
-        if (!provider) return;
+        if (!window.ethereum) return;
+        const provider = new (await import('ethers')).providers.Web3Provider(
+          window.ethereum as any
+        );
 
         const amounts = await getAerodromeQuote({
           provider,
@@ -148,7 +145,7 @@ const SwapModal: React.FC<SwapModalProps> = memo(
         setQuote(null);
         setQuoteError('Unable to fetch quote');
       }
-    }, [amount, fromToken, toToken, fromDecimals, toDecimals, poolType, wallets]);
+    }, [amount, fromToken, toToken, fromDecimals, toDecimals, poolType]);
 
     useEffect(() => {
       const t = setTimeout(fetchQuote, 300);
@@ -160,8 +157,9 @@ const SwapModal: React.FC<SwapModalProps> = memo(
       if (!quote || !fromToken || !toToken || !address) return;
       setIsSwapping(true);
       try {
+        if (!window.ethereum) throw new Error('No wallet connected');
         const provider = new (await import('ethers')).providers.Web3Provider(
-          await wallets[0].getEthereumProvider()
+          window.ethereum as any
         );
         const signer = provider.getSigner();
         const parsed = parseUnits(truncateToDecimals(amount, fromDecimals), fromDecimals);

@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Info, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { AddRecipientModal } from './AddRecipientModal';
-import { useWallets } from '@privy-io/react-auth';
+import { useWallets } from '@/hooks/useWallet';
 import { SUPPORTED_CHAINS_NORMAL, type ChainConfig } from '@/ramps/idrxco/utils/chains';
 import { Badge } from '@/components/ui/badge';
 import { useBalance } from '@/ramps/idrxco/hooks/useBalance';

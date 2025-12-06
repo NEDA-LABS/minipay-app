@@ -5,12 +5,11 @@ import Link from 'next/link';
 // import { useWeb3 } from '../utils/web3-provider';
 import { Button } from '@/components/ui/button';
 import { Wallet, LogOut } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 
 export function DashboardNav() {
 //   const { isConnected, connectWallet } = useWeb3();
-  const { logout, authenticated, user } = usePrivy();
-  const connectWallet = user?.wallet?.address
+  const { disconnect, authenticated, address } = useWallet();
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -42,7 +41,7 @@ export function DashboardNav() {
             ) : (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-green-600">● Connected</span>
-                <Button onClick={logout} variant="ghost" size="sm">
+                <Button onClick={disconnect} variant="ghost" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </Button>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWallet, useWallets } from "@/hooks/useWallet";
 import { ethers } from "ethers";
 import { stablecoins } from "../data/stablecoins";
 import { SUPPORTED_CHAINS } from "@/data/platformSupportedChains";
@@ -43,7 +43,7 @@ export const StablecoinBalanceTracker = ({
   setTotalBalance,
   setLoading: setParentLoading,
 }: StablecoinBalanceTrackerProps) => {
-  const { user, authenticated } = usePrivy();
+  const { address: walletAddress, authenticated } = useWallet();
   const { wallets } = useWallets();
   const [currentChain, setCurrentChain] = useState<Chain | null>(null);
   const [balances, setBalances] = useState<StablecoinBalances>({});

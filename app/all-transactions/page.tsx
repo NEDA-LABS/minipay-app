@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import {
   Search,
   Filter,
@@ -82,7 +82,7 @@ const currencySymbols: { [key: string]: { icon: string; label: string } } = stab
 
 
 function TransactionsPage() {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, address } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -101,11 +101,11 @@ function TransactionsPage() {
   const itemsPerPage = 10;
 
   const fetchTransactions = useCallback(async () => {
-    if (!authenticated || !user) return;
+    if (!authenticated || !address) return;
 
     try {
       setRefreshing(true);
-      const response = await axios.get(`/api/transactions?merchantId=${user.wallet?.address}`, {
+      const response = await axios.get(`/api/transactions?merchantId=${address}`, {
         headers: {
           'X-App-Secret': process.env.NEXT_PUBLIC_APP_ACCESS, // From .env.local
           'X-Requested-With': 'XMLHttpRequest', // CSRF protection
@@ -121,7 +121,7 @@ function TransactionsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [authenticated, user]);
+  }, [authenticated, address]);
 
   useEffect(() => {
     fetchTransactions();

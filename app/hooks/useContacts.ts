@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import type { Contact } from '../contacts/types';
 
 interface CreateContactData {
@@ -44,7 +44,7 @@ export const contactKeys = {
  * - Error handling
  */
 export function useContacts() {
-  const { getAccessToken, authenticated } = usePrivy();
+  const { getAccessToken, authenticated } = useWallet();
   const queryClient = useQueryClient();
 
   // Fetch contacts query

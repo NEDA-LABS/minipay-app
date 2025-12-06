@@ -1,6 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useWallets } from '@privy-io/react-auth';
-import { ChainConfig, SUPPORTED_CHAINS, DEFAULT_CHAIN } from '@/offramp/offrampHooks/constants';
+import { useState, useCallback } from 'react';
+import { useAccount, useChainId, useSwitchChain } from 'wagmi';
+import { celo } from 'wagmi/chains';
+
+// MiniPay only supports Celo
+const CELO_CHAIN = {
+  id: celo.id,
+  name: celo.name,
+  nativeCurrency: celo.nativeCurrency,
+  rpcUrl: 'https://forno.celo.org',
+};
+
+interface ChainConfig {
+  id: number;
+  name: string;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  rpcUrl: string;
+}
 
 interface UseChainReturn {
   currentChain: ChainConfig;
@@ -14,70 +29,37 @@ interface UseChainReturn {
 }
 
 export const useChain = (): UseChainReturn => {
-  const { wallets } = useWallets();
-  const [currentChain, setCurrentChain] = useState<ChainConfig>(DEFAULT_CHAIN);
-  const [isSwitching, setIsSwitching] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync, isPending } = useSwitchChain();
   const [error, setError] = useState<string | null>(null);
 
-  const wallet = wallets[0];
-  const isConnected = Boolean(wallet);
+  // MiniPay is Celo-only, so we always return Celo chain
+  const currentChain = CELO_CHAIN;
 
-  useEffect(() => {
-    if (!wallet) {
-      setCurrentChain(DEFAULT_CHAIN);
-      setIsInitializing(false);
+  const handleSwitchChain = useCallback(async (targetChainId: number) => {
+    // MiniPay only supports Celo, so switching is a no-op
+    if (targetChainId !== celo.id) {
+      setError('MiniPay only supports Celo network');
       return;
     }
     
-    // Only update if chainId is defined and valid
-    if (wallet.chainId) {
-      const chainId = Number(wallet.chainId);
-      const chain = SUPPORTED_CHAINS.find(c => c.id === chainId);
-      if (chain) {
-        setCurrentChain(chain);
-        setIsInitializing(false);
-        return;
-      }
-    }
-    
-    // Fallback to DEFAULT_CHAIN only if wallet exists but chain is unsupported
-    setCurrentChain(DEFAULT_CHAIN);
-    setIsInitializing(false);
-  }, [wallet, wallet?.chainId]);
-
-  const switchChain = useCallback(async (chainId: number) => {
-    if (!wallet) {
-      setError('Wallet not connected');
-      return;
-    }
-
-    setIsSwitching(true);
-    setError(null);
-
     try {
-      await wallet.switchChain(chainId);
-      console.log('Switching chain initiated');
+      await switchChainAsync({ chainId: targetChainId });
     } catch (err: any) {
-      setError(err.message.includes('rejected') 
-        ? 'User rejected chain switch' 
-        : `Failed to switch: ${err.message}`
-      );
-      console.error("Error switching chain:", err);
-    } finally {
-      setIsSwitching(false);
+      setError(err.message || 'Failed to switch chain');
     }
-  }, [wallet]);
+  }, [switchChainAsync]);
 
   const clearError = useCallback(() => setError(null), []);
 
   return {
     currentChain,
-    supportedChains: SUPPORTED_CHAINS,
-    switchChain,
+    supportedChains: [CELO_CHAIN],
+    switchChain: handleSwitchChain,
     isConnected,
-    isSwitching,
-    isInitializing,
+    isSwitching: isPending,
+    isInitializing: false,
     error,
     clearError,
   };

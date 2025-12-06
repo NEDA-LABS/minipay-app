@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import { useBalance } from '../hooks/useBalance';
 import { useTransaction } from '../hooks/useTransaction';
 import { useIDRXRedeem } from '../hooks/useIDRXRedeem';
@@ -42,7 +42,7 @@ interface IDRXProviderProps {
  * Provides clean access to all IDRX-related functionality using modern patterns
  */
 export function IDRXProvider({ children }: IDRXProviderProps) {
-  const { authenticated } = usePrivy();
+  const { authenticated } = useWallet();
   const { walletAddress, isConnected } = useTransaction();
 
   // Hook factories to avoid hook call issues

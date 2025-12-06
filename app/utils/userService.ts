@@ -2,11 +2,9 @@
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
-export interface PrivyUser {
-  id: string;
-  email?: { address: string };
-  wallet?: { address: string };
-  phone?: { number: string };
+export interface WalletUser {
+  wallet: string;
+  email?: string;
 }
 
 export interface UserData {
@@ -20,46 +18,51 @@ export interface UserData {
   updatedAt: Date;
 }
 
-// Create or update user when they sign in with Privy
-export async function syncPrivyUser(privyUser: PrivyUser): Promise<UserData> {
+// Create or update user when they connect wallet (MiniPay)
+export async function syncWalletUser(walletAddress: string): Promise<UserData> {
   try {
     const userData = {
-      privyUserId: privyUser.id,
-      email: privyUser.email?.address,
-      name: null, // Can be updated later
+      privyUserId: walletAddress, // Use wallet address as unique ID
+      wallet: walletAddress,
+      name: null,
       isActive: true,
-      wallet: privyUser.wallet?.address,
     };
 
     const user = await prisma.user.upsert({
-      where: { privyUserId: privyUser.id },
+      where: { wallet: walletAddress },
       update: {
-        email: userData.email ? { set: userData.email } : undefined,
         updatedAt: new Date(),
       },
       create: userData,
     });
 
-    // console.log('User synced successfully:', user.id); debugg
     return user;
   } catch (error) {
-    console.error('Error syncing Privy user:', error);
+    console.error('Error syncing wallet user:', error);
     throw new Error('Failed to sync user data');
   }
 }
 
+// Legacy alias for backward compatibility
+export const syncPrivyUser = async (privyUser: { id: string; wallet?: { address: string } }): Promise<UserData> => {
+  const walletAddress = privyUser.wallet?.address || privyUser.id;
+  return syncWalletUser(walletAddress);
+};
 
-// Get user by Privy ID
-export async function getUserByPrivyId(privyUserId: string): Promise<UserData | null> {
+// Get user by wallet address (primary lookup for MiniPay)
+export async function getUserByWalletId(walletAddress: string): Promise<UserData | null> {
   try {
     return await prisma.user.findUnique({
-      where: { privyUserId },
+      where: { wallet: walletAddress },
     });
   } catch (error) {
-    console.error('Error fetching user by Privy ID:', error);
+    console.error('Error fetching user by wallet:', error);
     return null;
   }
 }
+
+// Legacy alias
+export const getUserByPrivyId = getUserByWalletId;
 
 // Get user by email
 export async function getUserByEmail(email: string): Promise<UserData | null> {

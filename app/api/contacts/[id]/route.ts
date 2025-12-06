@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserIdFromRequest } from '@/utils/privyUserIdFromRequest';
+import { getUserIdFromRequest } from '@/utils/walletFromRequest';
 import prisma from '@/lib/prisma';
 
 // Helper to verify contact ownership

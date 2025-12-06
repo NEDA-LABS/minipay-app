@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useWallet, useWallets } from '@/hooks/useWallet';
 import { X, Clock, CheckCircle, XCircle, AlertCircle, DollarSign, Building2, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import Header from '@/components/Header';
@@ -128,7 +128,7 @@ const formatAmount = async (amount: string, currency: string, rate: string): Pro
 };
 
 const MasterNotificationCenter: React.FC = () => {
-  const { user } = usePrivy();
+  const { address } = useWallet();
   const { wallets } = useWallets();
   const [localNotifications, setLocalNotifications] = useState<NotificationItem[]>([]);
   const [dbNotifications, setDbNotifications] = useState<DatabaseNotification[]>([]);
@@ -136,7 +136,7 @@ const MasterNotificationCenter: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [formattedAmounts, setFormattedAmounts] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<'all' | 'notifications' | 'transactions'>('all');
-  const userAddress = user?.wallet?.address || wallets?.[0]?.address;
+  const userAddress = address || wallets?.[0]?.address;
 
   // Fetch database notifications
   const fetchDbNotifications = async () => {

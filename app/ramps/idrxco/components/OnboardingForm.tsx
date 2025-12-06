@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 
 const onboardingSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -26,7 +26,7 @@ type OnboardingFormData = z.infer<typeof onboardingSchema>;
 export function OnboardingForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, getAccessToken } = usePrivy();
+  const { user, getAccessToken } = useWallet();
   const {
     register,
     handleSubmit,

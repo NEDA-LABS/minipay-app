@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useAccount, useBalance, useSwitchChain, useChainId, usePublicClient } from 'wagmi';
-import { useFundWallet, useSendTransaction, useWallets, usePrivy } from '@privy-io/react-auth';
+import { useAccount, useBalance, useSwitchChain, useChainId, usePublicClient, useSendTransaction as useWagmiSendTransaction } from 'wagmi';
+import { useWallet, useWallets, useFundWallet, useSendTransaction } from '@/hooks/useWallet';
 import { formatUnits, parseEther, parseUnits, isAddress, encodeFunctionData } from 'viem';
 import { base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet } from 'viem/chains';
 import { Copy, Eye, EyeOff, Download, Send, Plus, Wallet, ArrowUpDown, ExternalLink, X, ChevronDown, AlertTriangle, Shield, Zap } from 'lucide-react';
@@ -108,9 +108,10 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
   const publicClient = usePublicClient();
   const { fundWallet } = useFundWallet();
   const { sendTransaction } = useSendTransaction();
-  const { exportWallet, user } = usePrivy();
+  const { address: walletAddress } = useWallet();
 
-  const isPrivyEmbedded = wallets?.[0]?.walletClientType.toLowerCase() === 'privy';
+  // MiniPay doesn't use embedded wallets - users have their own wallet
+  const isPrivyEmbedded = false;
   const SUPPORTED_CHAINS = [base, bsc, scroll, celo, arbitrum, polygon, optimism, mainnet];
 
   const [activeTab, setActiveTab] = useState<'overview' | 'send' | 'receive' | 'settings'>(defaultTab);
@@ -362,16 +363,8 @@ export default function WalletModal({ isOpen, onClose, defaultTab = 'overview' }
   };
 
   const handleExportWallet = async () => {
-    if (!address) return toast.error('No wallet connected');
-    try {
-      setIsExporting(true);
-      await exportWallet({ address });
-      toast.success('Private key exported successfully');
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to export wallet');
-    } finally {
-      setIsExporting(false);
-    }
+    // MiniPay users manage their own wallet - export not supported
+    toast.error('Export not available for MiniPay wallets');
   };
 
   const copyToClipboard = async (text: string, label: string) => {

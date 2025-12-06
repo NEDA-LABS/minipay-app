@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
-import { useAccount, useWalletClient, useBalance, usePublicClient } from "wagmi";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useAccount, useWalletClient, useBalance, usePublicClient, useSwitchChain } from "wagmi";
+import { useWallet, useWallets } from "@/hooks/useWallet";
 import { useSearchParams } from "next/navigation";
 import { parseEther, formatUnits, isAddress, parseUnits } from "viem";
 import { acrossClient } from "@/utils/acrossProtocol";
@@ -52,9 +52,10 @@ interface Progress {
 export function BridgePageContent() {
   const searchParams = useSearchParams();
   const isEmbedded = true; // Always embedded when used in tab
-  const { login, authenticated, ready } = usePrivy();
+  const { connect, authenticated, ready } = useWallet();
   const { wallets } = useWallets();
   const { address } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
 
@@ -131,7 +132,7 @@ export function BridgePageContent() {
 
   // Handle automatic chain switching with delay for better UX
   const autoSwitchChain = useCallback(async () => {
-    if (!wallet || !address || isSwitchingChain) return;
+    if (!address || isSwitchingChain) return;
     
     // Add a small delay to make the switch feel more natural
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -139,7 +140,7 @@ export function BridgePageContent() {
     setIsSwitchingChain(true);
     setError("");
     try {
-      await wallet.switchChain(fromChainId);
+      await switchChainAsync({ chainId: fromChainId });
       setNeedsChainSwitch(false);
       toast.success(`Automatically switched to ${chainConfig[fromChainId as keyof typeof chainConfig]?.name}`);
     } catch (err: any) {
@@ -150,7 +151,7 @@ export function BridgePageContent() {
     } finally {
       setIsSwitchingChain(false);
     }
-  }, [wallet, fromChainId, address, isSwitchingChain]);
+  }, [switchChainAsync, fromChainId, address, isSwitchingChain]);
 
   // Automatically switch to the "from" chain when needed
   useEffect(() => {
@@ -469,7 +470,7 @@ export function BridgePageContent() {
             <p className="text-gray-400">Connect your wallet to start bridging assets across chains</p>
           </div>
           <button
-            onClick={login}
+            onClick={connect}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
           >
             Connect Wallet

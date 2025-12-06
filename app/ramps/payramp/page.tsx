@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useWallet, useWallets } from '@/hooks/useWallet';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ChainSelector from './ChainSelector';
@@ -13,7 +13,7 @@ import { withDashboardLayout } from '@/utils/withDashboardLayout';
 type SupportedToken = 'USDC' | 'USDT';
 
 const OffRampPage: React.FC = () => {
-  const { authenticated, login, connectWallet } = usePrivy();
+  const { authenticated, connect } = useWallet();
   const { wallets } = useWallets();
   const activeWallet = wallets[0] as WalletType | undefined;
   
@@ -89,10 +89,10 @@ const OffRampPage: React.FC = () => {
                   </p>
                 </div>
                 <button
-                  onClick={login}
+                  onClick={connect}
                   className="px-4 py-2 !bg-gradient-to-r !from-purple-600 !to-blue-600 hover:!from-purple-700 hover:!to-blue-700 !text-white !font-medium !rounded-xl !shadow-lg hover:!shadow-xl !transition-all !duration-300 text-base transform hover:-translate-y-0.5"
                 >
-                  Login with Privy
+                  Connect Wallet
                 </button>
               </div>
             </div>
@@ -123,7 +123,7 @@ const OffRampPage: React.FC = () => {
                   </p>
                 </div>
                 <button
-                  onClick={connectWallet}
+                  onClick={connect}
                   className="px-4 py-2 !bg-gradient-to-r !from-emerald-600 !to-green-600 hover:!from-emerald-700 hover:!to-green-700 !text-white !font-medium !rounded-xl !shadow-lg hover:!shadow-xl !transition-all !duration-300 text-base transform hover:-translate-y-0.5"
                 >
                   Connect Wallet

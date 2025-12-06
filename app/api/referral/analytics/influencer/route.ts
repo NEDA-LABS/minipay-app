@@ -1,6 +1,6 @@
 // /app/api/referral/analytics/influencer/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getUserIdFromRequest } from "@/utils/privyUserIdFromRequest";
+import { getUserIdFromRequest } from "@/utils/walletFromRequest";
 import prisma from '@/lib/prisma';
 
 // safe number from optional string

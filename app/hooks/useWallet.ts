@@ -101,3 +101,27 @@ export function useWalletAddress(): `0x${string}` | undefined {
 
 // Re-export for convenience
 export { useAccount, useConnect, useDisconnect } from 'wagmi';
+
+/**
+ * Stub for Privy's useFundWallet - not applicable for MiniPay
+ * MiniPay users fund their wallet through the MiniPay app directly
+ */
+export function useFundWallet() {
+  return {
+    fundWallet: async (_options: { address: string }) => {
+      throw new Error('Funding not available - use MiniPay app to add funds');
+    },
+  };
+}
+
+/**
+ * Stub for Privy's useSendTransaction
+ * For MiniPay, use wagmi's useSendTransaction instead
+ */
+export function useSendTransaction() {
+  return {
+    sendTransaction: async (_options: { to: string; value?: bigint; data?: string }) => {
+      throw new Error('Use wagmi sendTransaction instead');
+    },
+  };
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallets,usePrivy } from '@privy-io/react-auth';
+import { useWallet, useWallets } from '@/hooks/useWallet';
 import { X, Clock, CheckCircle, XCircle, AlertCircle, DollarSign, Building2, CreditCard } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
@@ -76,7 +76,7 @@ const formatAmount = (amount: string, currency: string) => {
 };
 
 const OrderHistoryModal = () => {
-  const { user } = usePrivy();
+  const { user } = useWallet();
   const [isOpen, setIsOpen] = useState(false);
   const [orders, setOrders] = useState<OffRampTransaction[]>([]);
   const [loading, setLoading] = useState(false);

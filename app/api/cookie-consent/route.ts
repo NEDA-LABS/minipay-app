@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUserIdFromRequest } from "@/utils/privyUserIdFromRequest";
+import { getUserIdFromRequest } from "@/utils/walletFromRequest";
 import prisma from '@/lib/prisma';
 
 // export const runtime = "nodejs";

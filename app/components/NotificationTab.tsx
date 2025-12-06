@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Trash2, X, Loader2 } from 'lucide-react';
-import { useWallets } from '@privy-io/react-auth';
+import { useWallets } from '@/hooks/useWallet';
 import { addPaymentTransaction, PaymentTransaction } from '../utils/paymentStorage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

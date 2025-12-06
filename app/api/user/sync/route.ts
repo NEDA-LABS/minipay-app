@@ -1,16 +1,19 @@
-// Sync user with Privy
+// Sync user with wallet address (MiniPay)
 import { NextResponse } from 'next/server';
-import { syncPrivyUser } from '../../../utils/userService';
+import { syncWalletUser } from '../../../utils/userService';
 
 export async function POST(req: Request) {
   try {
-    const { privyUser } = await req.json();
+    const { wallet, privyUser } = await req.json();
+    
+    // Support both new wallet-based and legacy privyUser format
+    const walletAddress = wallet || privyUser?.wallet?.address || privyUser?.id;
 
-    if (!privyUser || !privyUser.id) {
-      return NextResponse.json({ error: 'Invalid Privy user data' }, { status: 400 });
+    if (!walletAddress) {
+      return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 });
     }
 
-    const user = await syncPrivyUser(privyUser);
+    const user = await syncWalletUser(walletAddress);
     return NextResponse.json({ success: true, user });
   } catch (error) {
     console.error('API Error:', error);

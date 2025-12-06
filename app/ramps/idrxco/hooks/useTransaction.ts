@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useWallet, useWallets } from '@/hooks/useWallet';
 import { createWalletClient, createPublicClient, custom, http, formatUnits, parseUnits, getAddress } from 'viem';
 import { base, polygon, bsc } from 'viem/chains';
 import type { ChainConfig } from '../utils/chains';
@@ -102,11 +102,11 @@ interface TransferTransactionParams {
 }
 
 /**
- * Modern hook for handling IDRX transactions using Privy and viem
+ * Modern hook for handling IDRX transactions using wagmi and viem
  * Provides secure, efficient transaction handling with proper error management
  */
 export const useTransaction = () => {
-  const { authenticated } = usePrivy();
+  const { authenticated } = useWallet();
   const { wallets } = useWallets();
   const [state, setState] = useState<TransactionState>({
     isLoading: false,

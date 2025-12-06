@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import { ApiKey } from '../utils/types';
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function ApiTab({ keys, webhookUrl, onChangeWebhook, onSave, isSaving }: Props) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken } = useWallet();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(keys);
 
   const generateApiKey = async () => {

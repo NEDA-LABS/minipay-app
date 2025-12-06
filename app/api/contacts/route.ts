@@ -5,13 +5,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserIdFromRequest } from '@/utils/privyUserIdFromRequest';
+import { getUserIdFromRequest } from '@/utils/walletFromRequest';
 import prisma from '@/lib/prisma';
 
 // GET /api/contacts - List contacts
 export async function GET(request: NextRequest) {
   try {
-    // Get authenticated user from Privy token
+    // Get authenticated user from wallet address
     const privyUserId = await getUserIdFromRequest(request);
     
     if (!privyUserId) {
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
 // POST /api/contacts - Create new contact
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user from Privy token
+    // Get authenticated user from wallet address
     const privyUserId = await getUserIdFromRequest(request);
     
     if (!privyUserId) {

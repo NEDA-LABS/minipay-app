@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { FaFileInvoiceDollar, FaDownload, FaShare, FaPrint, FaCopy, FaCalendarAlt, FaUser, FaEnvelope, FaCreditCard } from "react-icons/fa";
 import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import Header from '../../components/Header';
 
 interface LineItem {
@@ -29,7 +29,7 @@ interface Invoice {
 }
 
 export default function InvoiceViewPage() {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user } = useWallet();
   const params = useParams();
   const router = useRouter();
   const invoiceId = params.id as string;

@@ -100,7 +100,7 @@ export default function DashboardContent() {
 
 
   // Fetch balances and transactions in parallel when walletAddress changes
-  // CRITICAL: Don't wait for Privy 'ready' - start fetching as soon as we have wallet address
+  // CRITICAL: Start fetching as soon as we have wallet address - start fetching as soon as we have wallet address
   // This eliminates the 2-3 second blocking wait on first load
   useEffect(() => {
     if (!walletAddress) return;

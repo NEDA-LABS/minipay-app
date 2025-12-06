@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaFileInvoiceDollar, FaPlus, FaEye, FaDownload, FaShare } from "react-icons/fa6";
 import { Loader2, FileText, BarChart3 } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import { motion } from "framer-motion";
 import Header from '../components/Header';
 import { withDashboardLayout } from '../utils/withDashboardLayout';
@@ -28,7 +28,7 @@ interface Invoice {
 }
 
 function InvoicePage() {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user } = useWallet();
   const walletAddress = user?.wallet?.address;
   const isConnected = authenticated && !!walletAddress;
   const merchantId = walletAddress;

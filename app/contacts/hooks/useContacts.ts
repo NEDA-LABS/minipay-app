@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import type {
   Contact,
   ContactFilters,
@@ -15,7 +15,7 @@ import type {
 } from '../types';
 
 export const useContacts = () => {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken } = useWallet();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

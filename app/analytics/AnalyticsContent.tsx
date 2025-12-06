@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import { useRouter } from "next/navigation";
 import CurrencyFilter from "./CurrencyFilter";
 import { exportTransactionsToCSV } from "./ExportCSV";
@@ -88,8 +88,7 @@ const getPaymentMethodsData = (transactions: any[]) => {
 
 export default function AnalyticsContent() {
   const [dateRange, setDateRange] = useState("All");
-  const { user, authenticated } = usePrivy();
-  const address = user?.wallet?.address;
+  const { address, authenticated } = useWallet();
   const router = useRouter();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isTransactionLoading, setIsTransactionLoading] = useState(false);

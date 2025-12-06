@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Users, Search } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import type { Contact } from './types';
 import { useContacts } from './hooks/useContacts';
 
 const ContactsPage = () => {
-  const { authenticated, user, login } = usePrivy();
+  const { authenticated, address, connect } = useWallet();
   
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,10 +40,10 @@ const ContactsPage = () => {
 
   // Fetch contacts on mount
   useEffect(() => {
-    if (authenticated && user) {
+    if (authenticated && address) {
       fetchContacts();
     }
-  }, [authenticated, user, fetchContacts]);
+  }, [authenticated, address, fetchContacts]);
 
   // Filter contacts based on search
   const filteredContacts = contacts.filter(contact => {
@@ -104,7 +104,7 @@ const ContactsPage = () => {
             <Users className="h-12 w-12 text-purple-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-white mb-2">Login Required</h3>
             <p className="text-slate-300 mb-6">Please login to view your contacts</p>
-            <Button onClick={login} className="bg-gradient-to-r from-purple-600 to-blue-600">
+            <Button onClick={connect} className="bg-gradient-to-r from-purple-600 to-blue-600">
               Login
             </Button>
           </CardContent>

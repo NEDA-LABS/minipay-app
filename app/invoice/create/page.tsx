@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaFileInvoiceDollar, FaCirclePlus, FaPlus } from "react-icons/fa6";
-import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@/hooks/useWallet";
 import {withDashboardLayout} from "../../utils/withDashboardLayout";
 
 import Header from '../../components/Header';
 import { stablecoins } from '../../data/stablecoins';
 
 function CreateInvoicePage() {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user } = useWallet();
   const walletAddress = user?.wallet?.address;
   const isConnected = authenticated && !!walletAddress;
 

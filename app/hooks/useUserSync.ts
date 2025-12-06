@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import toast from 'react-hot-toast';
 
 export function useUserSync() {
-  const { user, authenticated, ready } = usePrivy();
+  const { address, authenticated, ready } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   type User = {
     email?: string | null;
@@ -15,7 +15,7 @@ export function useUserSync() {
 
   // Sync user when they authenticate
   useEffect(() => {
-    if (!ready || !authenticated || !user || isLoading) return;
+    if (!ready || !authenticated || !address || isLoading) return;
 
     const syncUser = async () => {
       setIsLoading(true);
@@ -25,36 +25,27 @@ export function useUserSync() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ privyUser: user }),
+          body: JSON.stringify({ wallet: address }),
         });
-
-        // if (!response.ok) {
-        //   throw new Error('Failed to sync user');
-        // }
 
         const result = await response.json();
         setUserData(result.user);
         
         // Store user data in localStorage for quick access
         localStorage.setItem('userData', JSON.stringify(result.user));
-        
-        // console.log('User synced successfully:', result.user); 
       } catch (error) {
-        // console.log('privy user:', user);
-        // console.error('Error syncing user:', error);
         toast.error('Failed to sync user data');
-
       } finally {
         setIsLoading(false);
       }
     };
 
     syncUser();
-  }, [ready, authenticated, user]);
+  }, [ready, authenticated, address, isLoading]);
 
   // Function to add email to user
   const addEmail = async (email: string) => {
-    if (!user?.id) return;
+    if (!address) return;
 
     setIsLoading(true);
     try {
@@ -64,7 +55,7 @@ export function useUserSync() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          privyUserId: user.id, 
+          wallet: address, 
           email 
         }),
       });
@@ -80,15 +71,12 @@ export function useUserSync() {
       toast.success('Email added successfully!');
       return result.user;
     } catch (error) {
-      // console.error('Error adding email:', error);
       toast.error('Failed to add email');
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
-
-  // console.log("user email", userData?.email);
 
   return {
     userData,

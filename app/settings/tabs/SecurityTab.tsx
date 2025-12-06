@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallet } from '@/hooks/useWallet';
 import { SettingsDto } from '../utils/types';
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function SecurityTab({ data, onChange, onSave, isSaving }: Props) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken } = useWallet();
   const [show2FASetup, setShow2FASetup] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [verificationToken, setVerificationToken] = useState('');
